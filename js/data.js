@@ -400,51 +400,53 @@ function calculateDistance(lat1, lon1, lat2, lon2, unit = 'kilometers') {
 }
 
 // Function to search for nearby people groups
-function searchNearby(country, upgName, radius, units, type) {
+function searchNearby(country, upgName, radius, units = 'kilometers') {
+    // Find the reference UPG
     const referenceUPG = upgData.find(upg => upg.country === country && upg.name === upgName);
-    if (!referenceUPG) return { fpgs: [], uupgs: [] };
+    
+    if (!referenceUPG) {
+        console.error('Reference UPG not found:', { country, upgName });
+        return { uupgs: [], fpgs: [] };
+    }
+
+    console.log('Reference UPG found:', referenceUPG);
 
     const results = {
-        fpgs: [],
-        uupgs: []
+        uupgs: [],
+        fpgs: []
     };
 
-    // Search for nearby UPGs
-    if (type === 'both' || type === 'uupg') {
-        results.uupgs = upgData
-            .filter(upg => upg.country !== country || upg.name !== upgName) // Exclude reference UPG
-            .map(upg => {
-                const distance = calculateDistance(
-                    referenceUPG.latitude,
-                    referenceUPG.longitude,
-                    upg.latitude,
-                    upg.longitude,
-                    units
-                );
-                return { ...upg, distance };
-            })
-            .filter(upg => upg.distance <= radius)
-            .sort((a, b) => a.distance - b.distance);
-    }
+    // Search through all UPGs
+    upgData.forEach(upg => {
+        // Skip the reference UPG itself
+        if (upg.country === country && upg.name === upgName) return;
 
-    // For demonstration, we'll show other UPGs as FPGs if they have low evangelical percentage
-    if (type === 'both' || type === 'fpg') {
-        results.fpgs = upgData
-            .filter(upg => (upg.country !== country || upg.name !== upgName) && 
-                          (upg.evangelical === 0 || upg.evangelical === ""))
-            .map(fpg => {
-                const distance = calculateDistance(
-                    referenceUPG.latitude,
-                    referenceUPG.longitude,
-                    fpg.latitude,
-                    fpg.longitude,
-                    units
-                );
-                return { ...fpg, distance };
-            })
-            .filter(fpg => fpg.distance <= radius)
-            .sort((a, b) => a.distance - b.distance);
-    }
+        // Calculate distance
+        const distance = calculateDistance(
+            referenceUPG.latitude,
+            referenceUPG.longitude,
+            upg.latitude,
+            upg.longitude,
+            units
+        );
 
+        // If within radius, add to appropriate category
+        if (distance <= parseFloat(radius)) {
+            const upgWithDistance = { ...upg, distance };
+            
+            // Classify as FPG if evangelical percentage is 0 or empty
+            if (upg.evangelical === 0 || upg.evangelical === "") {
+                results.fpgs.push(upgWithDistance);
+            } else {
+                results.uupgs.push(upgWithDistance);
+            }
+        }
+    });
+
+    // Sort results by distance
+    results.uupgs.sort((a, b) => a.distance - b.distance);
+    results.fpgs.sort((a, b) => a.distance - b.distance);
+
+    console.log('Search results:', results);
     return results;
 }

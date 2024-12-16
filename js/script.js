@@ -106,7 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Search button listener
     const searchButton = document.getElementById('searchButton');
     if (searchButton) {
-        searchButton.addEventListener('click', function() {
+        searchButton.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+            
             const country = document.getElementById('country').value;
             const upg = document.getElementById('upg').value;
             const radius = document.getElementById('radius').value;
@@ -117,16 +119,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            console.log('Searching with params:', { country, upg, radius, units });
+
             // Search for nearby groups
             const nearbyGroups = searchNearby(country, upg, radius, units);
-            
+            console.log('Search results:', nearbyGroups);
+
             // Display results
-            if (nearbyGroups.uupgs) {
+            if (nearbyGroups.uupgs && nearbyGroups.uupgs.length > 0) {
                 displayResults(nearbyGroups.uupgs, 'uupg');
+            } else {
+                const uupgList = document.getElementById('uupgList');
+                uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
             }
-            if (nearbyGroups.fpgs) {
+
+            if (nearbyGroups.fpgs && nearbyGroups.fpgs.length > 0) {
                 displayResults(nearbyGroups.fpgs, 'fpg');
+            } else {
+                const fpgList = document.getElementById('fpgList');
+                fpgList.innerHTML = '<p class="no-results">No FPGs found within the specified radius.</p>';
             }
+
+            // Show the sort options
+            document.getElementById('sortOptions').style.display = 'flex';
         });
     }
 });
