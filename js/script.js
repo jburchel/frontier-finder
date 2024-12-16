@@ -130,11 +130,11 @@ function sortResults(sortBy) {
             if (sortBy === 'distance' || sortBy === 'population') {
                 aValue = parseFloat(aValue) || 0;
                 bValue = parseFloat(bValue) || 0;
-                return aValue - bValue;
+                return bValue - aValue; // Descending order for numbers
             }
             
-            // String comparison for other fields
-            return aValue.localeCompare(bValue);
+            // String comparison for other fields (country, language, religion)
+            return bValue.localeCompare(aValue); // Descending order for strings
         });
         
         // Clear and re-append sorted items
