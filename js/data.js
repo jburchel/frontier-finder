@@ -99,56 +99,43 @@ async function loadAllData() {
             existingUpgs: existingUpgData.length,
             uupgs: uupgData.length
         });
-        
-        // Populate the country dropdown
-        const countrySelect = document.getElementById('country');
-        if (countrySelect) {
-            // Clear existing options except the first one
-            while (countrySelect.options.length > 1) {
-                countrySelect.remove(1);
-            }
-            
-            const countries = getCountries();
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                countrySelect.appendChild(option);
-            });
-            
-            // Enable the dropdown
-            countrySelect.disabled = false;
-        }
     } catch (error) {
         console.error('Error loading data:', error);
-        // Display error to user
-        const countrySelect = document.getElementById('country');
-        if (countrySelect) {
-            // Clear existing options except the first one
-            while (countrySelect.options.length > 1) {
-                countrySelect.remove(1);
-            }
-            const option = document.createElement('option');
-            option.textContent = 'Error loading data';
-            countrySelect.appendChild(option);
-            countrySelect.disabled = true;
-        }
     }
 }
 
-// Function to get unique countries (from existing UPGs)
-function getCountries() {
-    return [...new Set(existingUpgData.map(group => group.country))]
+// Function to get unique countries from existing UPGs
+function getUniqueCountries() {
+    const countries = [...new Set(existingUpgData.map(group => group.country))]
         .filter(country => country) // Remove empty values
         .sort();
+    return countries;
+}
+
+// Function to populate country dropdown
+function populateCountryDropdown() {
+    const countrySelect = document.getElementById('country');
+    const countries = getUniqueCountries();
+    
+    countrySelect.innerHTML = '<option value="">Select a Country</option>';
+    countries.forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        countrySelect.appendChild(option);
+    });
 }
 
 // Function to get UPGs for a country (from existing UPGs)
 function getUPGsByCountry(country) {
     console.log('Getting UPGs for country:', country);
+    if (!existingUpgData) {
+        console.error('UPG data not loaded yet');
+        return [];
+    }
     console.log('Total existing UPGs:', existingUpgData.length);
     const upgs = existingUpgData
-        .filter(group => group.country === country)
+        .filter(group => group.country && group.country.trim().toLowerCase() === country.trim().toLowerCase())
         .sort((a, b) => a.name.localeCompare(b.name));
     console.log('Found UPGs:', upgs);
     return upgs;
@@ -222,5 +209,10 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
     };
 }
 
-// Load data when the script loads
-document.addEventListener('DOMContentLoaded', loadAllData);
+// Initialize data when the script loads
+loadAllData().then(() => {
+    console.log('Data loaded successfully');
+    populateCountryDropdown();
+}).catch(error => {
+    console.error('Error loading data:', error);
+});
