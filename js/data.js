@@ -91,10 +91,16 @@ export async function loadUUPGData() {
                             obj[header] = values[index];
                         }
                     });
+                    // Map PeopleName to name for consistency
+                    if (obj.PeopleName) {
+                        obj.name = obj.PeopleName;
+                    }
                     // Convert numeric fields
-                    obj.latitude = parseFloat(obj.latitude) || 0;
-                    obj.longitude = parseFloat(obj.longitude) || 0;
-                    obj.population = parseInt((obj.population || '').replace(/,/g, '')) || 0;
+                    obj.latitude = parseFloat(obj.Latitude || obj.latitude) || 0;
+                    obj.longitude = parseFloat(obj.Longitude || obj.longitude) || 0;
+                    obj.population = parseInt((obj.Population || obj.population || '').replace(/,/g, '')) || 0;
+                    obj.language = obj.Language || obj.language || 'Unknown';
+                    obj.religion = obj.Religion || obj.religion || 'Unknown';
                     return obj;
                 } catch (error) {
                     console.error(`Error parsing UUPG line ${index + 2}:`, error);
