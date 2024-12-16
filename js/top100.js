@@ -1,24 +1,38 @@
 // Top 100 List Management
 class Top100Manager {
     constructor() {
-        this.db = firebase.firestore();
-        this.auth = firebase.auth();
-        this.top100List = [];
-        this.currentSort = { field: 'rank', order: 'asc' };
-        this.currentFilter = '';
-        
-        this.initializeUI();
-        this.setupEventListeners();
-        this.setupAuthStateListener();
+        try {
+            console.log('Initializing Top100Manager...');
+            this.db = firebase.firestore();
+            this.auth = firebase.auth();
+            this.top100List = [];
+            this.currentSort = { field: 'rank', order: 'asc' };
+            this.currentFilter = '';
+            
+            this.initializeUI();
+            this.setupEventListeners();
+            this.setupAuthStateListener();
+            console.log('Top100Manager initialized successfully');
+        } catch (error) {
+            console.error('Error in Top100Manager constructor:', error);
+            document.getElementById('top100List').innerHTML = 
+                `<p class="error">Error initializing Top 100 list: ${error.message}</p>`;
+        }
     }
 
     initializeUI() {
+        console.log('Initializing UI...');
         this.top100ListContainer = document.getElementById('top100List');
         this.regionFilter = document.getElementById('regionFilter');
+        if (!this.top100ListContainer || !this.regionFilter) {
+            throw new Error('Required UI elements not found');
+        }
         this.populateRegionFilter();
+        console.log('UI initialized successfully');
     }
 
     setupEventListeners() {
+        console.log('Setting up event listeners...');
         // Set up sort buttons
         document.querySelectorAll('.sort-button').forEach(button => {
             button.addEventListener('click', () => {
@@ -32,10 +46,13 @@ class Top100Manager {
             this.currentFilter = this.regionFilter.value;
             this.renderTop100List();
         });
+        console.log('Event listeners set up successfully');
     }
 
     setupAuthStateListener() {
+        console.log('Setting up auth state listener...');
         this.auth.onAuthStateChanged(user => {
+            console.log('Auth state changed:', user ? 'User signed in' : 'No user');
             if (user) {
                 this.loadTop100List();
             } else {
@@ -45,30 +62,52 @@ class Top100Manager {
     }
 
     async promptLogin() {
+        console.log('Prompting login...');
         try {
-            await this.auth.signInAnonymously();
+            const result = await this.auth.signInAnonymously();
+            console.log('Anonymous sign-in successful:', result.user.uid);
         } catch (error) {
             console.error('Error signing in:', error);
-            this.top100ListContainer.innerHTML = '<p class="error">Error loading Top 100 list. Please try refreshing the page.</p>';
+            this.top100ListContainer.innerHTML = 
+                `<p class="error">Error signing in: ${error.message}. Please try refreshing the page.</p>`;
         }
     }
 
     async loadTop100List() {
+        console.log('Loading top 100 list...');
         try {
-            const snapshot = await this.db.collection('top100Lists')
-                .doc(this.auth.currentUser.uid)
-                .get();
+            if (!this.auth.currentUser) {
+                throw new Error('No authenticated user');
+            }
 
-            this.top100List = snapshot.exists ? snapshot.data().groups : [];
+            const docRef = this.db.collection('top100Lists').doc(this.auth.currentUser.uid);
+            console.log('Fetching document:', docRef.path);
+            
+            const snapshot = await docRef.get();
+            console.log('Document exists:', snapshot.exists);
+
+            if (snapshot.exists) {
+                const data = snapshot.data();
+                console.log('Document data:', data);
+                this.top100List = data.groups || [];
+            } else {
+                console.log('No existing top 100 list, creating empty list');
+                this.top100List = [];
+                // Create an empty document for the user
+                await docRef.set({ groups: [] });
+            }
+
             this.populateRegionFilter();
             this.renderTop100List();
         } catch (error) {
             console.error('Error loading Top 100 list:', error);
-            this.top100ListContainer.innerHTML = '<p class="error">Error loading Top 100 list. Please try refreshing the page.</p>';
+            this.top100ListContainer.innerHTML = 
+                `<p class="error">Error loading Top 100 list: ${error.message}. Please try refreshing the page.</p>`;
         }
     }
 
     populateRegionFilter() {
+        console.log('Populating region filter...');
         // Get unique regions from the list
         const regions = [...new Set(this.top100List.map(group => this.getRegionFromCountry(group.country)))];
         
@@ -85,9 +124,11 @@ class Top100Manager {
             option.textContent = region;
             this.regionFilter.appendChild(option);
         });
+        console.log('Region filter populated successfully');
     }
 
     getRegionFromCountry(country) {
+        console.log('Getting region from country:', country);
         // Add your region mapping logic here
         // This is a simplified example
         const regionMap = {
@@ -101,6 +142,7 @@ class Top100Manager {
     }
 
     handleSort(field) {
+        console.log('Handling sort:', field);
         const button = document.querySelector(`[data-sort="${field}"]`);
         
         // Toggle sort order if clicking the same field
@@ -121,6 +163,7 @@ class Top100Manager {
     }
 
     renderTop100List() {
+        console.log('Rendering top 100 list...');
         this.top100ListContainer.innerHTML = '';
         
         if (this.top100List.length === 0) {
@@ -186,9 +229,11 @@ class Top100Manager {
         });
 
         this.top100ListContainer.appendChild(list);
+        console.log('Top 100 list rendered successfully');
     }
 
     async removeFromTop100(index) {
+        console.log('Removing group from top 100 list:', index);
         try {
             this.top100List.splice(index, 1);
             await this.db.collection('top100Lists')
