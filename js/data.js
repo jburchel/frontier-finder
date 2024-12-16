@@ -294,17 +294,21 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
 // Function to search for nearby people groups
 export async function searchNearby(country, upgName, radius, units = 'kilometers', type = 'both') {
     try {
-        // Load UUPG data if not already loaded
-        if (uupgData.length === 0) {
-            await loadUUPGData();
+        console.log('Starting search with parameters:', { country, upgName, radius, units, type });
+        
+        // Load data if not already loaded
+        if (uupgData.length === 0 || existingUpgData.length === 0) {
+            await loadAllData();
         }
 
-        // Find the selected UPG
-        const selectedUpg = uupgData.find(upg => 
+        // Find the selected UPG from existing UPGs
+        const selectedUpg = existingUpgData.find(upg => 
             upg.country === country && upg.name === upgName
         );
         
         if (!selectedUpg) {
+            console.error('Selected UPG not found in existing UPGs:', { country, upgName });
+            console.log('Available UPGs for country:', existingUpgData.filter(upg => upg.country === country).map(upg => upg.name));
             throw new Error('Selected UPG not found');
         }
 
@@ -337,9 +341,16 @@ export async function searchNearby(country, upgName, radius, units = 'kilometers
             console.log('Searching for UUPGs...');
             results.uupgs = uupgData
                 .filter(uupg => {
+                    // Make sure we have valid coordinates
+                    if (!uupg.latitude || !uupg.longitude) {
+                        console.warn('UUPG missing coordinates:', uupg);
+                        return false;
+                    }
+                    
                     if (uupg.country === country && uupg.name === upgName) {
                         return false; // Exclude the selected UPG
                     }
+                    
                     const distance = calculateDistance(
                         selectedUpg.latitude,
                         selectedUpg.longitude,
