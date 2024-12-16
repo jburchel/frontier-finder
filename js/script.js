@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Search button listener
     const searchButton = document.getElementById('searchButton');
     if (searchButton) {
-        searchButton.addEventListener('click', function(e) {
+        searchButton.addEventListener('click', async function(e) {
             e.preventDefault(); // Prevent form submission
             
             const country = document.getElementById('country').value;
@@ -119,29 +119,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            console.log('Searching with params:', { country, upg, radius, units });
+            // Show loading state
+            const uupgList = document.getElementById('uupgList');
+            const fpgList = document.getElementById('fpgList');
+            uupgList.innerHTML = '<p class="loading">Searching for UUPGs...</p>';
+            fpgList.innerHTML = '<p class="loading">Searching for FPGs...</p>';
 
-            // Search for nearby groups
-            const nearbyGroups = searchNearby(country, upg, radius, units);
-            console.log('Search results:', nearbyGroups);
+            try {
+                console.log('Searching with params:', { country, upg, radius, units });
 
-            // Display results
-            if (nearbyGroups.uupgs && nearbyGroups.uupgs.length > 0) {
-                displayResults(nearbyGroups.uupgs, 'uupg');
-            } else {
-                const uupgList = document.getElementById('uupgList');
-                uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
+                // Search for nearby groups
+                const nearbyGroups = await searchNearby(country, upg, radius, units);
+                console.log('Search results:', nearbyGroups);
+
+                // Display results
+                if (nearbyGroups.uupgs && nearbyGroups.uupgs.length > 0) {
+                    displayResults(nearbyGroups.uupgs, 'uupg');
+                } else {
+                    uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
+                }
+
+                if (nearbyGroups.fpgs && nearbyGroups.fpgs.length > 0) {
+                    displayResults(nearbyGroups.fpgs, 'fpg');
+                } else {
+                    fpgList.innerHTML = '<p class="no-results">No FPGs found within the specified radius.</p>';
+                }
+
+                // Show the sort options
+                document.getElementById('sortOptions').style.display = 'flex';
+            } catch (error) {
+                console.error('Error during search:', error);
+                uupgList.innerHTML = '<p class="error">Error searching for UUPGs. Please try again.</p>';
+                fpgList.innerHTML = '<p class="error">Error searching for FPGs. Please try again.</p>';
             }
-
-            if (nearbyGroups.fpgs && nearbyGroups.fpgs.length > 0) {
-                displayResults(nearbyGroups.fpgs, 'fpg');
-            } else {
-                const fpgList = document.getElementById('fpgList');
-                fpgList.innerHTML = '<p class="no-results">No FPGs found within the specified radius.</p>';
-            }
-
-            // Show the sort options
-            document.getElementById('sortOptions').style.display = 'flex';
         });
     }
 });

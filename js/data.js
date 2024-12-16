@@ -1,4 +1,4 @@
-// UPG data from CSV
+// Load UUPG data from CSV
 const upgData = [
     {
         "name": "Georgian",
@@ -388,19 +388,53 @@ function getUPGsByCountry(country) {
 
 // Function to calculate distance between two points
 function calculateDistance(lat1, lon1, lat2, lon2, unit = 'kilometers') {
-    const R = unit === 'kilometers' ? 6371 : 3959; // Earth's radius in km or miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const R = unit === 'miles' ? 3959 : 6371; // Radius of the earth in miles or km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
     const a = 
         Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
     return R * c;
 }
 
+function deg2rad(deg) {
+    return deg * (Math.PI/180);
+}
+
+// Function to fetch FPGs from Joshua Project API
+async function fetchFPGs(latitude, longitude, radius, units) {
+    try {
+        const response = await fetch(`${config.apiBaseUrl}/people_groups/search?api_key=${config.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${units}&is_frontier=true`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch FPGs from Joshua Project API');
+        }
+        const data = await response.json();
+        return data.map(fpg => ({
+            name: fpg.peo_name,
+            country: fpg.cntry_name,
+            latitude: fpg.latitude,
+            longitude: fpg.longitude,
+            population: fpg.population,
+            language: fpg.primary_language_name,
+            religion: fpg.religion_primary_name,
+            distance: calculateDistance(
+                latitude,
+                longitude,
+                fpg.latitude,
+                fpg.longitude,
+                units
+            )
+        }));
+    } catch (error) {
+        console.error('Error fetching FPGs:', error);
+        return [];
+    }
+}
+
 // Function to search for nearby people groups
-function searchNearby(country, upgName, radius, units = 'kilometers') {
+async function searchNearby(country, upgName, radius, units = 'kilometers') {
     // Find the reference UPG
     const referenceUPG = upgData.find(upg => upg.country === country && upg.name === upgName);
     
@@ -411,42 +445,27 @@ function searchNearby(country, upgName, radius, units = 'kilometers') {
 
     console.log('Reference UPG found:', referenceUPG);
 
-    const results = {
-        uupgs: [],
-        fpgs: []
+    // Search for nearby UUPGs from CSV data
+    const uupgs = upgData
+        .filter(upg => upg.country !== country || upg.name !== upgName)
+        .map(upg => ({
+            ...upg,
+            distance: calculateDistance(
+                referenceUPG.latitude,
+                referenceUPG.longitude,
+                upg.latitude,
+                upg.longitude,
+                units
+            )
+        }))
+        .filter(upg => upg.distance <= parseFloat(radius))
+        .sort((a, b) => a.distance - b.distance);
+
+    // Fetch FPGs from Joshua Project API
+    const fpgs = await fetchFPGs(referenceUPG.latitude, referenceUPG.longitude, radius, units);
+
+    return {
+        uupgs,
+        fpgs: fpgs.sort((a, b) => a.distance - b.distance)
     };
-
-    // Search through all UPGs
-    upgData.forEach(upg => {
-        // Skip the reference UPG itself
-        if (upg.country === country && upg.name === upgName) return;
-
-        // Calculate distance
-        const distance = calculateDistance(
-            referenceUPG.latitude,
-            referenceUPG.longitude,
-            upg.latitude,
-            upg.longitude,
-            units
-        );
-
-        // If within radius, add to appropriate category
-        if (distance <= parseFloat(radius)) {
-            const upgWithDistance = { ...upg, distance };
-            
-            // Classify as FPG if evangelical percentage is 0 or empty
-            if (upg.evangelical === 0 || upg.evangelical === "") {
-                results.fpgs.push(upgWithDistance);
-            } else {
-                results.uupgs.push(upgWithDistance);
-            }
-        }
-    });
-
-    // Sort results by distance
-    results.uupgs.sort((a, b) => a.distance - b.distance);
-    results.fpgs.sort((a, b) => a.distance - b.distance);
-
-    console.log('Search results:', results);
-    return results;
 }

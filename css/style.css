@@ -226,6 +226,36 @@ button:hover {
     margin: 1rem 0;
 }
 
+.loading {
+    padding: 1rem;
+    text-align: center;
+    color: var(--primary-color);
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius);
+    margin: 1rem 0;
+}
+
+.loading::after {
+    content: "...";
+    animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ""; }
+    40% { content: "."; }
+    60% { content: ".."; }
+    80%, 100% { content: "..."; }
+}
+
+.error {
+    padding: 1rem;
+    text-align: center;
+    color: #dc3545;
+    background-color: #f8d7da;
+    border-radius: var(--border-radius);
+    margin: 1rem 0;
+}
+
 footer {
     text-align: center;
     margin-top: 3rem;
