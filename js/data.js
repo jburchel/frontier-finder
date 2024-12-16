@@ -52,8 +52,11 @@ async function loadAllData() {
             throw new Error(`HTTP error! status: ${existingResponse.status}`);
         }
         const existingCsvText = await existingResponse.text();
+        console.log('Loaded existing UPGs CSV:', existingCsvText.slice(0, 200) + '...');
+        
         const existingLines = existingCsvText.split('\n').filter(line => line.trim());
         const existingHeaders = parseCSVLine(existingLines[0]);
+        console.log('Existing UPG headers:', existingHeaders);
 
         existingUpgData = existingLines.slice(1).map(line => {
             const values = parseCSVLine(line);
@@ -67,6 +70,8 @@ async function loadAllData() {
             });
             return obj;
         });
+
+        console.log('Parsed existing UPGs:', existingUpgData.slice(0, 2));
 
         // Load UUPGs for search
         const uupgResponse = await fetch('data/updated_uupg.csv');
@@ -140,9 +145,13 @@ function getCountries() {
 
 // Function to get UPGs for a country (from existing UPGs)
 function getUPGsByCountry(country) {
-    return existingUpgData
+    console.log('Getting UPGs for country:', country);
+    console.log('Total existing UPGs:', existingUpgData.length);
+    const upgs = existingUpgData
         .filter(group => group.country === country)
         .sort((a, b) => a.name.localeCompare(b.name));
+    console.log('Found UPGs:', upgs);
+    return upgs;
 }
 
 // Function to fetch FPGs from Joshua Project API
