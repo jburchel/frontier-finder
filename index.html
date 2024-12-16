@@ -9,59 +9,65 @@
 <body>
     <div class="container">
         <header>
+            <img src="images/crossover-global-logo.png" alt="Crossover Global Logo" class="logo">
             <h1>Frontier Finder</h1>
-            <p class="mission-statement">Discover and explore Unreached People Groups (UPGs) and Frontier People Groups (FPGs) around the world.</p>
+            <p class="tagline">"We provide gospel access to unreached people groups."</p>
         </header>
 
         <main>
-            <form id="searchForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="country">Select Country</label>
-                        <select id="country" name="country" required>
-                            <option value="">Choose a country...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="upg">Select a UPG in the Country</label>
-                        <select id="upg" name="upg" required disabled>
-                            <option value="">Choose a UPG...</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="search-section">
+                <h2>Find Frontier and Unengaged People Groups</h2>
+                <p class="instructions">Search for Frontier People Groups (FPGs) and Unengaged Unreached People Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="radius">Search Radius</label>
-                        <div class="radius-group">
-                            <input type="number" id="radius" name="radius" min="1" required value="100">
-                            <select id="units" name="units">
-                                <option value="kilometers">Kilometers</option>
-                                <option value="miles">Miles</option>
+                <form id="searchForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="country">Select Country</label>
+                            <select id="country" name="country" required>
+                                <option value="">Choose a country...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="upg">Select a UPG in the Country</label>
+                            <select id="upg" name="upg" required disabled>
+                                <option value="">Choose a UPG...</option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="type">Search Type</label>
-                        <select id="type" name="type">
-                            <option value="both">Both FPGs and UUPGs</option>
-                            <option value="fpg">FPGs Only</option>
-                            <option value="uupg">UUPGs Only</option>
-                        </select>
-                    </div>
-                </div>
 
-                <button type="submit">Search</button>
-            </form>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="radius">Search Radius</label>
+                            <div class="radius-group">
+                                <input type="number" id="radius" name="radius" min="1" required value="100">
+                                <select id="units" name="units">
+                                    <option value="kilometers">Kilometers</option>
+                                    <option value="miles">Miles</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="type">Search Type</label>
+                            <select id="type" name="type">
+                                <option value="both">Both FPGs and UUPGs</option>
+                                <option value="fpg">FPGs Only</option>
+                                <option value="uupg">UUPGs Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit">Search People Groups</button>
+                </form>
+            </div>
 
             <div id="results" class="results-section">
+                <div id="uupgResults">
+                    <h2>Unengaged Unreached People Groups</h2>
+                    <div class="results-list" id="uupgList"></div>
+                </div>
                 <div id="fpgResults">
                     <h2>Frontier People Groups</h2>
                     <div class="results-list" id="fpgList"></div>
-                </div>
-                <div id="uupgResults">
-                    <h2>Unreached Unengaged People Groups</h2>
-                    <div class="results-list" id="uupgList"></div>
                 </div>
             </div>
         </main>
