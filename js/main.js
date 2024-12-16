@@ -1,60 +1,72 @@
-document.addEventListener('DOMContentLoaded', function() {
+import { getUniqueCountries, loadAllData, getUpgsForCountry, searchNearby } from './data.js';
+
+document.addEventListener('DOMContentLoaded', async function() {
     const countrySelect = document.getElementById('country');
     const upgSelect = document.getElementById('upg');
     const searchForm = document.getElementById('searchForm');
     const yearSpan = document.getElementById('year');
 
-    // Set current year in footer
-    yearSpan.textContent = new Date().getFullYear();
+    try {
+        // Load all data first
+        await loadAllData();
 
-    // Populate countries dropdown
-    const countries = getCountries();
-    countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = country;
-        countrySelect.appendChild(option);
-    });
-
-    // Update UPGs when country is selected
-    countrySelect.addEventListener('change', function() {
-        upgSelect.innerHTML = '<option value="">Choose a UPG...</option>';
-        upgSelect.disabled = true;
-
-        if (this.value) {
-            const upgs = getUPGsByCountry(this.value);
-            upgs.forEach(upg => {
-                const option = document.createElement('option');
-                option.value = upg;
-                option.textContent = upg;
-                upgSelect.appendChild(option);
-            });
-            upgSelect.disabled = false;
+        // Set current year in footer
+        if (yearSpan) {
+            yearSpan.textContent = new Date().getFullYear();
         }
-    });
 
-    // Handle form submission
-    searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // Populate countries dropdown
+        const countries = await getUniqueCountries();
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            countrySelect.appendChild(option);
+        });
 
-        const searchData = {
-            country: countrySelect.value,
-            upg: upgSelect.value,
-            radius: document.getElementById('radius').value,
-            units: document.getElementById('units').value,
-            type: document.getElementById('type').value
-        };
+        // Update UPGs when country is selected
+        countrySelect.addEventListener('change', async function() {
+            upgSelect.innerHTML = '<option value="">Choose a UPG...</option>';
+            upgSelect.disabled = true;
 
-        const results = searchNearby(
-            searchData.country,
-            searchData.upg,
-            parseFloat(searchData.radius),
-            searchData.units,
-            searchData.type
-        );
+            if (this.value) {
+                const upgs = await getUpgsForCountry(this.value);
+                upgs.forEach(upg => {
+                    const option = document.createElement('option');
+                    option.value = upg.id;
+                    option.textContent = upg.name;
+                    upgSelect.appendChild(option);
+                });
+                upgSelect.disabled = false;
+            }
+        });
 
-        displayResults(results);
-    });
+        // Handle form submission
+        searchForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const searchData = {
+                country: countrySelect.value,
+                upg: upgSelect.value,
+                radius: document.getElementById('radius').value,
+                units: document.getElementById('units').value,
+                type: document.getElementById('type').value
+            };
+
+            const results = await searchNearby(
+                searchData.country,
+                searchData.upg,
+                parseFloat(searchData.radius),
+                searchData.units,
+                searchData.type
+            );
+
+            displayResults(results);
+        });
+    } catch (error) {
+        console.error('Error initializing form:', error);
+        alert('There was an error loading the form. Please try refreshing the page.');
+    }
 });
 
 function displayResults(results) {
@@ -62,27 +74,33 @@ function displayResults(results) {
     const uupgList = document.getElementById('uupgList');
 
     // Clear previous results
-    fpgList.innerHTML = '';
-    uupgList.innerHTML = '';
+    if (fpgList) fpgList.innerHTML = '';
+    if (uupgList) uupgList.innerHTML = '';
 
     // Display FPGs
-    results.fpgs.forEach(fpg => {
-        const card = createResultCard(fpg);
-        fpgList.appendChild(card);
-    });
+    if (results.fpgs && fpgList) {
+        results.fpgs.forEach(fpg => {
+            const card = createResultCard(fpg);
+            fpgList.appendChild(card);
+        });
+
+        // Show "No results" message if needed
+        if (results.fpgs.length === 0) {
+            fpgList.innerHTML = '<p>No Frontier People Groups found within the specified radius.</p>';
+        }
+    }
 
     // Display UUPGs
-    results.uupgs.forEach(uupg => {
-        const card = createResultCard(uupg);
-        uupgList.appendChild(card);
-    });
+    if (results.uupgs && uupgList) {
+        results.uupgs.forEach(uupg => {
+            const card = createResultCard(uupg);
+            uupgList.appendChild(card);
+        });
 
-    // Show "No results" message if needed
-    if (results.fpgs.length === 0) {
-        fpgList.innerHTML = '<p>No Frontier People Groups found within the specified radius.</p>';
-    }
-    if (results.uupgs.length === 0) {
-        uupgList.innerHTML = '<p>No Unreached Unengaged People Groups found within the specified radius.</p>';
+        // Show "No results" message if needed
+        if (results.uupgs.length === 0) {
+            uupgList.innerHTML = '<p>No Unreached Unengaged People Groups found within the specified radius.</p>';
+        }
     }
 }
 
