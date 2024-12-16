@@ -11,17 +11,14 @@ function displaySearchParams(country, upgName, radius, units, searchType) {
 
 // Function to display results
 function displayResults(results, type, units) {
-    const resultsList = document.getElementById('resultsList');
-    
+    const listElement = document.getElementById(`${type}List`);
     if (!results || results.length === 0) {
-        const currentContent = resultsList.innerHTML;
-        resultsList.innerHTML = currentContent + `<p class="no-results">No ${type.toUpperCase()}s found in this area</p>`;
+        listElement.innerHTML = `<p class="no-results">No ${type.toUpperCase()}s found in this area</p>`;
         return;
     }
 
     const resultHtml = results.map((group, index) => `
-        <div class="result-item ${type}" data-index="${index}" data-type="${type}">
-            <div class="result-type">${type.toUpperCase()}</div>
+        <div class="result-item" data-index="${index}">
             <h3>${group.name}</h3>
             <div class="result-details">
                 <span><strong>Country:</strong> ${group.country}</span>
@@ -36,34 +33,35 @@ function displayResults(results, type, units) {
         </div>
     `).join('');
 
-    resultsList.innerHTML += resultHtml;
+    listElement.innerHTML = resultHtml;
 }
 
 // Function to sort results
 function sortResults(sortBy, order) {
-    const resultsList = document.getElementById('resultsList');
-    const items = Array.from(resultsList.getElementsByClassName('result-item'));
-    
-    if (items.length === 0) return;
+    ['uupg', 'fpg'].forEach(type => {
+        const listElement = document.getElementById(`${type}List`);
+        const items = Array.from(listElement.getElementsByClassName('result-item'));
+        
+        if (items.length === 0) return;
 
-    items.sort((a, b) => {
-        const aValue = a.querySelector(`[data-${sortBy}]`)?.dataset[sortBy];
-        const bValue = b.querySelector(`[data-${sortBy}]`)?.dataset[sortBy];
-        
-        if (sortBy === 'distance' || sortBy === 'population') {
-            return order === 'asc' 
-                ? parseFloat(aValue) - parseFloat(bValue)
-                : parseFloat(bValue) - parseFloat(aValue);
-        }
-        
-        return order === 'asc'
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
+        items.sort((a, b) => {
+            const aValue = a.querySelector(`[data-${sortBy}]`)?.dataset[sortBy];
+            const bValue = b.querySelector(`[data-${sortBy}]`)?.dataset[sortBy];
+            
+            if (sortBy === 'distance' || sortBy === 'population') {
+                return order === 'asc' 
+                    ? parseFloat(aValue) - parseFloat(bValue)
+                    : parseFloat(bValue) - parseFloat(aValue);
+            }
+            
+            return order === 'asc'
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+        });
+
+        listElement.innerHTML = '';
+        items.forEach(item => listElement.appendChild(item));
     });
-
-    // Clear and re-append sorted items
-    resultsList.innerHTML = '';
-    items.forEach(item => resultsList.appendChild(item));
 }
 
 // Initialize the results page
@@ -83,41 +81,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (country && upgName && radius) {
         try {
             // Show loading state
-            const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = '<p class="loading">Searching...</p>';
+            document.getElementById('uupgList').innerHTML = '<p class="loading">Searching...</p>';
+            document.getElementById('fpgList').innerHTML = '<p class="loading">Searching...</p>';
 
             // Show sort options
             document.getElementById('sortOptions').style.display = 'flex';
 
             // Perform search
             const results = await searchNearby(country, upgName, radius, units);
-            
-            // Clear loading message
-            resultsList.innerHTML = '';
 
             // Display results based on search type
             if (searchType === 'both' || searchType === 'uupg') {
                 displayResults(results.uupgs, 'uupg', units);
+            } else {
+                document.getElementById('uupgList').innerHTML = '<p class="no-results">UUPG search disabled</p>';
             }
 
             if (searchType === 'both' || searchType === 'fpg') {
                 displayResults(results.fpgs, 'fpg', units);
+            } else {
+                document.getElementById('fpgList').innerHTML = '<p class="no-results">FPG search disabled</p>';
             }
 
-            // Show no results message if needed
-            if ((!results.uupgs || results.uupgs.length === 0) && 
-                (!results.fpgs || results.fpgs.length === 0)) {
-                resultsList.innerHTML = '<p class="no-results">No results found in this area</p>';
-            }
         } catch (error) {
             console.error('Search error:', error);
-            document.getElementById('resultsList').innerHTML = 
-                '<p class="error">Error performing search</p>';
+            document.getElementById('uupgList').innerHTML = '<p class="error">Error performing search</p>';
+            document.getElementById('fpgList').innerHTML = '<p class="error">Error performing search</p>';
         }
     } else {
         // Handle case where parameters are missing
-        document.getElementById('resultsList').innerHTML = 
-            '<p class="error">Missing search parameters</p>';
+        document.getElementById('uupgList').innerHTML = '<p class="error">Missing search parameters</p>';
+        document.getElementById('fpgList').innerHTML = '<p class="error">Missing search parameters</p>';
     }
 
     // Add event listeners to sort buttons

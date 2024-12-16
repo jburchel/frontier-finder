@@ -134,12 +134,24 @@ button:hover {
 }
 
 /* Results Section */
+.results-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
 .results-section {
     background: white;
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    margin-top: 2rem;
+}
+
+.results-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
 }
 
 .results-list {
@@ -151,7 +163,6 @@ button:hover {
     background: #f8f9fa;
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -160,35 +171,13 @@ button:hover {
     box-shadow: var(--box-shadow);
 }
 
-.result-type {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-.result-item.uupg .result-type {
-    background-color: #e3f2fd;
-    color: #1976d2;
-}
-
-.result-item.fpg .result-type {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
-}
-
 .result-item h3 {
     margin: 0 0 1rem 0;
     color: var(--primary-color);
-    padding-right: 5rem;
 }
 
 .result-details {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 0.75rem;
 }
 
@@ -227,14 +216,6 @@ button:hover {
 
 .no-results {
     font-style: italic;
-}
-
-/* Results Columns */
-.results-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
