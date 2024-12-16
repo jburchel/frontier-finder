@@ -11,9 +11,6 @@ venv/
 .vscode/
 .idea/
 
-# Data files
-data/*.csv
-
 # System files
 .DS_Store
 Thumbs.db
