@@ -1,6 +1,6 @@
 // Joshua Project API configuration
 const config = {
-    apiKey: '', // Get your API key from https://api.joshuaproject.net/
+    apiKey: '080e14ad747e', // Joshua Project API key
     apiBaseUrl: 'https://api.joshuaproject.net/v1',
     headers: {
         'Accept': 'application/json'
