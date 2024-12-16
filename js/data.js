@@ -150,7 +150,12 @@ export function getUpgsForCountry(country) {
 // Function to fetch FPGs from Joshua Project API
 export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
-        const apiKey = 'YOUR_API_KEY'; // Replace with your Joshua Project API key
+        const apiKey = process.env.JOSHUA_PROJECT_API_KEY;
+        if (!apiKey) {
+            console.error('Joshua Project API key not found');
+            return [];
+        }
+
         const baseUrl = 'https://api.joshuaproject.net/v1/people_groups.json';
         const params = new URLSearchParams({
             api_key: apiKey,
@@ -161,12 +166,21 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             frontier_only: 1
         });
 
+        console.log('Fetching FPGs with params:', {
+            latitude,
+            longitude,
+            radius,
+            radius_units: units === 'kilometers' ? 'km' : 'mi'
+        });
+
         const response = await fetch(`${baseUrl}?${params}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch FPGs');
+            throw new Error(`Failed to fetch FPGs: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('FPGs found:', data.length);
+        
         return data.map(fpg => ({
             country: fpg.country,
             name: fpg.name,
@@ -174,7 +188,8 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             longitude: fpg.longitude,
             population: fpg.population,
             language: fpg.primary_language_name,
-            religion: fpg.primary_religion
+            religion: fpg.primary_religion,
+            distance: calculateDistance(latitude, longitude, fpg.latitude, fpg.longitude, units)
         }));
     } catch (error) {
         console.error('Error fetching FPGs:', error);

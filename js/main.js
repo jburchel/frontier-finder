@@ -79,54 +79,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
 
-            try {
-                // Show loading state
-                document.body.style.cursor = 'wait';
-                const submitButton = searchForm.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Searching...';
+            // Create URL search parameters
+            const searchParams = new URLSearchParams({
+                country: searchData.country,
+                upg: searchData.upg,
+                radius: searchData.radius,
+                units: searchData.units,
+                type: searchData.type
+            });
 
-                // Perform search
-                const results = await searchNearby(
-                    searchData.country,
-                    searchData.upg,
-                    parseFloat(searchData.radius),
-                    searchData.units,
-                    searchData.type
-                );
-
-                // Validate results
-                if (!results || (!results.fpgs && !results.uupgs)) {
-                    throw new Error('No results found');
-                }
-
-                // Update search parameters display
-                searchParams.innerHTML = `
-                    <p><strong>Country:</strong> ${searchData.country}</p>
-                    <p><strong>UPG:</strong> ${searchData.upg}</p>
-                    <p><strong>Radius:</strong> ${searchData.radius} ${searchData.units}</p>
-                    <p><strong>Search Type:</strong> ${searchData.type}</p>
-                `;
-
-                // Show results section and sort options
-                resultsSection.style.display = 'block';
-                sortOptions.style.display = 'block';
-
-                // Display results
-                displayResults(results);
-
-                // Scroll to results
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
-            } catch (error) {
-                console.error('Error searching:', error);
-                alert(error.message || 'Error performing search. Please try again.');
-            } finally {
-                // Reset loading state
-                document.body.style.cursor = 'default';
-                const submitButton = searchForm.querySelector('button[type="submit"]');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Search';
-            }
+            // Redirect to results page
+            window.location.href = `results.html?${searchParams.toString()}`;
         });
 
         // Handle sort buttons
