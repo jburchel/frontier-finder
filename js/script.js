@@ -1,11 +1,20 @@
-// Populate country dropdown and handle UPG selection
+// Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
     const countrySelect = document.getElementById('country');
     const upgSelect = document.getElementById('upg');
-    const countries = new Set();
+    const searchButton = document.getElementById('searchButton');
+    const sortOptions = document.getElementById('sortOptions');
 
-    // Collect all unique countries from UPG data
+    // Initially hide sort options
+    if (sortOptions) {
+        sortOptions.style.display = 'none';
+    }
+
+    // Populate country dropdown
     if (typeof upgData !== 'undefined') {
+        const countries = new Set();
+
         upgData.forEach(group => {
             if (group.country) {
                 countries.add(group.country);
@@ -20,39 +29,126 @@ document.addEventListener('DOMContentLoaded', function() {
             countrySelect.appendChild(option);
         });
 
-        // Function to update UPG dropdown
-        function updateUPGDropdown(selectedCountry) {
-            // Clear current options
-            upgSelect.innerHTML = '<option value="">Select a UPG</option>';
-            
-            if (!selectedCountry) return;
-
-            // Filter UPGs for selected country
-            const upgsInCountry = upgData.filter(group => group.country === selectedCountry);
-            
-            // Sort UPGs by name
-            upgsInCountry.sort((a, b) => a.name.localeCompare(b.name));
-            
-            // Add UPGs to dropdown
-            upgsInCountry.forEach(upg => {
-                const option = document.createElement('option');
-                option.value = upg.name;
-                option.textContent = upg.name;
-                upgSelect.appendChild(option);
-            });
-
-            // Enable UPG dropdown
-            upgSelect.disabled = false;
-        }
-
         // Add event listener for country selection
         countrySelect.addEventListener('change', function() {
             const selectedCountry = this.value;
             updateUPGDropdown(selectedCountry);
         });
-
     } else {
         console.error('UPG data not loaded');
+    }
+
+    // Function to update UPG dropdown
+    function updateUPGDropdown(selectedCountry) {
+        upgSelect.innerHTML = '<option value="">Select a UPG</option>';
+        
+        if (!selectedCountry) {
+            upgSelect.disabled = true;
+            return;
+        }
+
+        // Filter UPGs for selected country
+        const upgsInCountry = upgData.filter(group => group.country === selectedCountry);
+        
+        // Sort UPGs by name
+        upgsInCountry.sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Add UPGs to dropdown
+        upgsInCountry.forEach(upg => {
+            const option = document.createElement('option');
+            option.value = upg.name;
+            option.textContent = upg.name;
+            upgSelect.appendChild(option);
+        });
+
+        // Enable UPG dropdown
+        upgSelect.disabled = false;
+    }
+
+    // Add event listeners to sort buttons
+    const sortButtons = document.querySelectorAll('.sort-button');
+    sortButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const sortBy = this.getAttribute('data-sort');
+            
+            // Update active button
+            document.querySelectorAll('.sort-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Sort results
+            sortResults(sortBy);
+        });
+    });
+
+    // Add event listener for search button
+    if (searchButton) {
+        searchButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const country = countrySelect.value;
+            const upg = upgSelect.value;
+            const radius = document.getElementById('radius').value;
+            const units = document.getElementById('units').value;
+
+            if (!country || !upg || !radius) {
+                alert('Please fill in all search fields');
+                return;
+            }
+
+            // Show loading state
+            const uupgList = document.getElementById('uupgList');
+            const fpgList = document.getElementById('fpgList');
+            uupgList.innerHTML = '<p class="loading">Searching for UUPGs...</p>';
+            fpgList.innerHTML = '<p class="loading">Searching for FPGs...</p>';
+
+            try {
+                console.log('Searching with params:', { country, upg, radius, units });
+
+                // Get reference UPG
+                const referenceUPG = upgData.find(u => u.country === country && u.name === upg);
+                if (!referenceUPG) {
+                    throw new Error('Reference UPG not found');
+                }
+
+                // Search for nearby UUPGs from the CSV data
+                const nearbyUUPGs = upgData
+                    .filter(u => !(u.country === country && u.name === upg)) // Exclude reference UPG
+                    .map(u => ({
+                        ...u,
+                        distance: calculateDistance(
+                            referenceUPG.latitude,
+                            referenceUPG.longitude,
+                            u.latitude,
+                            u.longitude,
+                            units
+                        )
+                    }))
+                    .filter(u => u.distance <= parseFloat(radius))
+                    .sort((a, b) => a.distance - b.distance);
+
+                // Display UUPG results
+                if (nearbyUUPGs.length > 0) {
+                    displayResults(nearbyUUPGs, 'uupg');
+                } else {
+                    uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
+                }
+
+                // For now, show same results in FPG section until we integrate Joshua Project API
+                fpgList.innerHTML = '<p class="no-results">FPG search requires Joshua Project API integration.</p>';
+
+                // Show the sort options if we have results
+                if (nearbyUUPGs.length > 0) {
+                    sortOptions.style.display = 'flex';
+                }
+
+            } catch (error) {
+                console.error('Error during search:', error);
+                uupgList.innerHTML = '<p class="error">Error searching for UUPGs. Please try again.</p>';
+                fpgList.innerHTML = '<p class="error">Error searching for FPGs. Please try again.</p>';
+            }
+        });
     }
 });
 
@@ -65,6 +161,7 @@ function sortResults(sortBy) {
         if (!listElement) return;
         
         const results = Array.from(listElement.children);
+        if (results.length === 0) return;
         
         results.sort((a, b) => {
             const aValue = a.getAttribute(`data-${sortBy}`);
@@ -83,91 +180,12 @@ function sortResults(sortBy) {
     });
 }
 
-// Add event listeners to sort buttons and search functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Sort button listeners
-    const sortButtons = document.querySelectorAll('.sort-button');
-    
-    sortButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const sortBy = this.getAttribute('data-sort');
-            
-            // Update active button
-            document.querySelectorAll('.sort-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Sort results
-            sortResults(sortBy);
-        });
-    });
-
-    // Search button listener
-    const searchButton = document.getElementById('searchButton');
-    if (searchButton) {
-        searchButton.addEventListener('click', async function(e) {
-            e.preventDefault(); // Prevent form submission
-            
-            const country = document.getElementById('country').value;
-            const upg = document.getElementById('upg').value;
-            const radius = document.getElementById('radius').value;
-            const units = document.getElementById('units').value;
-
-            if (!country || !upg || !radius) {
-                alert('Please fill in all search fields');
-                return;
-            }
-
-            // Show loading state
-            const uupgList = document.getElementById('uupgList');
-            const fpgList = document.getElementById('fpgList');
-            uupgList.innerHTML = '<p class="loading">Searching for UUPGs...</p>';
-            fpgList.innerHTML = '<p class="loading">Searching for FPGs...</p>';
-
-            try {
-                console.log('Searching with params:', { country, upg, radius, units });
-
-                // Search for nearby groups
-                const nearbyGroups = await searchNearby(country, upg, radius, units);
-                console.log('Search results:', nearbyGroups);
-
-                // Display results
-                if (nearbyGroups.uupgs && nearbyGroups.uupgs.length > 0) {
-                    displayResults(nearbyGroups.uupgs, 'uupg');
-                } else {
-                    uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
-                }
-
-                if (nearbyGroups.fpgs && nearbyGroups.fpgs.length > 0) {
-                    displayResults(nearbyGroups.fpgs, 'fpg');
-                } else {
-                    fpgList.innerHTML = '<p class="no-results">No FPGs found within the specified radius.</p>';
-                }
-
-                // Show the sort options
-                document.getElementById('sortOptions').style.display = 'flex';
-            } catch (error) {
-                console.error('Error during search:', error);
-                uupgList.innerHTML = '<p class="error">Error searching for UUPGs. Please try again.</p>';
-                fpgList.innerHTML = '<p class="error">Error searching for FPGs. Please try again.</p>';
-            }
-        });
-    }
-});
-
 // Display results function
 function displayResults(groups, type) {
     const listElement = document.getElementById(`${type}List`);
     if (!listElement) return;
     
     listElement.innerHTML = '';
-    
-    // Show sort options when results are displayed
-    const sortOptions = document.getElementById('sortOptions');
-    if (sortOptions) {
-        sortOptions.style.display = 'flex';
-    }
     
     groups.forEach(group => {
         const resultItem = document.createElement('div');
