@@ -170,6 +170,9 @@ function createResultItem(group, type, distance) {
     const header = document.createElement('div');
     header.className = 'result-header';
     
+    const titleContainer = document.createElement('div');
+    titleContainer.className = 'title-container';
+    
     const title = document.createElement('h3');
     title.textContent = group.name;
     
@@ -179,12 +182,9 @@ function createResultItem(group, type, distance) {
     checkbox.value = `${type}-${div.dataset.id}`;
     checkbox.className = 'group-checkbox';
     
-    const checkboxContainer = document.createElement('label');
-    checkboxContainer.className = 'checkbox-container';
-    checkboxContainer.appendChild(checkbox);
-
-    header.appendChild(title);
-    header.appendChild(checkboxContainer);
+    titleContainer.appendChild(checkbox);
+    titleContainer.appendChild(title);
+    header.appendChild(titleContainer);
     
     const content = document.createElement('div');
     content.className = 'result-content';
