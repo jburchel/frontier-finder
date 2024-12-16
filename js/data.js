@@ -43,6 +43,41 @@ function parseCSVLine(line) {
     return values;
 }
 
+// Function to load UUPG data from CSV
+export async function loadUUPGData() {
+    try {
+        const response = await fetch('/data/updated_uupg.csv');
+        if (!response.ok) {
+            throw new Error(`Failed to load UUPG data: ${response.statusText}`);
+        }
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        uupgData = lines.slice(1)
+            .filter(line => line.trim())
+            .map(line => {
+                const values = line.split(',').map(v => v.trim());
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index];
+                });
+                // Convert numeric fields
+                obj.latitude = parseFloat(obj.latitude);
+                obj.longitude = parseFloat(obj.longitude);
+                obj.population = parseInt(obj.population) || 0;
+                return obj;
+            });
+            
+        console.log(`Loaded ${uupgData.length} UUPGs from CSV`);
+    } catch (error) {
+        console.error('Error loading UUPG data:', error);
+        throw error;
+    }
+}
+
 // Load both CSV files
 export async function loadAllData() {
     try {
@@ -83,41 +118,7 @@ export async function loadAllData() {
             throw new Error('No valid UPG data found after parsing');
         }
 
-        // Load UUPGs for search
-        console.log('Loading UUPGs data...');
-        const uupgResponse = await fetch('data/updated_uupg.csv');
-        if (!uupgResponse.ok) {
-            throw new Error(`Failed to load UUPGs data: ${uupgResponse.statusText}`);
-        }
-        const uupgText = await uupgResponse.text();
-        if (!uupgText.trim()) {
-            throw new Error('UUPGs data file is empty');
-        }
-        
-        const uupgLines = uupgText.split('\n').filter(line => line.trim());
-        if (uupgLines.length < 2) { // At least header + 1 data row
-            throw new Error('UUPGs data file has insufficient data');
-        }
-        
-        // Skip header row and parse data
-        uupgData = uupgLines.slice(1).map(line => {
-            const values = line.split(',');
-            return {
-                country: values[0],
-                name: values[1],
-                latitude: parseFloat(values[2]) || 0,
-                longitude: parseFloat(values[3]) || 0,
-                population: parseInt(values[4]) || 0,
-                language: values[5],
-                religion: values[6]
-            };
-        }).filter(uupg => uupg.country && uupg.name); // Filter out any entries without country or name
-
-        if (uupgData.length === 0) {
-            throw new Error('No valid UUPG data found after parsing');
-        }
-
-        console.log(`Data loaded successfully - ${existingUpgData.length} UPGs and ${uupgData.length} UUPGs`);
+        console.log(`Data loaded successfully - ${existingUpgData.length} UPGs`);
         return true;
     } catch (error) {
         console.error('Error loading data:', error);
@@ -169,7 +170,8 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             longitude,
             radius,
             radius_units: units === 'kilometers' ? 'km' : 'mi',
-            frontier_only: 1
+            frontier_only: 1,
+            limit: 100 // Increase limit to get more results
         });
 
         const response = await fetch(`${baseUrl}?${params}`);
@@ -179,14 +181,14 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
         }
 
         const data = await response.json();
-        console.log('FPGs found:', data.length);
+        console.log(`Found ${data.length} FPGs from Joshua Project API`);
         
         return data.map(fpg => ({
-            country: fpg.country,
-            name: fpg.name,
-            latitude: fpg.latitude,
-            longitude: fpg.longitude,
-            population: fpg.population,
+            country: fpg.country.name,
+            name: fpg.peo_name || fpg.name,
+            latitude: parseFloat(fpg.latitude),
+            longitude: parseFloat(fpg.longitude),
+            population: parseInt(fpg.population) || 0,
             language: fpg.primary_language_name,
             religion: fpg.primary_religion,
             distance: calculateDistance(latitude, longitude, fpg.latitude, fpg.longitude, units)
@@ -200,8 +202,13 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
 // Function to search for nearby people groups
 export async function searchNearby(country, upgName, radius, units = 'kilometers', type = 'both') {
     try {
+        // Load UUPG data if not already loaded
+        if (uupgData.length === 0) {
+            await loadUUPGData();
+        }
+
         // Find the selected UPG
-        const selectedUpg = existingUpgData.find(upg => 
+        const selectedUpg = uupgData.find(upg => 
             upg.country === country && upg.name === upgName
         );
         
