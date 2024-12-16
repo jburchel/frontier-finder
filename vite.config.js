@@ -29,19 +29,6 @@ export default defineConfig({
     open: true
   },
   
-  // Build configuration
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    rollupOptions: {
-      input: {
-        main: '/index.html',
-        results: '/results.html',
-        top100: '/top100.html'
-      }
-    }
-  },
-
   // Define environment variables to expose to the client
   define: {
     'import.meta.env.VITE_JOSHUA_PROJECT_API_KEY': JSON.stringify(envValues.VITE_JOSHUA_PROJECT_API_KEY),
@@ -52,5 +39,14 @@ export default defineConfig({
     'import.meta.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(envValues.VITE_FIREBASE_STORAGE_BUCKET),
     'import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(envValues.VITE_FIREBASE_MESSAGING_SENDER_ID),
     'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(envValues.VITE_FIREBASE_APP_ID)
-  }
+  },
+
+  // Build configuration
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets'
+  },
+
+  // Copy data files to dist/data during build
+  publicDir: 'public'
 });
