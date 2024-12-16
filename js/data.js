@@ -173,24 +173,39 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         const peopleGroups = Array.isArray(data) ? data : data.people_groups || [];
         console.log('People groups found:', peopleGroups.length);
 
-        const mappedData = peopleGroups.map(fpg => ({
-            name: fpg.peo_name || fpg.PeopNameInCountry,
-            country: fpg.cntry_name || fpg.Ctry,
-            latitude: parseFloat(fpg.latitude || fpg.Latitude) || 0,
-            longitude: parseFloat(fpg.longitude || fpg.Longitude) || 0,
-            population: parseInt(fpg.population || fpg.Population) || 0,
-            language: fpg.primary_language_name || fpg.PrimaryLanguageName,
-            religion: fpg.religion_primary_name || fpg.PrimaryReligion,
-            distance: calculateDistance(
-                latitude,
-                longitude,
-                parseFloat(fpg.latitude || fpg.Latitude) || 0,
-                parseFloat(fpg.longitude || fpg.Longitude) || 0,
-                units
-            )
-        }));
+        const mappedData = peopleGroups
+            .map(fpg => {
+                const fpgLat = parseFloat(fpg.latitude || fpg.Latitude) || 0;
+                const fpgLon = parseFloat(fpg.longitude || fpg.Longitude) || 0;
+                const distance = calculateDistance(
+                    latitude,
+                    longitude,
+                    fpgLat,
+                    fpgLon,
+                    units
+                );
 
-        console.log('Mapped FPG data:', mappedData);
+                return {
+                    name: fpg.peo_name || fpg.PeopNameInCountry,
+                    country: fpg.cntry_name || fpg.Ctry,
+                    latitude: fpgLat,
+                    longitude: fpgLon,
+                    population: parseInt(fpg.population || fpg.Population) || 0,
+                    language: fpg.primary_language_name || fpg.PrimaryLanguageName,
+                    religion: fpg.religion_primary_name || fpg.PrimaryReligion,
+                    distance
+                };
+            })
+            .filter(fpg => fpg.distance <= parseFloat(radius))
+            .sort((a, b) => a.distance - b.distance);
+
+        console.log('Filtered and sorted FPGs:', {
+            total: peopleGroups.length,
+            filtered: mappedData.length,
+            radius,
+            units
+        });
+
         return mappedData;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
