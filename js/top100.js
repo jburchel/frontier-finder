@@ -1,37 +1,59 @@
 // Top 100 List Management
 class Top100Manager {
     constructor() {
+        this.db = null;
+        this.auth = null;
+        this.top100List = [];
+        this.currentSort = { field: 'rank', order: 'asc' };
+        this.currentFilter = '';
+        this.initialized = false;
+    }
+
+    async initialize() {
         try {
             console.log('Initializing Top100Manager...');
+            
+            // Initialize Firebase components
             this.db = firebase.firestore();
             this.auth = firebase.auth();
-            this.top100List = [];
-            this.currentSort = { field: 'rank', order: 'asc' };
-            this.currentFilter = '';
             
-            this.initializeUI();
+            // Initialize UI
+            await this.initializeUI();
+            
+            // Set up event listeners
             this.setupEventListeners();
+            
+            // Set up auth state listener
             this.setupAuthStateListener();
+            
+            this.initialized = true;
             console.log('Top100Manager initialized successfully');
         } catch (error) {
-            console.error('Error in Top100Manager constructor:', error);
-            document.getElementById('top100List').innerHTML = 
-                `<p class="error">Error initializing Top 100 list: ${error.message}</p>`;
+            console.error('Error in Top100Manager initialization:', error);
+            const container = document.getElementById('top100List');
+            if (container) {
+                container.innerHTML = `<p class="error">Error initializing Top 100 list: ${error.message}</p>`;
+            }
+            throw error;
         }
     }
 
-    initializeUI() {
+    async initializeUI() {
         console.log('Initializing UI...');
         this.top100ListContainer = document.getElementById('top100List');
         this.regionFilter = document.getElementById('regionFilter');
+        
         if (!this.top100ListContainer || !this.regionFilter) {
             throw new Error('Required UI elements not found');
         }
+        
         this.populateRegionFilter();
         console.log('UI initialized successfully');
     }
 
     setupEventListeners() {
+        if (!this.initialized) return;
+        
         console.log('Setting up event listeners...');
         // Set up sort buttons
         document.querySelectorAll('.sort-button').forEach(button => {
@@ -50,6 +72,8 @@ class Top100Manager {
     }
 
     setupAuthStateListener() {
+        if (!this.initialized) return;
+        
         console.log('Setting up auth state listener...');
         this.auth.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'User signed in' : 'No user');
@@ -253,6 +277,7 @@ class Top100Manager {
 }
 
 // Initialize Top 100 Manager when the page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     window.top100Manager = new Top100Manager();
+    await window.top100Manager.initialize();
 });
