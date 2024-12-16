@@ -48,7 +48,7 @@ async function loadAllData() {
     try {
         // Load existing UPGs for dropdowns
         console.log('Loading existing UPGs data...');
-        const existingResponse = await fetch('/Users/jimburchel/CascadeProjects/frontier_finder/data/existing_upgs_updated.csv');
+        const existingResponse = await fetch('data/existing_upgs_updated.csv');
         if (!existingResponse.ok) {
             throw new Error(`Failed to load existing UPGs: HTTP ${existingResponse.status}`);
         }
@@ -88,7 +88,7 @@ async function loadAllData() {
 
         // Load UUPGs for search
         console.log('Loading UUPGs data...');
-        const uupgResponse = await fetch('/Users/jimburchel/CascadeProjects/frontier_finder/data/updated_uupg.csv');
+        const uupgResponse = await fetch('data/updated_uupg.csv');
         if (!uupgResponse.ok) {
             throw new Error(`Failed to load UUPGs: HTTP ${uupgResponse.status}`);
         }
