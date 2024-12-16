@@ -1,4 +1,4 @@
-import { searchNearby } from './data.js';
+import { searchNearby, loadUUPGData, loadExistingUPGs } from './data.js';
 
 // Get search parameters from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -34,10 +34,13 @@ async function displayResults() {
             throw new Error('Missing required search parameters');
         }
 
+        // Load data first
+        await Promise.all([loadUUPGData(), loadExistingUPGs()]);
+
         const results = await searchNearby(country, upgName, radius, units, type);
         
         // Display FPGs
-        if (results.fpgs.length > 0) {
+        if (results.fpgs && results.fpgs.length > 0) {
             const fpgHtml = results.fpgs.map(fpg => `
                 <div class="result-item">
                     <h3>${fpg.name}</h3>
@@ -45,8 +48,8 @@ async function displayResults() {
                         <span><strong>Country:</strong> ${fpg.country}</span>
                         <span><strong>Distance:</strong> ${fpg.distance.toFixed(1)} ${units}</span>
                         <span><strong>Population:</strong> ${fpg.population.toLocaleString()}</span>
-                        <span><strong>Language:</strong> ${fpg.language}</span>
-                        <span><strong>Religion:</strong> ${fpg.religion}</span>
+                        <span><strong>Language:</strong> ${fpg.language || 'Unknown'}</span>
+                        <span><strong>Religion:</strong> ${fpg.religion || 'Unknown'}</span>
                     </div>
                 </div>
             `).join('');
@@ -56,7 +59,7 @@ async function displayResults() {
         }
 
         // Display UUPGs
-        if (results.uupgs.length > 0) {
+        if (results.uupgs && results.uupgs.length > 0) {
             const uupgHtml = results.uupgs.map(uupg => `
                 <div class="result-item">
                     <h3>${uupg.name}</h3>
@@ -64,8 +67,8 @@ async function displayResults() {
                         <span><strong>Country:</strong> ${uupg.country}</span>
                         <span><strong>Distance:</strong> ${uupg.distance.toFixed(1)} ${units}</span>
                         <span><strong>Population:</strong> ${uupg.population.toLocaleString()}</span>
-                        <span><strong>Language:</strong> ${uupg.language}</span>
-                        <span><strong>Religion:</strong> ${uupg.religion}</span>
+                        <span><strong>Language:</strong> ${uupg.language || 'Unknown'}</span>
+                        <span><strong>Religion:</strong> ${uupg.religion || 'Unknown'}</span>
                     </div>
                 </div>
             `).join('');
@@ -76,7 +79,7 @@ async function displayResults() {
 
         // Show sort options if we have results
         if (sortOptions) {
-            sortOptions.style.display = (results.fpgs.length > 0 || results.uupgs.length > 0) ? 'block' : 'none';
+            sortOptions.style.display = (results.fpgs?.length > 0 || results.uupgs?.length > 0) ? 'block' : 'none';
         }
     } catch (error) {
         console.error('Error displaying results:', error);

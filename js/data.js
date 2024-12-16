@@ -46,9 +46,10 @@ function parseCSVLine(line) {
 // Function to load UUPG data from CSV
 export async function loadUUPGData() {
     try {
-        const response = await fetch('/data/updated_uupg.csv');
+        console.log('Loading UUPG data...');
+        const response = await fetch('../data/updated_uupg.csv');
         if (!response.ok) {
-            throw new Error(`Failed to load UUPG data: ${response.statusText}`);
+            throw new Error(`Failed to load UUPG data: ${response.status} ${response.statusText}`);
         }
         const csvText = await response.text();
         
@@ -62,67 +63,63 @@ export async function loadUUPGData() {
                 const values = line.split(',').map(v => v.trim());
                 const obj = {};
                 headers.forEach((header, index) => {
-                    obj[header] = values[index];
+                    if (index < values.length) { // Only assign if value exists
+                        obj[header] = values[index];
+                    }
                 });
                 // Convert numeric fields
-                obj.latitude = parseFloat(obj.latitude);
-                obj.longitude = parseFloat(obj.longitude);
-                obj.population = parseInt(obj.population) || 0;
+                obj.latitude = parseFloat(obj.latitude) || 0;
+                obj.longitude = parseFloat(obj.longitude) || 0;
+                obj.population = parseInt(obj.population.replace(/,/g, '')) || 0;
                 return obj;
-            });
+            })
+            .filter(obj => obj.country && obj.name); // Filter out invalid entries
             
         console.log(`Loaded ${uupgData.length} UUPGs from CSV`);
+        return uupgData;
     } catch (error) {
         console.error('Error loading UUPG data:', error);
         throw error;
     }
 }
 
-// Load both CSV files
-export async function loadAllData() {
+// Function to load existing UPGs data
+export async function loadExistingUPGs() {
     try {
-        // Load existing UPGs for dropdowns
         console.log('Loading existing UPGs data...');
-        const existingResponse = await fetch('data/existing_upgs_updated.csv');
-        if (!existingResponse.ok) {
-            throw new Error(`Failed to load existing UPGs data: ${existingResponse.statusText}`);
+        const response = await fetch('../data/existing_upgs_updated.csv');
+        if (!response.ok) {
+            throw new Error(`Failed to load existing UPGs data: ${response.status} ${response.statusText}`);
         }
-        const existingText = await existingResponse.text();
-        if (!existingText.trim()) {
-            throw new Error('Existing UPGs data file is empty');
-        }
+        const csvText = await response.text();
         
-        const existingLines = existingText.split('\n').filter(line => line.trim());
-        if (existingLines.length < 2) { // At least header + 1 data row
-            throw new Error('Existing UPGs data file has insufficient data');
-        }
+        // Parse CSV
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
         
-        // Skip header row and parse data
-        const header = existingLines[0].split(',');
-        existingUpgData = existingLines.slice(1).map(line => {
-            const values = parseCSVLine(line);
-            return {
-                name: values[0],
-                country: values[1],
-                latitude: parseFloat(values[2]) || 0,
-                longitude: parseFloat(values[3]) || 0,
-                population: parseInt(values[4]) || 0,
-                evangelical: values[5],
-                language: values[6],
-                religion: values[7],
-                description: values[8]
-            };
-        }).filter(upg => upg.country && upg.name); // Filter out any entries without country or name
-
-        if (existingUpgData.length === 0) {
-            throw new Error('No valid UPG data found after parsing');
-        }
-
-        console.log(`Data loaded successfully - ${existingUpgData.length} UPGs`);
-        return true;
+        existingUpgData = lines.slice(1)
+            .filter(line => line.trim())
+            .map(line => {
+                const values = line.split(',').map(v => v.trim());
+                const obj = {};
+                headers.forEach((header, index) => {
+                    if (index < values.length) { // Only assign if value exists
+                        obj[header] = values[index];
+                    }
+                });
+                // Convert numeric fields
+                obj.latitude = parseFloat(obj.latitude) || 0;
+                obj.longitude = parseFloat(obj.longitude) || 0;
+                obj.population = parseInt(obj.population.replace(/,/g, '')) || 0;
+                return obj;
+            })
+            .filter(obj => obj.country && obj.name); // Filter out invalid entries
+            
+        console.log(`Loaded ${existingUpgData.length} existing UPGs from CSV`);
+        return existingUpgData;
     } catch (error) {
-        console.error('Error loading data:', error);
-        throw new Error(`Failed to load data: ${error.message}`);
+        console.error('Error loading existing UPGs data:', error);
+        throw error;
     }
 }
 
