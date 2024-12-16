@@ -1,5 +1,5 @@
 // Import Firebase configuration
-import { db, auth } from './firebase-config.js';
+import { db } from './firebase-config.js';
 
 // Top 100 List Management
 class Top100Manager {
@@ -15,7 +15,7 @@ class Top100Manager {
             console.log('Initializing Top100Manager...');
             await this.initializeUI();
             this.setupEventListeners();
-            this.setupAuthStateListener();
+            await this.loadTop100List(); // Load the list immediately
             this.initialized = true;
             console.log('Top100Manager initialized successfully');
         } catch (error) {
@@ -59,18 +59,6 @@ class Top100Manager {
             this.renderTop100List();
         });
         console.log('Event listeners set up successfully');
-    }
-
-    setupAuthStateListener() {
-        console.log('Setting up auth state listener...');
-        auth.onAuthStateChanged(user => {
-            console.log('Auth state changed:', user ? 'User signed in' : 'No user');
-            if (user) {
-                this.loadTop100List();
-            } else {
-                this.promptLogin();
-            }
-        });
     }
 
     handleSort(field) {
@@ -170,15 +158,6 @@ class Top100Manager {
             console.error('Error populating region filter:', error);
             this.regionFilter.innerHTML = '<option value="">Error loading regions</option>';
         }
-    }
-
-    promptLogin() {
-        this.top100ListContainer.innerHTML = `
-            <div class="login-prompt">
-                <p>Please log in to view the Top 100 list</p>
-                <button onclick="signIn()">Sign In</button>
-            </div>
-        `;
     }
 }
 
