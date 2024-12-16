@@ -31,7 +31,7 @@ export default defineConfig({
 
   // Define environment variables to expose to the client
   define: {
-    'process.env': envValues
+    'window.env': envValues
   },
 
   // Build configuration

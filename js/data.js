@@ -233,7 +233,7 @@ export function getUpgsForCountry(country) {
 // Function to fetch FPGs from Joshua Project API
 export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
-        const apiKey = process.env.VITE_JOSHUA_PROJECT_API_KEY;
+        const apiKey = window.env.VITE_JOSHUA_PROJECT_API_KEY;
         console.log('API Key available:', !!apiKey);
         
         if (!apiKey) {
