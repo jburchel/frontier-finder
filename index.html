@@ -61,29 +61,23 @@
             </div>
 
             <div id="results" class="results-section">
-                <div id="uupgResults">
-                    <h2>Unengaged Unreached People Groups</h2>
-                    <div class="sort-options">
-                        <span>Sort by:</span>
-                        <button class="sort-button active" data-type="uupg" data-sort="distance">Distance</button>
-                        <button class="sort-button" data-type="uupg" data-sort="country">Country</button>
-                        <button class="sort-button" data-type="uupg" data-sort="population">Population</button>
-                        <button class="sort-button" data-type="uupg" data-sort="language">Language</button>
-                        <button class="sort-button" data-type="uupg" data-sort="religion">Religion</button>
-                    </div>
-                    <div class="results-list" id="uupgList"></div>
+                <div class="sort-options" id="sortOptions" style="display: none;">
+                    <span>Sort by:</span>
+                    <button class="sort-button active" data-sort="distance">Distance</button>
+                    <button class="sort-button" data-sort="country">Country</button>
+                    <button class="sort-button" data-sort="population">Population</button>
+                    <button class="sort-button" data-sort="language">Language</button>
+                    <button class="sort-button" data-sort="religion">Religion</button>
                 </div>
-                <div id="fpgResults">
-                    <h2>Frontier People Groups</h2>
-                    <div class="sort-options">
-                        <span>Sort by:</span>
-                        <button class="sort-button active" data-type="fpg" data-sort="distance">Distance</button>
-                        <button class="sort-button" data-type="fpg" data-sort="country">Country</button>
-                        <button class="sort-button" data-type="fpg" data-sort="population">Population</button>
-                        <button class="sort-button" data-type="fpg" data-sort="language">Language</button>
-                        <button class="sort-button" data-type="fpg" data-sort="religion">Religion</button>
+                <div class="results-columns">
+                    <div id="uupgResults">
+                        <h2>Unengaged Unreached People Groups</h2>
+                        <div class="results-list" id="uupgList"></div>
                     </div>
-                    <div class="results-list" id="fpgList"></div>
+                    <div id="fpgResults">
+                        <h2>Frontier People Groups</h2>
+                        <div class="results-list" id="fpgList"></div>
+                    </div>
                 </div>
             </div>
         </main>

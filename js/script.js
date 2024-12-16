@@ -1,23 +1,54 @@
 // Sorting functionality
-function sortResults(type, sortBy) {
-    const listElement = document.getElementById(`${type}List`);
-    const results = Array.from(listElement.children);
+function sortResults(sortBy) {
+    const sortLists = ['uupgList', 'fpgList'];
     
-    results.sort((a, b) => {
-        const aValue = a.getAttribute(`data-${sortBy}`);
-        const bValue = b.getAttribute(`data-${sortBy}`);
+    sortLists.forEach(listId => {
+        const listElement = document.getElementById(listId);
+        const results = Array.from(listElement.children);
         
-        if (sortBy === 'distance' || sortBy === 'population') {
-            return parseFloat(aValue) - parseFloat(bValue);
-        } else {
-            return aValue.localeCompare(bValue);
+        results.sort((a, b) => {
+            const aValue = a.getAttribute(`data-${sortBy}`);
+            const bValue = b.getAttribute(`data-${sortBy}`);
+            
+            if (sortBy === 'distance' || sortBy === 'population') {
+                return parseFloat(aValue) - parseFloat(bValue);
+            } else {
+                return aValue.localeCompare(bValue);
+            }
+        });
+        
+        // Clear and re-append sorted items
+        listElement.innerHTML = '';
+        results.forEach(item => listElement.appendChild(item));
+    });
+}
+
+// Populate country dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const countrySelect = document.getElementById('country');
+    const countries = new Set();
+
+    // Collect all unique countries from both UPGs and FPGs
+    upgsData.forEach(group => {
+        if (group.country) {
+            countries.add(group.country);
         }
     });
-    
-    // Clear and re-append sorted items
-    listElement.innerHTML = '';
-    results.forEach(item => listElement.appendChild(item));
-}
+
+    fpgsData.forEach(group => {
+        if (group.country) {
+            countries.add(group.country);
+        }
+    });
+
+    // Sort countries alphabetically and add to dropdown
+    Array.from(countries).sort().forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        countrySelect.appendChild(option);
+    });
+});
 
 // Add event listeners to sort buttons
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,17 +56,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     sortButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const type = this.getAttribute('data-type');
             const sortBy = this.getAttribute('data-sort');
             
             // Update active button
-            document.querySelectorAll(`.sort-button[data-type="${type}"]`).forEach(btn => {
+            document.querySelectorAll('.sort-button').forEach(btn => {
                 btn.classList.remove('active');
             });
             this.classList.add('active');
             
             // Sort results
-            sortResults(type, sortBy);
+            sortResults(sortBy);
         });
     });
 });
@@ -44,6 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function displayResults(groups, type) {
     const listElement = document.getElementById(`${type}List`);
     listElement.innerHTML = '';
+    
+    // Show sort options when results are displayed
+    document.getElementById('sortOptions').style.display = 'flex';
     
     groups.forEach(group => {
         const resultItem = document.createElement('div');

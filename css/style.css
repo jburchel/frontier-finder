@@ -135,9 +135,20 @@ button:hover {
 
 /* Results Section */
 .results-section {
+    margin-top: 2rem;
+}
+
+.results-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .results-columns {
+        grid-template-columns: 1fr;
+    }
 }
 
 .results-list {
@@ -171,6 +182,9 @@ button:hover {
 
 .sort-options {
     margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     gap: 0.5rem;
