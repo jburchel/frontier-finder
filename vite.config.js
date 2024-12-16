@@ -9,14 +9,14 @@ const isProduction = process.env.NODE_ENV === 'production';
 // For production, we'll use the environment variables directly
 // For development, we'll use the .env file
 const envValues = {
-  JOSHUA_PROJECT_API_KEY: process.env.JOSHUA_PROJECT_API_KEY || '',
-  FIREBASE_API_KEY: process.env.FIREBASE_API_KEY || '',
-  FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN || '',
-  FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL || '',
-  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
-  FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET || '',
-  FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-  FIREBASE_APP_ID: process.env.FIREBASE_APP_ID || ''
+  VITE_JOSHUA_PROJECT_API_KEY: process.env.JOSHUA_PROJECT_API_KEY || '',
+  VITE_FIREBASE_API_KEY: process.env.FIREBASE_API_KEY || '',
+  VITE_FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN || '',
+  VITE_FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL || '',
+  VITE_FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
+  VITE_FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET || '',
+  VITE_FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+  VITE_FIREBASE_APP_ID: process.env.FIREBASE_APP_ID || ''
 };
 
 export default defineConfig({
@@ -38,24 +38,19 @@ export default defineConfig({
         main: '/index.html',
         results: '/results.html',
         top100: '/top100.html'
-      },
-      output: {
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
   },
 
   // Define environment variables to expose to the client
   define: {
-    'process.env.JOSHUA_PROJECT_API_KEY': JSON.stringify(envValues.JOSHUA_PROJECT_API_KEY),
-    'process.env.FIREBASE_API_KEY': JSON.stringify(envValues.FIREBASE_API_KEY),
-    'process.env.FIREBASE_AUTH_DOMAIN': JSON.stringify(envValues.FIREBASE_AUTH_DOMAIN),
-    'process.env.FIREBASE_DATABASE_URL': JSON.stringify(envValues.FIREBASE_DATABASE_URL),
-    'process.env.FIREBASE_PROJECT_ID': JSON.stringify(envValues.FIREBASE_PROJECT_ID),
-    'process.env.FIREBASE_STORAGE_BUCKET': JSON.stringify(envValues.FIREBASE_STORAGE_BUCKET),
-    'process.env.FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(envValues.FIREBASE_MESSAGING_SENDER_ID),
-    'process.env.FIREBASE_APP_ID': JSON.stringify(envValues.FIREBASE_APP_ID)
+    'import.meta.env.VITE_JOSHUA_PROJECT_API_KEY': JSON.stringify(envValues.VITE_JOSHUA_PROJECT_API_KEY),
+    'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(envValues.VITE_FIREBASE_API_KEY),
+    'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(envValues.VITE_FIREBASE_AUTH_DOMAIN),
+    'import.meta.env.VITE_FIREBASE_DATABASE_URL': JSON.stringify(envValues.VITE_FIREBASE_DATABASE_URL),
+    'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(envValues.VITE_FIREBASE_PROJECT_ID),
+    'import.meta.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(envValues.VITE_FIREBASE_STORAGE_BUCKET),
+    'import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(envValues.VITE_FIREBASE_MESSAGING_SENDER_ID),
+    'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(envValues.VITE_FIREBASE_APP_ID)
   }
 });

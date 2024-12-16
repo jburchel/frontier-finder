@@ -148,16 +148,18 @@ export function getUpgsForCountry(country) {
 // Function to fetch FPGs from Joshua Project API
 export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
-        const apiKey = process.env.JOSHUA_PROJECT_API_KEY;
+        const apiKey = import.meta.env.VITE_JOSHUA_PROJECT_API_KEY;
+        console.log('API Key available:', !!apiKey);
+        
         if (!apiKey) {
-            throw new Error('Joshua Project API key not found. Please add it to your environment variables.');
+            throw new Error('Joshua Project API key not found. Please add VITE_JOSHUA_PROJECT_API_KEY to your .env file.');
         }
 
         console.log('Fetching FPGs with params:', {
             latitude,
             longitude,
             radius,
-            units
+            units: units === 'kilometers' ? 'km' : 'mi'
         });
 
         const baseUrl = 'https://api.joshuaproject.net/v1/people_groups.json';
@@ -171,9 +173,17 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             limit: 100 // Increase limit to get more results
         });
 
-        const response = await fetch(`${baseUrl}?${params}`);
+        const url = `${baseUrl}?${params}`;
+        console.log('Fetching from URL:', url.replace(apiKey, '[REDACTED]')); // Log URL without exposing API key
+
+        const response = await fetch(url);
         if (!response.ok) {
             const errorText = await response.text();
+            console.error('API Response:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            });
             throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
@@ -181,13 +191,13 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
         console.log(`Found ${data.length} FPGs from Joshua Project API`);
         
         return data.map(fpg => ({
-            country: fpg.country.name,
-            name: fpg.peo_name || fpg.name,
-            latitude: parseFloat(fpg.latitude),
-            longitude: parseFloat(fpg.longitude),
+            country: fpg.country?.name || fpg.country || 'Unknown',
+            name: fpg.peo_name || fpg.name || 'Unknown',
+            latitude: parseFloat(fpg.latitude) || 0,
+            longitude: parseFloat(fpg.longitude) || 0,
             population: parseInt(fpg.population) || 0,
-            language: fpg.primary_language_name,
-            religion: fpg.primary_religion,
+            language: fpg.primary_language_name || 'Unknown',
+            religion: fpg.primary_religion || 'Unknown',
             distance: calculateDistance(latitude, longitude, fpg.latitude, fpg.longitude, units)
         }));
     } catch (error) {
