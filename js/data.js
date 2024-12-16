@@ -197,7 +197,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                 };
             })
             .filter(fpg => fpg.distance <= parseFloat(radius))
-            .sort((a, b) => a.distance - b.distance);
+            .sort((a, b) => b.distance - a.distance);
 
         console.log('Filtered and sorted FPGs:', {
             total: peopleGroups.length,
@@ -244,7 +244,7 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
             )
         }))
         .filter(upg => upg.distance <= parseFloat(radius))
-        .sort((a, b) => a.distance - b.distance);
+        .sort((a, b) => b.distance - a.distance);
 
     console.log('Found UUPGs:', uupgs.length);
 
@@ -267,7 +267,7 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
 
     return {
         uupgs,
-        fpgs: fpgs.sort((a, b) => a.distance - b.distance)
+        fpgs: fpgs.sort((a, b) => b.distance - a.distance)
     };
 }
 
