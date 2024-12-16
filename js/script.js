@@ -1,3 +1,61 @@
+// Populate country dropdown and handle UPG selection
+document.addEventListener('DOMContentLoaded', function() {
+    const countrySelect = document.getElementById('country');
+    const upgSelect = document.getElementById('upg');
+    const countries = new Set();
+
+    // Collect all unique countries from UPG data
+    if (typeof upgData !== 'undefined') {
+        upgData.forEach(group => {
+            if (group.country) {
+                countries.add(group.country);
+            }
+        });
+
+        // Sort countries alphabetically and add to dropdown
+        Array.from(countries).sort().forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            countrySelect.appendChild(option);
+        });
+
+        // Function to update UPG dropdown
+        function updateUPGDropdown(selectedCountry) {
+            // Clear current options
+            upgSelect.innerHTML = '<option value="">Select a UPG</option>';
+            
+            if (!selectedCountry) return;
+
+            // Filter UPGs for selected country
+            const upgsInCountry = upgData.filter(group => group.country === selectedCountry);
+            
+            // Sort UPGs by name
+            upgsInCountry.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Add UPGs to dropdown
+            upgsInCountry.forEach(upg => {
+                const option = document.createElement('option');
+                option.value = upg.name;
+                option.textContent = upg.name;
+                upgSelect.appendChild(option);
+            });
+
+            // Enable UPG dropdown
+            upgSelect.disabled = false;
+        }
+
+        // Add event listener for country selection
+        countrySelect.addEventListener('change', function() {
+            const selectedCountry = this.value;
+            updateUPGDropdown(selectedCountry);
+        });
+
+    } else {
+        console.error('UPG data not loaded');
+    }
+});
+
 // Sorting functionality
 function sortResults(sortBy) {
     const sortLists = ['uupgList', 'fpgList'];
@@ -25,51 +83,9 @@ function sortResults(sortBy) {
     });
 }
 
-// Populate country dropdown
+// Add event listeners to sort buttons and search functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const countrySelect = document.getElementById('country');
-    const countries = new Set();
-
-    // Collect all unique countries from UPG data
-    if (typeof upgData !== 'undefined') {
-        upgData.forEach(group => {
-            if (group.country) {
-                countries.add(group.country);
-            }
-        });
-
-        // Sort countries alphabetically and add to dropdown
-        Array.from(countries).sort().forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            countrySelect.appendChild(option);
-        });
-
-        // Add event listener for country selection
-        countrySelect.addEventListener('change', function() {
-            const selectedCountry = this.value;
-            const upgSelect = document.getElementById('upg');
-            upgSelect.innerHTML = '<option value="">Select a UPG</option>';
-
-            // Filter UPGs for selected country
-            const upgsInCountry = upgData.filter(group => group.country === selectedCountry);
-            
-            // Populate UPG dropdown
-            upgsInCountry.forEach(upg => {
-                const option = document.createElement('option');
-                option.value = upg.name;
-                option.textContent = upg.name;
-                upgSelect.appendChild(option);
-            });
-        });
-    } else {
-        console.error('UPG data not loaded');
-    }
-});
-
-// Add event listeners to sort buttons
-document.addEventListener('DOMContentLoaded', function() {
+    // Sort button listeners
     const sortButtons = document.querySelectorAll('.sort-button');
     
     sortButtons.forEach(button => {
@@ -87,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add event listener for search button
+    // Search button listener
     const searchButton = document.getElementById('searchButton');
     if (searchButton) {
         searchButton.addEventListener('click', function() {
@@ -115,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Update displayResults function to include data attributes
+// Display results function
 function displayResults(groups, type) {
     const listElement = document.getElementById(`${type}List`);
     if (!listElement) return;
