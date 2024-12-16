@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import dotenv from 'dotenv';
+import { resolve } from 'path';
 
 dotenv.config();
 
@@ -37,9 +38,26 @@ export default defineConfig({
   // Build configuration
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        results: resolve(__dirname, 'results.html')
+      }
+    }
   },
 
   // Copy data files to dist/data during build
-  publicDir: 'public'
+  publicDir: 'public',
+
+  // Replace environment variables in HTML files
+  plugins: [{
+    name: 'html-transform',
+    transformIndexHtml(html) {
+      return html.replace(
+        /%VITE_JOSHUA_PROJECT_API_KEY%/g,
+        process.env.VITE_JOSHUA_PROJECT_API_KEY || ''
+      );
+    }
+  }]
 });
