@@ -54,13 +54,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const sortButtons = document.querySelectorAll('.sort-button');
     sortButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            sortButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            // Get sort type and sort results
             const sortBy = this.getAttribute('data-sort');
-            sortResults(sortBy);
+            const currentOrder = this.getAttribute('data-order') || 'desc';
+            
+            // Toggle sort order
+            const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+            this.setAttribute('data-order', newOrder);
+            
+            // Update button appearance
+            sortButtons.forEach(btn => {
+                btn.classList.remove('active', 'asc', 'desc');
+                if (btn === this) {
+                    btn.classList.add('active', newOrder);
+                }
+            });
+            
+            // Sort results with new order
+            sortResults(sortBy, newOrder);
         });
     });
 
@@ -117,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Sorting functionality
-function sortResults(sortBy) {
+function sortResults(sortBy, order = 'desc') {
     ['uupg', 'fpg'].forEach(type => {
         const listElement = document.getElementById(`${type}List`);
         const items = Array.from(listElement.getElementsByClassName('result-item'));
@@ -130,11 +140,13 @@ function sortResults(sortBy) {
             if (sortBy === 'distance' || sortBy === 'population') {
                 aValue = parseFloat(aValue) || 0;
                 bValue = parseFloat(bValue) || 0;
-                return bValue - aValue; // Descending order for numbers
+                return order === 'desc' ? bValue - aValue : aValue - bValue;
             }
             
             // String comparison for other fields (country, language, religion)
-            return bValue.localeCompare(aValue); // Descending order for strings
+            return order === 'desc' ? 
+                bValue.localeCompare(aValue) : 
+                aValue.localeCompare(bValue);
         });
         
         // Clear and re-append sorted items
