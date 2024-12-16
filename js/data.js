@@ -3,7 +3,7 @@ let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
 
 // Function to calculate distance between two points using Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2, units = 'km') {
+export function calculateDistance(lat1, lon1, lat2, lon2, units = 'km') {
     const R = units === 'km' ? 6371 : 3959; // Earth's radius in km or miles
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -44,7 +44,7 @@ function parseCSVLine(line) {
 }
 
 // Load both CSV files
-async function loadAllData() {
+export async function loadAllData() {
     try {
         // Load existing UPGs for dropdowns
         console.log('Loading existing UPGs data...');
@@ -122,7 +122,7 @@ async function loadAllData() {
                 console.error(`Error parsing line ${index + 2} of UUPGs:`, err);
                 return null;
             }
-        }).filter(Boolean); // Remove any null entries from parsing errors
+        }).filter(Boolean);
 
         console.log(`Parsed ${uupgData.length} UUPGs`);
 
@@ -139,7 +139,7 @@ async function loadAllData() {
 }
 
 // Function to get unique countries from existing UPGs
-function getUniqueCountries() {
+export function getUniqueCountries() {
     const countries = [...new Set(existingUpgData.map(group => group.country))]
         .filter(country => country) // Remove empty values
         .sort();
@@ -147,110 +147,81 @@ function getUniqueCountries() {
 }
 
 // Function to populate country dropdown
-function populateCountryDropdown() {
-    const countrySelect = document.getElementById('country');
+export function populateCountryDropdown() {
+    const countrySelect = document.getElementById('countrySelect');
+    if (!countrySelect) {
+        console.error('Country select element not found');
+        return;
+    }
+
     const countries = getUniqueCountries();
-    
-    countrySelect.innerHTML = '<option value="">Select a Country</option>';
-    countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = country;
-        countrySelect.appendChild(option);
-    });
+    countrySelect.innerHTML = '<option value="">Select a Country</option>' +
+        countries.map(country => `<option value="${country}">${country}</option>`).join('');
 }
 
 // Function to get UPGs for a country (from existing UPGs)
-function getUPGsByCountry(country) {
-    console.log('Getting UPGs for country:', country);
-    if (!existingUpgData) {
-        console.error('UPG data not loaded yet');
-        return [];
-    }
-    console.log('Total existing UPGs:', existingUpgData.length);
+export function getUPGsByCountry(country) {
+    if (!country) return [];
+    
     const upgs = existingUpgData
-        .filter(group => group.country && group.country.trim().toLowerCase() === country.trim().toLowerCase())
+        .filter(group => group.country === country)
         .sort((a, b) => a.name.localeCompare(b.name));
-    console.log('Found UPGs:', upgs);
+    
     return upgs;
 }
 
 // Function to fetch FPGs from Joshua Project API
-async function fetchFPGs(latitude, longitude, radius, units) {
-    // Validate API key before making the request
-    if (!window.validateApiKey()) {
-        console.error('API key validation failed');
-        return [];
-    }
-
+export async function fetchFPGs(latitude, longitude, radius, units) {
+    console.log('Fetching FPGs with parameters:', { latitude, longitude, radius, units });
+    
     try {
-        // Convert units to match Joshua Project's expectations
-        const jpUnits = units === 'kilometers' ? 'km' : 'mi';
+        // Convert units if necessary (API expects km)
+        let radiusInKm = units === 'miles' ? radius * 1.60934 : radius;
         
-        // Construct API URL with correct parameters
-        const apiUrl = `${window.jpConfig.apiBaseUrl}/v1/people_groups.json?api_key=${window.jpConfig.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${jpUnits}&frontier_only=1`;
-        console.log('Fetching FPGs with URL:', apiUrl);
-
-        const response = await fetch(apiUrl);
-        console.log('FPG API Response status:', response.status);
+        const url = `https://api.joshuaproject.net/v1/people_groups.json?latitude=${latitude}&longitude=${longitude}&radius=${radiusInKm}&api_key=0bca04d6a0d4`;
+        console.log('Fetching from URL:', url);
         
+        const response = await fetch(url);
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('FPG API Error:', errorData);
-            throw new Error(`Failed to fetch FPGs: ${errorData.message || response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('FPG API Response data:', data);
-
-        // Handle both array and object responses
-        const peopleGroups = Array.isArray(data) ? data : data.people_groups || [];
-        console.log('People groups found:', peopleGroups.length);
-
-        const mappedData = peopleGroups
-            .map(fpg => {
-                const fpgLat = parseFloat(fpg.latitude || fpg.Latitude) || 0;
-                const fpgLon = parseFloat(fpg.longitude || fpg.Longitude) || 0;
-                const distance = calculateDistance(
+        console.log('Received FPG data:', data);
+        
+        // Filter and transform the data
+        const fpgs = data
+            .filter(fpg => fpg.FrontierType === 'FPG')
+            .map(fpg => ({
+                name: fpg.PeopNameInCountry,
+                country: fpg.Ctry,
+                population: fpg.Population,
+                language: fpg.PrimaryLanguageName,
+                religion: fpg.PrimaryReligion,
+                latitude: fpg.Latitude,
+                longitude: fpg.Longitude,
+                distance: calculateDistance(
                     latitude,
                     longitude,
-                    fpgLat,
-                    fpgLon,
+                    fpg.Latitude,
+                    fpg.Longitude,
                     units
-                );
-
-                return {
-                    name: fpg.peo_name || fpg.PeopNameInCountry,
-                    country: fpg.cntry_name || fpg.Ctry,
-                    latitude: fpgLat,
-                    longitude: fpgLon,
-                    population: parseInt(fpg.population || fpg.Population) || 0,
-                    language: fpg.primary_language_name || fpg.PrimaryLanguageName,
-                    religion: fpg.religion_primary_name || fpg.PrimaryReligion,
-                    distance
-                };
-            })
-            .filter(fpg => fpg.distance <= parseFloat(radius))
-            .sort((a, b) => b.distance - a.distance);
-
-        console.log('Filtered and sorted FPGs:', {
-            total: peopleGroups.length,
-            filtered: mappedData.length,
-            radius,
-            units
-        });
-
-        return mappedData;
+                )
+            }))
+            .filter(fpg => fpg.distance <= radius)
+            .sort((a, b) => a.distance - b.distance);
+        
+        console.log('Processed FPGs:', fpgs);
+        return fpgs;
+        
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        document.getElementById('fpgList').innerHTML = 
-            `<p class="error">⚠️ Error fetching FPGs: ${error.message}</p>`;
         return [];
     }
 }
 
 // Function to search for nearby people groups
-async function searchNearby(country, upgName, radius, units = 'kilometers') {
+export async function searchNearby(country, upgName, radius, units = 'kilometers') {
     console.log('Starting search with:', { country, upgName, radius, units });
     console.log('Total UUPGs in dataset:', uupgData.length);
 
@@ -294,13 +265,6 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
     console.log('Found UUPGs:', uupgs.length);
 
     // Fetch FPGs from Joshua Project API
-    console.log('Fetching FPGs for coordinates:', {
-        lat: referenceUPG.latitude,
-        lon: referenceUPG.longitude,
-        radius,
-        units
-    });
-    
     const fpgs = await fetchFPGs(
         referenceUPG.latitude,
         referenceUPG.longitude,
@@ -308,12 +272,7 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
         units
     );
 
-    console.log('Found FPGs:', fpgs.length);
-
-    return {
-        uupgs,
-        fpgs: fpgs.sort((a, b) => a.distance - b.distance)
-    };
+    return { uupgs, fpgs };
 }
 
 // Initialize data when the script loads
@@ -321,5 +280,5 @@ loadAllData().then(() => {
     console.log('Data loaded successfully');
     populateCountryDropdown();
 }).catch(error => {
-    console.error('Error loading data:', error);
+    console.error('Error initializing data:', error);
 });
