@@ -9,6 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // For production, we'll use the environment variables directly
 // For development, we'll use the .env file
 const envValues = {
+  JOSHUA_PROJECT_API_KEY: process.env.JOSHUA_PROJECT_API_KEY || '',
   FIREBASE_API_KEY: process.env.FIREBASE_API_KEY || '',
   FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN || '',
   FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL || '',
@@ -48,7 +49,7 @@ export default defineConfig({
 
   // Define environment variables to expose to the client
   define: {
-    // In production, these values will be replaced at build time
+    'process.env.JOSHUA_PROJECT_API_KEY': JSON.stringify(envValues.JOSHUA_PROJECT_API_KEY),
     'process.env.FIREBASE_API_KEY': JSON.stringify(envValues.FIREBASE_API_KEY),
     'process.env.FIREBASE_AUTH_DOMAIN': JSON.stringify(envValues.FIREBASE_AUTH_DOMAIN),
     'process.env.FIREBASE_DATABASE_URL': JSON.stringify(envValues.FIREBASE_DATABASE_URL),

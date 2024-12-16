@@ -152,9 +152,15 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
         const apiKey = process.env.JOSHUA_PROJECT_API_KEY;
         if (!apiKey) {
-            console.error('Joshua Project API key not found');
-            return [];
+            throw new Error('Joshua Project API key not found. Please add it to your environment variables.');
         }
+
+        console.log('Fetching FPGs with params:', {
+            latitude,
+            longitude,
+            radius,
+            units
+        });
 
         const baseUrl = 'https://api.joshuaproject.net/v1/people_groups.json';
         const params = new URLSearchParams({
@@ -166,16 +172,10 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             frontier_only: 1
         });
 
-        console.log('Fetching FPGs with params:', {
-            latitude,
-            longitude,
-            radius,
-            radius_units: units === 'kilometers' ? 'km' : 'mi'
-        });
-
         const response = await fetch(`${baseUrl}?${params}`);
         if (!response.ok) {
-            throw new Error(`Failed to fetch FPGs: ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
         const data = await response.json();
@@ -193,7 +193,7 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
         }));
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        return [];
+        throw error;
     }
 }
 
@@ -209,15 +209,38 @@ export async function searchNearby(country, upgName, radius, units = 'kilometers
             throw new Error('Selected UPG not found');
         }
 
+        console.log('Selected UPG:', selectedUpg);
+
         const results = {
             fpgs: [],
             uupgs: []
         };
 
+        // Search for FPGs if type is 'both' or 'fpg'
+        if (type === 'both' || type === 'fpg') {
+            try {
+                console.log('Searching for FPGs...');
+                results.fpgs = await fetchFPGs(
+                    selectedUpg.latitude,
+                    selectedUpg.longitude,
+                    radius,
+                    units
+                );
+                console.log('FPGs found:', results.fpgs.length);
+            } catch (error) {
+                console.error('Error fetching FPGs:', error);
+                results.fpgs = [];
+            }
+        }
+
         // Search for UUPGs if type is 'both' or 'uupg'
         if (type === 'both' || type === 'uupg') {
+            console.log('Searching for UUPGs...');
             results.uupgs = uupgData
-                .map(uupg => {
+                .filter(uupg => {
+                    if (uupg.country === country && uupg.name === upgName) {
+                        return false; // Exclude the selected UPG
+                    }
                     const distance = calculateDistance(
                         selectedUpg.latitude,
                         selectedUpg.longitude,
@@ -225,25 +248,17 @@ export async function searchNearby(country, upgName, radius, units = 'kilometers
                         uupg.longitude,
                         units
                     );
-                    return { ...uupg, distance };
+                    uupg.distance = distance; // Add distance to UUPG object
+                    return distance <= radius;
                 })
-                .filter(uupg => uupg.distance <= radius)
                 .sort((a, b) => a.distance - b.distance);
-        }
-
-        // Search for FPGs if type is 'both' or 'fpg'
-        if (type === 'both' || type === 'fpg') {
-            results.fpgs = await fetchFPGs(
-                selectedUpg.latitude,
-                selectedUpg.longitude,
-                radius,
-                units
-            );
+            
+            console.log('UUPGs found:', results.uupgs.length);
         }
 
         return results;
     } catch (error) {
-        console.error('Error searching nearby:', error);
+        console.error('Error in searchNearby:', error);
         throw error;
     }
 }
