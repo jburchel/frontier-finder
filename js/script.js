@@ -183,8 +183,8 @@ function createResultItem(group, type, distance) {
     checkboxContainer.className = 'checkbox-container';
     checkboxContainer.appendChild(checkbox);
 
-    header.appendChild(checkboxContainer);
     header.appendChild(title);
+    header.appendChild(checkboxContainer);
     
     const content = document.createElement('div');
     content.className = 'result-content';
