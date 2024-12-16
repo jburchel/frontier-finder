@@ -262,6 +262,137 @@ footer {
     color: #666;
 }
 
+/* Top 100 List Styles */
+.top-100-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-100-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+#addToTop100 {
+    padding: 0.5rem 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#addToTop100:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+#listCount {
+    font-weight: 600;
+    color: #666;
+}
+
+.top-100-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.empty-list {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.top-100-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.top-100-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.top-100-item:last-child {
+    border-bottom: none;
+}
+
+.top-100-item .rank {
+    width: 2rem;
+    height: 2rem;
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.top-100-item .group-info {
+    flex: 1;
+}
+
+.top-100-item h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.top-100-item p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.top-100-item .remove-button {
+    background: none;
+    border: none;
+    color: #ff4444;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.top-100-item .remove-button:hover {
+    opacity: 1;
+}
+
+/* Add checkbox styles to results */
+.results-list .result-item {
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+.results-list .checkbox-container {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.results-list input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {

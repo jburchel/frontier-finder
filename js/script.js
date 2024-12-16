@@ -180,6 +180,46 @@ function sortResults(sortBy) {
     });
 }
 
+// Function to create result item
+function createResultItem(group, type, distance) {
+    const div = document.createElement('div');
+    div.className = 'result-item';
+    div.dataset.id = group.id || `${group.name}-${group.country}`;
+    div.dataset.name = group.name;
+    div.dataset.country = group.country;
+    div.dataset.population = group.population;
+    div.dataset.language = group.language;
+    div.dataset.religion = group.religion;
+
+    // Add checkbox for selection
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = `${type}-${div.dataset.id}`;
+    checkbox.className = 'group-checkbox';
+    
+    const checkboxContainer = document.createElement('label');
+    checkboxContainer.className = 'checkbox-container';
+    checkboxContainer.appendChild(checkbox);
+
+    div.appendChild(checkboxContainer);
+    
+    const content = document.createElement('div');
+    content.className = 'result-content';
+    content.innerHTML = `
+        <h3>${group.name}</h3>
+        <p>
+            <strong>Country:</strong> ${group.country}<br>
+            <strong>Population:</strong> ${group.population.toLocaleString()}<br>
+            <strong>Language:</strong> ${group.language}<br>
+            <strong>Religion:</strong> ${group.religion}<br>
+            <strong>Distance:</strong> ${distance.toFixed(1)} ${document.getElementById('units').value}
+        </p>
+    `;
+
+    div.appendChild(content);
+    return div;
+}
+
 // Display results function
 function displayResults(groups, type) {
     const listElement = document.getElementById(`${type}List`);
@@ -188,23 +228,7 @@ function displayResults(groups, type) {
     listElement.innerHTML = '';
     
     groups.forEach(group => {
-        const resultItem = document.createElement('div');
-        resultItem.className = 'result-item';
-        resultItem.setAttribute('data-distance', group.distance || '9999');
-        resultItem.setAttribute('data-country', group.country || '');
-        resultItem.setAttribute('data-population', group.population || '0');
-        resultItem.setAttribute('data-language', group.language || '');
-        resultItem.setAttribute('data-religion', group.religion || '');
-        
-        resultItem.innerHTML = `
-            <h3>${group.name}</h3>
-            <p><strong>Country:</strong> ${group.country}</p>
-            <p><strong>Population:</strong> ${group.population.toLocaleString()}</p>
-            <p><strong>Language:</strong> ${group.language}</p>
-            <p><strong>Religion:</strong> ${group.religion}</p>
-            <p><strong>Distance:</strong> ${group.distance ? Math.round(group.distance) + ' km' : 'N/A'}</p>
-        `;
-        
+        const resultItem = createResultItem(group, type, group.distance);
         listElement.appendChild(resultItem);
     });
 }
