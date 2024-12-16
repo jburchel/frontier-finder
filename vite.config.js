@@ -37,6 +37,11 @@ export default defineConfig({
         main: '/index.html',
         results: '/results.html',
         top100: '/top100.html'
+      },
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
   },
