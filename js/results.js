@@ -24,23 +24,34 @@ async function displayResults() {
     const sortOptions = document.getElementById('sortOptions');
 
     try {
-        if (loadingElement) loadingElement.style.display = 'block';
+        console.log('Starting to display results...');
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'block';
+            console.log('Showing loading indicator');
+        }
         if (errorElement) errorElement.style.display = 'none';
         if (uupgList) uupgList.innerHTML = '';
         if (fpgList) fpgList.innerHTML = '';
 
         // Validate input parameters
         if (!country || !upgName || !radius) {
+            console.error('Missing required parameters:', { country, upgName, radius });
             throw new Error('Missing required search parameters');
         }
 
+        console.log('Loading data...');
         // Load data first
         await Promise.all([loadUUPGData(), loadExistingUPGs()]);
+        console.log('Data loaded successfully');
 
+        console.log('Searching for nearby groups...');
         const results = await searchNearby(country, upgName, radius, units, type);
+        console.log('Search results:', results);
         
         // Display FPGs
         if (results.fpgs && results.fpgs.length > 0) {
+            console.log(`Found ${results.fpgs.length} FPGs`);
             const fpgHtml = results.fpgs.map(fpg => `
                 <div class="result-item">
                     <h3>${fpg.name}</h3>
@@ -55,11 +66,13 @@ async function displayResults() {
             `).join('');
             if (fpgList) fpgList.innerHTML = fpgHtml;
         } else {
+            console.log('No FPGs found');
             if (fpgList) fpgList.innerHTML = '<p class="no-results">No FPGs found in this area</p>';
         }
 
         // Display UUPGs
         if (results.uupgs && results.uupgs.length > 0) {
+            console.log(`Found ${results.uupgs.length} UUPGs`);
             const uupgHtml = results.uupgs.map(uupg => `
                 <div class="result-item">
                     <h3>${uupg.name}</h3>
@@ -74,12 +87,15 @@ async function displayResults() {
             `).join('');
             if (uupgList) uupgList.innerHTML = uupgHtml;
         } else {
+            console.log('No UUPGs found');
             if (uupgList) uupgList.innerHTML = '<p class="no-results">No UUPGs found in this area</p>';
         }
 
         // Show sort options if we have results
         if (sortOptions) {
-            sortOptions.style.display = (results.fpgs?.length > 0 || results.uupgs?.length > 0) ? 'block' : 'none';
+            const hasResults = (results.fpgs?.length > 0 || results.uupgs?.length > 0);
+            console.log('Has results:', hasResults);
+            sortOptions.style.display = hasResults ? 'block' : 'none';
         }
     } catch (error) {
         console.error('Error displaying results:', error);
@@ -90,7 +106,10 @@ async function displayResults() {
         if (uupgList) uupgList.innerHTML = '';
         if (fpgList) fpgList.innerHTML = '';
     } finally {
-        if (loadingElement) loadingElement.style.display = 'none';
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+            console.log('Hiding loading indicator');
+        }
     }
 }
 
@@ -148,5 +167,9 @@ document.querySelectorAll('.sort-button').forEach(button => {
     });
 });
 
-// Call displayResults when the page loads
-displayResults();
+// Initialize the page when the DOM content is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM content loaded, initializing results page...');
+    console.log('Search parameters:', { country, upgName, radius, units, type });
+    displayResults();
+});
