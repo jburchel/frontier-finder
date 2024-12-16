@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 100 UPGs - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/crossover-global-logo.png" alt="Crossover Global Logo" class="logo">
+            <h1>Top 100 Unreached People Groups</h1>
+            <p class="tagline">Largest unreached people groups by population</p>
+            <a href="index.html" class="back-button">← Back to Search</a>
+        </header>
+
+        <main>
+            <div class="top-100-controls">
+                <div class="filter-section">
+                    <label for="regionFilter">Filter by Region:</label>
+                    <select id="regionFilter">
+                        <option value="">All Regions</option>
+                    </select>
+                </div>
+                
+                <div class="sort-options">
+                    <span>Sort by:</span>
+                    <button class="sort-button" data-sort="rank">Rank</button>
+                    <button class="sort-button" data-sort="population">Population</button>
+                    <button class="sort-button" data-sort="country">Country</button>
+                    <button class="sort-button" data-sort="language">Language</button>
+                    <button class="sort-button" data-sort="religion">Religion</button>
+                </div>
+            </div>
+
+            <div class="top-100-list" id="top100List">
+                <!-- List items will be inserted here -->
+                <div class="loading">Loading top 100 UPGs...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/top100.js"></script>
+</body>
+</html>

@@ -3,8 +3,9 @@ class Top100Manager {
     constructor() {
         this.db = firebase.firestore();
         this.auth = firebase.auth();
-        this.selectedGroups = new Set();
         this.top100List = [];
+        this.currentSort = { field: 'rank', order: 'asc' };
+        this.currentFilter = '';
         
         this.initializeUI();
         this.setupEventListeners();
@@ -12,25 +13,24 @@ class Top100Manager {
     }
 
     initializeUI() {
-        this.addToTop100Button = document.getElementById('addToTop100');
-        this.listCountSpan = document.getElementById('listCount');
         this.top100ListContainer = document.getElementById('top100List');
+        this.regionFilter = document.getElementById('regionFilter');
+        this.populateRegionFilter();
     }
 
     setupEventListeners() {
-        this.addToTop100Button.addEventListener('click', () => this.addSelectedToTop100());
-        
-        // Listen for changes in the results sections
-        document.getElementById('uupgList').addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox') {
-                this.handleCheckboxChange(e.target);
-            }
+        // Set up sort buttons
+        document.querySelectorAll('.sort-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const sortField = button.getAttribute('data-sort');
+                this.handleSort(sortField);
+            });
         });
-        
-        document.getElementById('fpgList').addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox') {
-                this.handleCheckboxChange(e.target);
-            }
+
+        // Set up region filter
+        this.regionFilter.addEventListener('change', () => {
+            this.currentFilter = this.regionFilter.value;
+            this.renderTop100List();
         });
     }
 
@@ -39,7 +39,6 @@ class Top100Manager {
             if (user) {
                 this.loadTop100List();
             } else {
-                // Handle not logged in state
                 this.promptLogin();
             }
         });
@@ -47,34 +46,11 @@ class Top100Manager {
 
     async promptLogin() {
         try {
-            // For now, use anonymous auth
             await this.auth.signInAnonymously();
         } catch (error) {
             console.error('Error signing in:', error);
+            this.top100ListContainer.innerHTML = '<p class="error">Error loading Top 100 list. Please try refreshing the page.</p>';
         }
-    }
-
-    handleCheckboxChange(checkbox) {
-        const groupId = checkbox.value;
-        
-        if (checkbox.checked) {
-            if (this.top100List.length + this.selectedGroups.size >= 100) {
-                alert('You can only have up to 100 groups in your list.');
-                checkbox.checked = false;
-                return;
-            }
-            this.selectedGroups.add(groupId);
-        } else {
-            this.selectedGroups.delete(groupId);
-        }
-
-        this.updateUI();
-    }
-
-    updateUI() {
-        const totalSelected = this.top100List.length + this.selectedGroups.size;
-        this.listCountSpan.textContent = `${totalSelected}/100 Groups Selected`;
-        this.addToTop100Button.disabled = this.selectedGroups.size === 0;
     }
 
     async loadTop100List() {
@@ -84,72 +60,64 @@ class Top100Manager {
                 .get();
 
             this.top100List = snapshot.exists ? snapshot.data().groups : [];
+            this.populateRegionFilter();
             this.renderTop100List();
-            this.updateUI();
         } catch (error) {
             console.error('Error loading Top 100 list:', error);
+            this.top100ListContainer.innerHTML = '<p class="error">Error loading Top 100 list. Please try refreshing the page.</p>';
         }
     }
 
-    async addSelectedToTop100() {
-        if (!this.auth.currentUser) {
-            await this.promptLogin();
-            if (!this.auth.currentUser) return;
-        }
-
-        try {
-            // Convert selected groups to array and get their data
-            const newGroups = Array.from(this.selectedGroups).map(id => {
-                const [type, groupId] = id.split('-');
-                const resultsList = document.getElementById(`${type}List`);
-                const groupElement = resultsList.querySelector(`[data-id="${groupId}"]`);
-                
-                return {
-                    id: groupId,
-                    type: type, // 'uupg' or 'fpg'
-                    name: groupElement.dataset.name,
-                    country: groupElement.dataset.country,
-                    population: parseInt(groupElement.dataset.population),
-                    language: groupElement.dataset.language,
-                    religion: groupElement.dataset.religion,
-                    addedAt: new Date().toISOString()
-                };
-            });
-
-            // Check if adding these would exceed 100
-            if (this.top100List.length + newGroups.length > 100) {
-                alert('Adding these groups would exceed the 100 group limit.');
-                return;
-            }
-
-            // Add new groups to the list
-            this.top100List = [...this.top100List, ...newGroups];
-
-            // Save to Firestore
-            await this.db.collection('top100Lists')
-                .doc(this.auth.currentUser.uid)
-                .set({
-                    groups: this.top100List,
-                    updatedAt: new Date().toISOString()
-                });
-
-            // Clear selections and update UI
-            this.selectedGroups.clear();
-            this.uncheckAllCheckboxes();
-            this.renderTop100List();
-            this.updateUI();
-        } catch (error) {
-            console.error('Error adding groups to Top 100:', error);
-            alert('Error adding groups to your Top 100 list. Please try again.');
-        }
-    }
-
-    uncheckAllCheckboxes() {
-        ['uupg', 'fpg'].forEach(type => {
-            const checkboxes = document.getElementById(`${type}List`)
-                .querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = false);
+    populateRegionFilter() {
+        // Get unique regions from the list
+        const regions = [...new Set(this.top100List.map(group => this.getRegionFromCountry(group.country)))];
+        
+        // Sort regions alphabetically
+        regions.sort();
+        
+        // Clear existing options except "All Regions"
+        this.regionFilter.innerHTML = '<option value="">All Regions</option>';
+        
+        // Add region options
+        regions.forEach(region => {
+            const option = document.createElement('option');
+            option.value = region;
+            option.textContent = region;
+            this.regionFilter.appendChild(option);
         });
+    }
+
+    getRegionFromCountry(country) {
+        // Add your region mapping logic here
+        // This is a simplified example
+        const regionMap = {
+            'China': 'East Asia',
+            'India': 'South Asia',
+            'Iran': 'Middle East',
+            'Indonesia': 'Southeast Asia',
+            // Add more mappings as needed
+        };
+        return regionMap[country] || 'Other';
+    }
+
+    handleSort(field) {
+        const button = document.querySelector(`[data-sort="${field}"]`);
+        
+        // Toggle sort order if clicking the same field
+        if (this.currentSort.field === field) {
+            this.currentSort.order = this.currentSort.order === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort.field = field;
+            this.currentSort.order = 'asc';
+        }
+
+        // Update button states
+        document.querySelectorAll('.sort-button').forEach(btn => {
+            btn.classList.remove('active', 'asc', 'desc');
+        });
+        button.classList.add('active', this.currentSort.order);
+
+        this.renderTop100List();
     }
 
     renderTop100List() {
@@ -160,32 +128,61 @@ class Top100Manager {
             return;
         }
 
-        const list = document.createElement('ul');
+        // Filter list if region filter is active
+        let filteredList = this.top100List;
+        if (this.currentFilter) {
+            filteredList = this.top100List.filter(group => 
+                this.getRegionFromCountry(group.country) === this.currentFilter
+            );
+        }
+
+        // Sort the list
+        filteredList.sort((a, b) => {
+            let aValue = a[this.currentSort.field];
+            let bValue = b[this.currentSort.field];
+
+            if (this.currentSort.field === 'rank') {
+                aValue = this.top100List.indexOf(a);
+                bValue = this.top100List.indexOf(b);
+            }
+
+            if (typeof aValue === 'number') {
+                return this.currentSort.order === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
+            const comparison = String(aValue).localeCompare(String(bValue));
+            return this.currentSort.order === 'asc' ? comparison : -comparison;
+        });
+
+        const list = document.createElement('div');
         list.className = 'top-100-items';
 
-        this.top100List.forEach((group, index) => {
-            const li = document.createElement('li');
-            li.className = 'top-100-item';
-            li.innerHTML = `
-                <span class="rank">${index + 1}</span>
+        filteredList.forEach((group, index) => {
+            const rank = this.top100List.indexOf(group) + 1;
+            const item = document.createElement('div');
+            item.className = 'top-100-item';
+            item.innerHTML = `
+                <span class="rank">#${rank}</span>
                 <div class="group-info">
                     <h3>${group.name}</h3>
                     <p>
                         <span class="country">${group.country}</span> |
-                        <span class="population">Pop: ${group.population.toLocaleString()}</span> |
-                        <span class="type">${group.type.toUpperCase()}</span>
+                        <span class="population">Population: ${group.population.toLocaleString()}</span>
                     </p>
                     <p>
                         <span class="language">Language: ${group.language}</span> |
                         <span class="religion">Religion: ${group.religion}</span>
                     </p>
                 </div>
-                <button class="remove-button" data-index="${index}">×</button>
+                <button class="remove-button" data-index="${this.top100List.indexOf(group)}">Remove</button>
             `;
 
             // Add remove button functionality
-            li.querySelector('.remove-button').addEventListener('click', () => this.removeFromTop100(index));
-            list.appendChild(li);
+            item.querySelector('.remove-button').addEventListener('click', () => 
+                this.removeFromTop100(this.top100List.indexOf(group))
+            );
+            
+            list.appendChild(item);
         });
 
         this.top100ListContainer.appendChild(list);
@@ -201,8 +198,8 @@ class Top100Manager {
                     updatedAt: new Date().toISOString()
                 });
 
+            this.populateRegionFilter();
             this.renderTop100List();
-            this.updateUI();
         } catch (error) {
             console.error('Error removing group from Top 100:', error);
             alert('Error removing group from your Top 100 list. Please try again.');
