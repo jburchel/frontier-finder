@@ -11,33 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
         sortOptions.style.display = 'none';
     }
 
-    // Populate country dropdown
-    if (typeof upgData !== 'undefined') {
-        const countries = new Set();
-
-        upgData.forEach(group => {
-            if (group.country) {
-                countries.add(group.country);
-            }
-        });
-
-        // Sort countries alphabetically and add to dropdown
-        Array.from(countries).sort().forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            countrySelect.appendChild(option);
-        });
-
-        // Add event listener for country selection
-        countrySelect.addEventListener('change', function() {
-            const selectedCountry = this.value;
-            console.log('Country selected:', selectedCountry);
-            updateUPGDropdown(selectedCountry);
-        });
-    } else {
-        console.error('UPG data not loaded');
-    }
+    // Add event listener for country selection
+    countrySelect.addEventListener('change', function() {
+        const selectedCountry = this.value;
+        console.log('Country selected:', selectedCountry);
+        updateUPGDropdown(selectedCountry);
+    });
 
     // Function to update UPG dropdown
     function updateUPGDropdown(selectedCountry) {
@@ -52,6 +31,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get UPGs for selected country using the function from data.js
         const upgsInCountry = getUPGsByCountry(selectedCountry);
         console.log('UPGs found for country:', upgsInCountry);
+        
+        if (!upgsInCountry || upgsInCountry.length === 0) {
+            upgSelect.innerHTML = '<option value="">No UPGs found</option>';
+            upgSelect.disabled = true;
+            return;
+        }
         
         // Add UPGs to dropdown
         upgsInCountry.forEach(upg => {
