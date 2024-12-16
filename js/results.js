@@ -1,4 +1,71 @@
-// Initialize the results page when the DOM is loaded
+// Function to display search parameters
+function displaySearchParams(country, upgName, radius, units, searchType) {
+    const searchParams = document.getElementById('searchParams');
+    searchParams.innerHTML = `
+        <p><strong>Country:</strong> ${country}</p>
+        <p><strong>UPG:</strong> ${upgName}</p>
+        <p><strong>Radius:</strong> ${radius} ${units}</p>
+        <p><strong>Search Type:</strong> ${searchType.toUpperCase()}</p>
+    `;
+}
+
+// Function to display results
+function displayResults(results, type, units) {
+    const listElement = document.getElementById(`${type}List`);
+    if (!results || results.length === 0) {
+        listElement.innerHTML = `<p class="no-results">No ${type.toUpperCase()}s found in this area</p>`;
+        return;
+    }
+
+    const resultHtml = results.map((group, index) => `
+        <div class="result-item" data-index="${index}">
+            <h3>${group.name}</h3>
+            <div class="result-details">
+                <span><strong>Country:</strong> ${group.country}</span>
+                <span><strong>Population:</strong> ${group.population.toLocaleString()}</span>
+                <span><strong>Language:</strong> ${group.language}</span>
+                <span><strong>Religion:</strong> ${group.religion}</span>
+                <span><strong>Distance:</strong> ${group.distance.toFixed(1)} ${units}</span>
+            </div>
+            <button class="add-to-list-button" onclick="addToTop100('${type}', ${index})">
+                Add to Top 100
+            </button>
+        </div>
+    `).join('');
+
+    listElement.innerHTML = resultHtml;
+}
+
+// Function to sort results
+function sortResults(sortBy, order) {
+    const lists = ['uupg', 'fpg'];
+    
+    lists.forEach(type => {
+        const listElement = document.getElementById(`${type}List`);
+        const items = Array.from(listElement.getElementsByClassName('result-item'));
+        
+        if (items.length === 0) return;
+
+        items.sort((a, b) => {
+            const aValue = a.querySelector(`[data-${sortBy}]`).dataset[sortBy];
+            const bValue = b.querySelector(`[data-${sortBy}]`).dataset[sortBy];
+            
+            if (sortBy === 'distance' || sortBy === 'population') {
+                return order === 'asc' 
+                    ? parseFloat(aValue) - parseFloat(bValue)
+                    : parseFloat(bValue) - parseFloat(aValue);
+            }
+            
+            return order === 'asc'
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+        });
+
+        items.forEach(item => listElement.appendChild(item));
+    });
+}
+
+// Initialize the results page
 document.addEventListener('DOMContentLoaded', async function() {
     // Get search parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -26,21 +93,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Display results based on search type
             if (searchType === 'both' || searchType === 'uupg') {
-                displayResults(results.uupgs, 'uupg');
+                displayResults(results.uupgs, 'uupg', units);
             } else {
                 document.getElementById('uupgList').innerHTML = '<p class="no-results">UUPG search disabled</p>';
             }
 
             if (searchType === 'both' || searchType === 'fpg') {
-                displayResults(results.fpgs, 'fpg');
+                displayResults(results.fpgs, 'fpg', units);
             } else {
                 document.getElementById('fpgList').innerHTML = '<p class="no-results">FPG search disabled</p>';
-            }
-
-            // Show no results message if needed
-            if (results.uupgs.length === 0 && results.fpgs.length === 0) {
-                document.getElementById('uupgList').innerHTML = '<p class="no-results">No UUPGs found in this area</p>';
-                document.getElementById('fpgList').innerHTML = '<p class="no-results">No FPGs found in this area</p>';
             }
         } catch (error) {
             console.error('Search error:', error);
@@ -54,37 +115,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Add event listeners to sort buttons
-    const sortButtons = document.querySelectorAll('.sort-button');
-    sortButtons.forEach(button => {
+    document.querySelectorAll('.sort-button').forEach(button => {
         button.addEventListener('click', function() {
-            const sortBy = this.getAttribute('data-sort');
-            const currentOrder = this.getAttribute('data-order') || 'desc';
+            const sortBy = this.dataset.sort;
+            const currentOrder = this.dataset.order || 'asc';
+            const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
             
-            // Toggle sort order
-            const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
-            this.setAttribute('data-order', newOrder);
-            
-            // Update button appearance
-            sortButtons.forEach(btn => {
+            // Update all buttons
+            document.querySelectorAll('.sort-button').forEach(btn => {
                 btn.classList.remove('active', 'asc', 'desc');
-                if (btn === this) {
-                    btn.classList.add('active', newOrder);
-                }
             });
             
-            // Sort results with new order
+            // Update clicked button
+            this.classList.add('active', newOrder);
+            this.dataset.order = newOrder;
+            
+            // Sort results
             sortResults(sortBy, newOrder);
         });
     });
 });
-
-// Function to display search parameters
-function displaySearchParams(country, upgName, radius, units, searchType) {
-    const searchParams = document.getElementById('searchParams');
-    searchParams.innerHTML = `
-        <p><strong>Country:</strong> ${country}</p>
-        <p><strong>UPG:</strong> ${upgName}</p>
-        <p><strong>Radius:</strong> ${radius} ${units}</p>
-        <p><strong>Search Type:</strong> ${searchType.toUpperCase()}</p>
-    `;
-}
