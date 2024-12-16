@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     try {
         // Load all data first
+        console.log('Loading data...');
         await loadAllData();
+        console.log('Data loaded successfully');
 
         // Set current year in footer
         if (yearSpan) {
@@ -20,6 +22,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Populate countries dropdown
         const countries = await getUniqueCountries();
+        if (!countries || countries.length === 0) {
+            throw new Error('No countries found in the data');
+        }
+        
         countrySelect.innerHTML = '<option value="">Select a country</option>';
         countries.forEach(country => {
             const option = document.createElement('option');
@@ -35,6 +41,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (this.value) {
                 const upgs = await getUpgsForCountry(this.value);
+                if (!upgs || upgs.length === 0) {
+                    upgSelect.innerHTML = '<option value="">No UPGs found for this country</option>';
+                    return;
+                }
+                
                 upgs.forEach(upg => {
                     const option = document.createElement('option');
                     option.value = upg.name;
@@ -57,10 +68,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                 type: document.getElementById('type').value
             };
 
+            // Validate form data
+            if (!searchData.country || !searchData.upg) {
+                alert('Please select both a country and a UPG');
+                return;
+            }
+
+            if (!searchData.radius || isNaN(searchData.radius) || searchData.radius <= 0) {
+                alert('Please enter a valid radius greater than 0');
+                return;
+            }
+
             try {
                 // Show loading state
                 document.body.style.cursor = 'wait';
-                searchForm.querySelector('button[type="submit"]').disabled = true;
+                const submitButton = searchForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Searching...';
 
                 // Perform search
                 const results = await searchNearby(
@@ -70,6 +94,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     searchData.units,
                     searchData.type
                 );
+
+                // Validate results
+                if (!results || (!results.fpgs && !results.uupgs)) {
+                    throw new Error('No results found');
+                }
 
                 // Update search parameters display
                 searchParams.innerHTML = `
@@ -90,11 +119,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 resultsSection.scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 console.error('Error searching:', error);
-                alert('Error performing search. Please try again.');
+                alert(error.message || 'Error performing search. Please try again.');
             } finally {
                 // Reset loading state
                 document.body.style.cursor = 'default';
-                searchForm.querySelector('button[type="submit"]').disabled = false;
+                const submitButton = searchForm.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Search';
             }
         });
 

@@ -49,8 +49,18 @@ export async function loadAllData() {
         // Load existing UPGs for dropdowns
         console.log('Loading existing UPGs data...');
         const existingResponse = await fetch('data/existing_upgs_updated.csv');
+        if (!existingResponse.ok) {
+            throw new Error(`Failed to load existing UPGs data: ${existingResponse.statusText}`);
+        }
         const existingText = await existingResponse.text();
+        if (!existingText.trim()) {
+            throw new Error('Existing UPGs data file is empty');
+        }
+        
         const existingLines = existingText.split('\n').filter(line => line.trim());
+        if (existingLines.length < 2) { // At least header + 1 data row
+            throw new Error('Existing UPGs data file has insufficient data');
+        }
         
         // Skip header row and parse data
         const header = existingLines[0].split(',');
@@ -69,11 +79,25 @@ export async function loadAllData() {
             };
         }).filter(upg => upg.country && upg.name); // Filter out any entries without country or name
 
+        if (existingUpgData.length === 0) {
+            throw new Error('No valid UPG data found after parsing');
+        }
+
         // Load UUPGs for search
         console.log('Loading UUPGs data...');
-        const uupgResponse = await fetch('data/uupgs.csv');
+        const uupgResponse = await fetch('data/updated_uupg.csv');
+        if (!uupgResponse.ok) {
+            throw new Error(`Failed to load UUPGs data: ${uupgResponse.statusText}`);
+        }
         const uupgText = await uupgResponse.text();
+        if (!uupgText.trim()) {
+            throw new Error('UUPGs data file is empty');
+        }
+        
         const uupgLines = uupgText.split('\n').filter(line => line.trim());
+        if (uupgLines.length < 2) { // At least header + 1 data row
+            throw new Error('UUPGs data file has insufficient data');
+        }
         
         // Skip header row and parse data
         uupgData = uupgLines.slice(1).map(line => {
@@ -89,11 +113,15 @@ export async function loadAllData() {
             };
         }).filter(uupg => uupg.country && uupg.name); // Filter out any entries without country or name
 
-        console.log('Data loaded successfully');
+        if (uupgData.length === 0) {
+            throw new Error('No valid UUPG data found after parsing');
+        }
+
+        console.log(`Data loaded successfully - ${existingUpgData.length} UPGs and ${uupgData.length} UUPGs`);
         return true;
     } catch (error) {
         console.error('Error loading data:', error);
-        throw error;
+        throw new Error(`Failed to load data: ${error.message}`);
     }
 }
 
