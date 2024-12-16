@@ -154,6 +154,13 @@ function createResultItem(group, type, distance) {
     div.dataset.religion = group.religion;
     div.dataset.distance = distance;
 
+    // Create header with name and checkbox
+    const header = document.createElement('div');
+    header.className = 'result-header';
+    
+    const title = document.createElement('h3');
+    title.textContent = group.name;
+    
     // Add checkbox for selection
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -164,12 +171,12 @@ function createResultItem(group, type, distance) {
     checkboxContainer.className = 'checkbox-container';
     checkboxContainer.appendChild(checkbox);
 
-    div.appendChild(checkboxContainer);
+    header.appendChild(checkboxContainer);
+    header.appendChild(title);
     
     const content = document.createElement('div');
     content.className = 'result-content';
     content.innerHTML = `
-        <h3>${group.name}</h3>
         <p>
             <strong>Country:</strong> ${group.country}<br>
             <strong>Population:</strong> ${group.population.toLocaleString()}<br>
@@ -179,6 +186,7 @@ function createResultItem(group, type, distance) {
         </p>
     `;
 
+    div.appendChild(header);
     div.appendChild(content);
     return div;
 }
