@@ -47,11 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Filter UPGs for selected country
-        const upgsInCountry = upgData.filter(group => group.country === selectedCountry);
-        
-        // Sort UPGs by name
-        upgsInCountry.sort((a, b) => a.name.localeCompare(b.name));
+        // Get UPGs for selected country using the function from data.js
+        const upgsInCountry = getUPGsByCountry(selectedCountry);
         
         // Add UPGs to dropdown
         upgsInCountry.forEach(upg => {
@@ -69,114 +66,91 @@ document.addEventListener('DOMContentLoaded', function() {
     const sortButtons = document.querySelectorAll('.sort-button');
     sortButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const sortBy = this.getAttribute('data-sort');
-            
-            // Update active button
-            document.querySelectorAll('.sort-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            // Remove active class from all buttons
+            sortButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
             this.classList.add('active');
-            
-            // Sort results
+            // Get sort type and sort results
+            const sortBy = this.getAttribute('data-sort');
             sortResults(sortBy);
         });
     });
 
-    // Add event listener for search button
-    if (searchButton) {
-        searchButton.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            const country = countrySelect.value;
-            const upg = upgSelect.value;
-            const radius = document.getElementById('radius').value;
-            const units = document.getElementById('units').value;
+    // Add form submit handler
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const country = countrySelect.value;
+        const upgName = upgSelect.value;
+        const radius = document.getElementById('radius').value;
+        const units = document.getElementById('units').value;
+        const searchType = document.getElementById('type').value;
 
-            if (!country || !upg || !radius) {
-                alert('Please fill in all search fields');
-                return;
-            }
+        if (!country || !upgName || !radius) {
+            alert('Please fill in all required fields');
+            return;
+        }
 
+        try {
             // Show loading state
-            const uupgList = document.getElementById('uupgList');
-            const fpgList = document.getElementById('fpgList');
-            uupgList.innerHTML = '<p class="loading">Searching for UUPGs...</p>';
-            fpgList.innerHTML = '<p class="loading">Searching for FPGs...</p>';
+            document.getElementById('uupgList').innerHTML = '<p class="loading">Searching...</p>';
+            document.getElementById('fpgList').innerHTML = '<p class="loading">Searching...</p>';
 
-            try {
-                console.log('Searching with params:', { country, upg, radius, units });
+            // Perform search
+            const results = await searchNearby(country, upgName, radius, units);
 
-                // Get reference UPG
-                const referenceUPG = upgData.find(u => u.country === country && u.name === upg);
-                if (!referenceUPG) {
-                    throw new Error('Reference UPG not found');
-                }
+            // Show sort options
+            sortOptions.style.display = 'flex';
 
-                // Search for nearby UUPGs from the CSV data
-                const nearbyUUPGs = upgData
-                    .filter(u => !(u.country === country && u.name === upg)) // Exclude reference UPG
-                    .map(u => ({
-                        ...u,
-                        distance: calculateDistance(
-                            referenceUPG.latitude,
-                            referenceUPG.longitude,
-                            u.latitude,
-                            u.longitude,
-                            units
-                        )
-                    }))
-                    .filter(u => u.distance <= parseFloat(radius))
-                    .sort((a, b) => a.distance - b.distance);
-
-                // Display UUPG results
-                if (nearbyUUPGs.length > 0) {
-                    displayResults(nearbyUUPGs, 'uupg');
-                } else {
-                    uupgList.innerHTML = '<p class="no-results">No UUPGs found within the specified radius.</p>';
-                }
-
-                // For now, show same results in FPG section until we integrate Joshua Project API
-                fpgList.innerHTML = '<p class="no-results">FPG search requires Joshua Project API integration.</p>';
-
-                // Show the sort options if we have results
-                if (nearbyUUPGs.length > 0) {
-                    sortOptions.style.display = 'flex';
-                }
-
-            } catch (error) {
-                console.error('Error during search:', error);
-                uupgList.innerHTML = '<p class="error">Error searching for UUPGs. Please try again.</p>';
-                fpgList.innerHTML = '<p class="error">Error searching for FPGs. Please try again.</p>';
+            // Display results based on search type
+            if (searchType === 'both' || searchType === 'uupg') {
+                displayResults(results.uupgs, 'uupg');
+            } else {
+                document.getElementById('uupgList').innerHTML = '<p class="no-results">UUPG search disabled</p>';
             }
-        });
-    }
+
+            if (searchType === 'both' || searchType === 'fpg') {
+                displayResults(results.fpgs, 'fpg');
+            } else {
+                document.getElementById('fpgList').innerHTML = '<p class="no-results">FPG search disabled</p>';
+            }
+
+            // Show no results message if needed
+            if (results.uupgs.length === 0 && results.fpgs.length === 0) {
+                document.getElementById('uupgList').innerHTML = '<p class="no-results">No UUPGs found in this area</p>';
+                document.getElementById('fpgList').innerHTML = '<p class="no-results">No FPGs found in this area</p>';
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            document.getElementById('uupgList').innerHTML = '<p class="error">Error performing search</p>';
+            document.getElementById('fpgList').innerHTML = '<p class="error">Error performing search</p>';
+        }
+    });
 });
 
 // Sorting functionality
 function sortResults(sortBy) {
-    const sortLists = ['uupgList', 'fpgList'];
-    
-    sortLists.forEach(listId => {
-        const listElement = document.getElementById(listId);
-        if (!listElement) return;
+    ['uupg', 'fpg'].forEach(type => {
+        const listElement = document.getElementById(`${type}List`);
+        const items = Array.from(listElement.getElementsByClassName('result-item'));
         
-        const results = Array.from(listElement.children);
-        if (results.length === 0) return;
-        
-        results.sort((a, b) => {
-            const aValue = a.getAttribute(`data-${sortBy}`);
-            const bValue = b.getAttribute(`data-${sortBy}`);
+        items.sort((a, b) => {
+            let aValue = a.getAttribute(`data-${sortBy}`);
+            let bValue = b.getAttribute(`data-${sortBy}`);
             
+            // Convert to numbers for distance and population
             if (sortBy === 'distance' || sortBy === 'population') {
-                return parseFloat(aValue) - parseFloat(bValue);
-            } else {
-                return aValue.localeCompare(bValue);
+                aValue = parseFloat(aValue) || 0;
+                bValue = parseFloat(bValue) || 0;
+                return aValue - bValue;
             }
+            
+            // String comparison for other fields
+            return aValue.localeCompare(bValue);
         });
         
         // Clear and re-append sorted items
-        listElement.innerHTML = '';
-        results.forEach(item => listElement.appendChild(item));
+        items.forEach(item => listElement.appendChild(item));
     });
 }
 
@@ -190,6 +164,7 @@ function createResultItem(group, type, distance) {
     div.dataset.population = group.population;
     div.dataset.language = group.language;
     div.dataset.religion = group.religion;
+    div.dataset.distance = distance;
 
     // Add checkbox for selection
     const checkbox = document.createElement('input');
@@ -223,9 +198,12 @@ function createResultItem(group, type, distance) {
 // Display results function
 function displayResults(groups, type) {
     const listElement = document.getElementById(`${type}List`);
-    if (!listElement) return;
-    
     listElement.innerHTML = '';
+    
+    if (groups.length === 0) {
+        listElement.innerHTML = `<p class="no-results">No ${type.toUpperCase()}s found in this area</p>`;
+        return;
+    }
     
     groups.forEach(group => {
         const resultItem = createResultItem(group, type, group.distance);
