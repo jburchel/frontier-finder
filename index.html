@@ -63,20 +63,37 @@
             <div id="results" class="results-section">
                 <div id="uupgResults">
                     <h2>Unengaged Unreached People Groups</h2>
+                    <div class="sort-options">
+                        <span>Sort by:</span>
+                        <button class="sort-button active" data-type="uupg" data-sort="distance">Distance</button>
+                        <button class="sort-button" data-type="uupg" data-sort="country">Country</button>
+                        <button class="sort-button" data-type="uupg" data-sort="population">Population</button>
+                        <button class="sort-button" data-type="uupg" data-sort="language">Language</button>
+                        <button class="sort-button" data-type="uupg" data-sort="religion">Religion</button>
+                    </div>
                     <div class="results-list" id="uupgList"></div>
                 </div>
                 <div id="fpgResults">
                     <h2>Frontier People Groups</h2>
+                    <div class="sort-options">
+                        <span>Sort by:</span>
+                        <button class="sort-button active" data-type="fpg" data-sort="distance">Distance</button>
+                        <button class="sort-button" data-type="fpg" data-sort="country">Country</button>
+                        <button class="sort-button" data-type="fpg" data-sort="population">Population</button>
+                        <button class="sort-button" data-type="fpg" data-sort="language">Language</button>
+                        <button class="sort-button" data-type="fpg" data-sort="religion">Religion</button>
+                    </div>
                     <div class="results-list" id="fpgList"></div>
                 </div>
             </div>
         </main>
 
         <footer>
-            <p>&copy; <span id="year"></span> Frontier Finder. Data provided by Joshua Project.</p>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
         </footer>
     </div>
     <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
