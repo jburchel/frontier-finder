@@ -12,28 +12,45 @@ function displaySearchParams(country, upgName, radius, units, searchType) {
 // Function to display results
 function displayResults(results, type, units) {
     const listElement = document.getElementById(`${type}List`);
+    if (!listElement) {
+        console.error(`Element with id "${type}List" not found`);
+        return;
+    }
+
     if (!results || results.length === 0) {
         listElement.innerHTML = `<p class="no-results">No ${type.toUpperCase()}s found in this area</p>`;
         return;
     }
 
-    const resultHtml = results.map((group, index) => `
-        <div class="result-item" data-index="${index}">
-            <h3>${group.name}</h3>
-            <div class="result-details">
-                <span><strong>Country:</strong> ${group.country}</span>
-                <span><strong>Population:</strong> ${group.population.toLocaleString()}</span>
-                <span><strong>Language:</strong> ${group.language}</span>
-                <span><strong>Religion:</strong> ${group.religion}</span>
-                <span><strong>Distance:</strong> ${group.distance.toFixed(1)} ${units}</span>
-            </div>
-            <button class="add-to-list-button" onclick="addToTop100('${type}', ${index})">
-                Add to Top 100
-            </button>
-        </div>
-    `).join('');
+    try {
+        const resultHtml = results.map((group, index) => {
+            if (!group) {
+                console.error(`Invalid group at index ${index}`);
+                return '';
+            }
 
-    listElement.innerHTML = resultHtml;
+            return `
+                <div class="result-item" data-index="${index}">
+                    <h3>${group.name || 'Unknown'}</h3>
+                    <div class="result-details">
+                        <span><strong>Country:</strong> ${group.country || 'Unknown'}</span>
+                        <span><strong>Population:</strong> ${(group.population || 0).toLocaleString()}</span>
+                        <span><strong>Language:</strong> ${group.language || 'Unknown'}</span>
+                        <span><strong>Religion:</strong> ${group.religion || 'Unknown'}</span>
+                        <span><strong>Distance:</strong> ${(group.distance || 0).toFixed(1)} ${units}</span>
+                    </div>
+                    <button class="add-to-list-button" onclick="addToTop100('${type}', ${index})">
+                        Add to Top 100
+                    </button>
+                </div>
+            `;
+        }).filter(Boolean).join('');
+
+        listElement.innerHTML = resultHtml || '<p class="no-results">Error displaying results</p>';
+    } catch (error) {
+        console.error('Error displaying results:', error);
+        listElement.innerHTML = `<p class="error">⚠️ Error displaying results: ${error.message}</p>`;
+    }
 }
 
 // Function to sort results
@@ -71,8 +88,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     const country = urlParams.get('country');
     const upgName = urlParams.get('upg');
     const radius = urlParams.get('radius');
-    const units = urlParams.get('units');
-    const searchType = urlParams.get('type');
+    const units = urlParams.get('units') || 'miles';
+    const searchType = urlParams.get('type') || 'both';
+
+    // Get references to DOM elements
+    const uupgList = document.getElementById('uupgList');
+    const fpgList = document.getElementById('fpgList');
+    const sortOptions = document.getElementById('sortOptions');
+
+    if (!uupgList || !fpgList) {
+        console.error('Required DOM elements not found');
+        return;
+    }
 
     // Display search parameters
     displaySearchParams(country, upgName, radius, units, searchType);
@@ -81,37 +108,42 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (country && upgName && radius) {
         try {
             // Show loading state
-            document.getElementById('uupgList').innerHTML = '<p class="loading">Searching...</p>';
-            document.getElementById('fpgList').innerHTML = '<p class="loading">Searching...</p>';
+            uupgList.innerHTML = '<p class="loading">Searching...</p>';
+            fpgList.innerHTML = '<p class="loading">Searching...</p>';
 
-            // Show sort options
-            document.getElementById('sortOptions').style.display = 'flex';
+            // Show sort options if they exist
+            if (sortOptions) {
+                sortOptions.style.display = 'flex';
+            }
 
             // Perform search
             const results = await searchNearby(country, upgName, radius, units);
+            
+            if (!results) {
+                throw new Error('Search returned no results');
+            }
 
             // Display results based on search type
             if (searchType === 'both' || searchType === 'uupg') {
                 displayResults(results.uupgs, 'uupg', units);
             } else {
-                document.getElementById('uupgList').innerHTML = '<p class="no-results">UUPG search disabled</p>';
+                uupgList.innerHTML = '<p class="no-results">UUPG search disabled</p>';
             }
 
             if (searchType === 'both' || searchType === 'fpg') {
                 displayResults(results.fpgs, 'fpg', units);
             } else {
-                document.getElementById('fpgList').innerHTML = '<p class="no-results">FPG search disabled</p>';
+                fpgList.innerHTML = '<p class="no-results">FPG search disabled</p>';
             }
-
         } catch (error) {
-            console.error('Search error:', error);
-            document.getElementById('uupgList').innerHTML = '<p class="error">Error performing search</p>';
-            document.getElementById('fpgList').innerHTML = '<p class="error">Error performing search</p>';
+            console.error('Error performing search:', error);
+            uupgList.innerHTML = `<p class="error">⚠️ Error: ${error.message}</p>`;
+            fpgList.innerHTML = `<p class="error">⚠️ Error: ${error.message}</p>`;
         }
     } else {
-        // Handle case where parameters are missing
-        document.getElementById('uupgList').innerHTML = '<p class="error">Missing search parameters</p>';
-        document.getElementById('fpgList').innerHTML = '<p class="error">Missing search parameters</p>';
+        console.error('Missing required search parameters');
+        uupgList.innerHTML = '<p class="error">⚠️ Missing required search parameters</p>';
+        fpgList.innerHTML = '<p class="error">⚠️ Missing required search parameters</p>';
     }
 
     // Add event listeners to sort buttons

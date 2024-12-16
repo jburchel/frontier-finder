@@ -47,60 +47,92 @@ function parseCSVLine(line) {
 async function loadAllData() {
     try {
         // Load existing UPGs for dropdowns
-        const existingResponse = await fetch('data/existing_upgs_updated.csv');
+        console.log('Loading existing UPGs data...');
+        const existingResponse = await fetch('/Users/jimburchel/CascadeProjects/frontier_finder/data/existing_upgs_updated.csv');
         if (!existingResponse.ok) {
-            throw new Error(`HTTP error! status: ${existingResponse.status}`);
+            throw new Error(`Failed to load existing UPGs: HTTP ${existingResponse.status}`);
         }
         const existingCsvText = await existingResponse.text();
-        console.log('Loaded existing UPGs CSV:', existingCsvText.slice(0, 200) + '...');
+        if (!existingCsvText.trim()) {
+            throw new Error('Existing UPGs CSV is empty');
+        }
+        console.log('Successfully loaded existing UPGs CSV');
         
         const existingLines = existingCsvText.split('\n').filter(line => line.trim());
         const existingHeaders = parseCSVLine(existingLines[0]);
         console.log('Existing UPG headers:', existingHeaders);
 
-        existingUpgData = existingLines.slice(1).map(line => {
-            const values = parseCSVLine(line);
-            const obj = {};
-            existingHeaders.forEach((header, index) => {
-                let value = values[index] || '';
-                if (header === 'latitude' || header === 'longitude' || header === 'population') {
-                    value = parseFloat(value) || 0;
-                }
-                obj[header] = value;
-            });
-            return obj;
-        });
+        if (existingLines.length < 2) {
+            throw new Error('No data rows found in existing UPGs CSV');
+        }
 
-        console.log('Parsed existing UPGs:', existingUpgData.slice(0, 2));
+        existingUpgData = existingLines.slice(1).map((line, index) => {
+            try {
+                const values = parseCSVLine(line);
+                const obj = {};
+                existingHeaders.forEach((header, i) => {
+                    let value = values[i] || '';
+                    if (header === 'latitude' || header === 'longitude' || header === 'population') {
+                        value = parseFloat(value) || 0;
+                    }
+                    obj[header] = value;
+                });
+                return obj;
+            } catch (err) {
+                console.error(`Error parsing line ${index + 2} of existing UPGs:`, err);
+                return null;
+            }
+        }).filter(Boolean);
+
+        console.log(`Parsed ${existingUpgData.length} existing UPGs`);
 
         // Load UUPGs for search
-        const uupgResponse = await fetch('data/updated_uupg.csv');
+        console.log('Loading UUPGs data...');
+        const uupgResponse = await fetch('/Users/jimburchel/CascadeProjects/frontier_finder/data/updated_uupg.csv');
         if (!uupgResponse.ok) {
-            throw new Error(`HTTP error! status: ${uupgResponse.status}`);
+            throw new Error(`Failed to load UUPGs: HTTP ${uupgResponse.status}`);
         }
         const uupgCsvText = await uupgResponse.text();
+        if (!uupgCsvText.trim()) {
+            throw new Error('UUPGs CSV is empty');
+        }
+        console.log('Successfully loaded UUPGs CSV');
+
         const uupgLines = uupgCsvText.split('\n').filter(line => line.trim());
         const uupgHeaders = parseCSVLine(uupgLines[0]);
+        console.log('UUPG headers:', uupgHeaders);
 
-        uupgData = uupgLines.slice(1).map(line => {
-            const values = parseCSVLine(line);
-            const obj = {};
-            obj.name = values[0] || ''; // PeopleName
-            obj.country = values[1] || ''; // Country
-            obj.population = parseInt(values[2]) || 0;
-            obj.language = values[3] || '';
-            obj.religion = values[4] || '';
-            obj.latitude = parseFloat(values[5]) || 0;
-            obj.longitude = parseFloat(values[6]) || 0;
-            return obj;
-        });
+        if (uupgLines.length < 2) {
+            throw new Error('No data rows found in UUPGs CSV');
+        }
 
-        console.log('Data loaded:', {
+        uupgData = uupgLines.slice(1).map((line, index) => {
+            try {
+                const values = parseCSVLine(line);
+                return {
+                    name: values[0] || '',
+                    country: values[1] || '',
+                    population: parseInt(values[2]) || 0,
+                    language: values[3] || '',
+                    religion: values[4] || '',
+                    latitude: parseFloat(values[5]) || 0,
+                    longitude: parseFloat(values[6]) || 0
+                };
+            } catch (err) {
+                console.error(`Error parsing line ${index + 2} of UUPGs:`, err);
+                return null;
+            }
+        }).filter(Boolean);
+
+        console.log('Data loading complete:', {
             existingUpgs: existingUpgData.length,
             uupgs: uupgData.length
         });
+
+        return true;
     } catch (error) {
         console.error('Error loading data:', error);
+        throw error;
     }
 }
 
