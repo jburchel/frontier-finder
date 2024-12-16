@@ -143,10 +143,16 @@ function getUPGsByCountry(country) {
 
 // Function to fetch FPGs from Joshua Project API
 async function fetchFPGs(latitude, longitude, radius, units) {
+    // Validate API key before making the request
+    if (!window.validateApiKey()) {
+        return [];
+    }
+
     try {
-        const response = await fetch(`${config.apiBaseUrl}/people_groups/search?api_key=${config.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${units}&is_frontier=true`);
+        const response = await fetch(`${window.jpConfig.apiBaseUrl}/people_groups/search?api_key=${window.jpConfig.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${units}&is_frontier=true`);
         if (!response.ok) {
-            throw new Error('Failed to fetch FPGs from Joshua Project API');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Failed to fetch FPGs: ${errorData.message || response.statusText}`);
         }
         const data = await response.json();
         return data.map(fpg => ({
@@ -167,6 +173,8 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         }));
     } catch (error) {
         console.error('Error fetching FPGs:', error);
+        document.getElementById('fpgList').innerHTML = 
+            `<p class="error">⚠️ Error fetching FPGs: ${error.message}</p>`;
         return [];
     }
 }
