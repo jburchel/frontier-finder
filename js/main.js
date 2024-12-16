@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const upgSelect = document.getElementById('upg');
     const searchForm = document.getElementById('searchForm');
     const yearSpan = document.getElementById('year');
+    const resultsSection = document.querySelector('.results-section');
+    const searchParams = document.getElementById('searchParams');
+    const sortOptions = document.getElementById('sortOptions');
 
     try {
         // Load all data first
@@ -55,6 +58,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
 
             try {
+                // Show loading state
+                document.body.style.cursor = 'wait';
+                searchForm.querySelector('button[type="submit"]').disabled = true;
+
+                // Perform search
                 const results = await searchNearby(
                     searchData.country,
                     searchData.upg,
@@ -63,11 +71,39 @@ document.addEventListener('DOMContentLoaded', async function() {
                     searchData.type
                 );
 
+                // Update search parameters display
+                searchParams.innerHTML = `
+                    <p><strong>Country:</strong> ${searchData.country}</p>
+                    <p><strong>UPG:</strong> ${searchData.upg}</p>
+                    <p><strong>Radius:</strong> ${searchData.radius} ${searchData.units}</p>
+                    <p><strong>Search Type:</strong> ${searchData.type}</p>
+                `;
+
+                // Show results section and sort options
+                resultsSection.style.display = 'block';
+                sortOptions.style.display = 'block';
+
+                // Display results
                 displayResults(results);
+
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 console.error('Error searching:', error);
                 alert('Error performing search. Please try again.');
+            } finally {
+                // Reset loading state
+                document.body.style.cursor = 'default';
+                searchForm.querySelector('button[type="submit"]').disabled = false;
             }
+        });
+
+        // Handle sort buttons
+        document.querySelectorAll('.sort-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const sortBy = this.dataset.sort;
+                sortResults(sortBy);
+            });
         });
     } catch (error) {
         console.error('Error initializing form:', error);
@@ -85,27 +121,25 @@ function displayResults(results) {
 
     // Display FPGs
     if (results.fpgs && fpgList) {
-        results.fpgs.forEach(fpg => {
-            const card = createResultCard(fpg);
-            fpgList.appendChild(card);
-        });
-
-        // Show "No results" message if needed
         if (results.fpgs.length === 0) {
             fpgList.innerHTML = '<p>No Frontier People Groups found within the specified radius.</p>';
+        } else {
+            results.fpgs.forEach(fpg => {
+                const card = createResultCard(fpg);
+                fpgList.appendChild(card);
+            });
         }
     }
 
     // Display UUPGs
     if (results.uupgs && uupgList) {
-        results.uupgs.forEach(uupg => {
-            const card = createResultCard(uupg);
-            uupgList.appendChild(card);
-        });
-
-        // Show "No results" message if needed
         if (results.uupgs.length === 0) {
             uupgList.innerHTML = '<p>No Unreached Unengaged People Groups found within the specified radius.</p>';
+        } else {
+            results.uupgs.forEach(uupg => {
+                const card = createResultCard(uupg);
+                uupgList.appendChild(card);
+            });
         }
     }
 }
@@ -118,10 +152,55 @@ function createResultCard(group) {
         <h3>${group.name}</h3>
         <p><strong>Country:</strong> ${group.country}</p>
         <p><strong>Population:</strong> ${group.population.toLocaleString()}</p>
-        <p><strong>Distance:</strong> ${group.distance.toFixed(1)} ${document.getElementById('units').value}</p>
+        ${group.distance ? `<p><strong>Distance:</strong> ${group.distance.toFixed(1)} ${document.getElementById('units').value}</p>` : ''}
         ${group.language ? `<p><strong>Language:</strong> ${group.language}</p>` : ''}
         ${group.religion ? `<p><strong>Religion:</strong> ${group.religion}</p>` : ''}
     `;
 
     return card;
+}
+
+function sortResults(sortBy) {
+    const fpgList = document.getElementById('fpgList');
+    const uupgList = document.getElementById('uupgList');
+
+    [fpgList, uupgList].forEach(list => {
+        if (!list) return;
+
+        const cards = Array.from(list.getElementsByClassName('result-card'));
+        if (cards.length === 0) return;
+
+        cards.sort((a, b) => {
+            const aValue = getValueFromCard(a, sortBy);
+            const bValue = getValueFromCard(b, sortBy);
+            return aValue.localeCompare(bValue);
+        });
+
+        // Clear and re-append sorted cards
+        list.innerHTML = '';
+        cards.forEach(card => list.appendChild(card));
+    });
+}
+
+function getValueFromCard(card, sortBy) {
+    const text = card.textContent;
+    switch (sortBy) {
+        case 'distance':
+            const distanceMatch = text.match(/Distance: ([\d.]+)/);
+            return distanceMatch ? distanceMatch[1].padStart(10, '0') : '9999999999';
+        case 'country':
+            const countryMatch = text.match(/Country: (.+?)(?=Population|$)/);
+            return countryMatch ? countryMatch[1].trim() : '';
+        case 'population':
+            const popMatch = text.match(/Population: ([\d,]+)/);
+            return popMatch ? popMatch[1].replace(/,/g, '').padStart(12, '0') : '000000000000';
+        case 'language':
+            const langMatch = text.match(/Language: (.+?)(?=Religion|$)/);
+            return langMatch ? langMatch[1].trim() : 'ZZZZZ';
+        case 'religion':
+            const relMatch = text.match(/Religion: (.+?)$/);
+            return relMatch ? relMatch[1].trim() : 'ZZZZZ';
+        default:
+            return '';
+    }
 }

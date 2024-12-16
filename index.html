@@ -19,7 +19,7 @@
                 <h2>Find Frontier and Unengaged People Groups</h2>
                 <p class="instructions">Search for Frontier People Groups (FPGs) and Unreached UnengagedPeople Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
 
-                <form id="searchForm" action="results.html" method="get">
+                <form id="searchForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="country">Select Country:</label>
@@ -58,6 +58,40 @@
 
                     <button type="submit" id="searchButton">Search</button>
                 </form>
+            </div>
+
+            <div class="results-section" style="display: none;">
+                <div class="search-summary">
+                    <h2>Search Parameters</h2>
+                    <div id="searchParams" class="search-params">
+                        <!-- Search parameters will be inserted here -->
+                    </div>
+                </div>
+
+                <div id="sortOptions" class="sort-options" style="display: none;">
+                    <span>Sort by:</span>
+                    <button class="sort-button" data-sort="distance">Distance</button>
+                    <button class="sort-button" data-sort="country">Country</button>
+                    <button class="sort-button" data-sort="population">Population</button>
+                    <button class="sort-button" data-sort="language">Language</button>
+                    <button class="sort-button" data-sort="religion">Religion</button>
+                </div>
+
+                <div class="results-columns">
+                    <div class="results-section column-1">
+                        <h2>Unengaged Unreached People Groups</h2>
+                        <div id="uupgList" class="results-list">
+                            <!-- UUPG results will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="results-section column-2">
+                        <h2>Frontier People Groups</h2>
+                        <div id="fpgList" class="results-list">
+                            <!-- FPG results will be inserted here -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="top-100-section">
