@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/crossover-global-logo.png" alt="Crossover Global Logo" class="logo">
+            <h1>Search Results</h1>
+            <a href="index.html" class="back-button">← Back to Search</a>
+        </header>
+
+        <main>
+            <div class="search-summary">
+                <h2>Search Parameters</h2>
+                <div id="searchParams" class="search-params">
+                    <!-- Search parameters will be inserted here -->
+                </div>
+            </div>
+
+            <div id="sortOptions" class="sort-options" style="display: none;">
+                <span>Sort by:</span>
+                <button class="sort-button" data-sort="distance">Distance</button>
+                <button class="sort-button" data-sort="country">Country</button>
+                <button class="sort-button" data-sort="population">Population</button>
+                <button class="sort-button" data-sort="language">Language</button>
+                <button class="sort-button" data-sort="religion">Religion</button>
+            </div>
+
+            <div class="results-columns">
+                <div class="results-section">
+                    <h2>Unengaged Unreached People Groups</h2>
+                    <div id="uupgList" class="results-list">
+                        <!-- UUPG results will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <h2>Frontier People Groups</h2>
+                    <div id="fpgList" class="results-list">
+                        <!-- FPG results will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/results.js"></script>
+</body>
+</html>

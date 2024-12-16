@@ -19,7 +19,7 @@
                 <h2>Find Frontier and Unengaged People Groups</h2>
                 <p class="instructions">Search for Frontier People Groups (FPGs) and Unreached UnengagedPeople Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
 
-                <form id="searchForm">
+                <form id="searchForm" action="results.html" method="get">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="country">Select Country:</label>
@@ -49,14 +49,14 @@
                         <div class="form-group">
                             <label for="type">Search Type</label>
                             <select id="type" name="type">
-                                <option value="both">Both FPGs and UUPGs</option>
-                                <option value="fpg">FPGs Only</option>
-                                <option value="uupg">UUPGs Only</option>
+                                <option value="both">Both UUPG and FPG</option>
+                                <option value="uupg">UUPG Only</option>
+                                <option value="fpg">FPG Only</option>
                             </select>
                         </div>
                     </div>
 
-                    <button type="submit">Search People Groups</button>
+                    <button type="submit" id="searchButton">Search</button>
                 </form>
             </div>
 
