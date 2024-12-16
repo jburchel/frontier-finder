@@ -110,19 +110,21 @@ async function loadAllData() {
             try {
                 const values = parseCSVLine(line);
                 return {
-                    name: values[0] || '',
-                    country: values[1] || '',
-                    population: parseInt(values[2]) || 0,
-                    language: values[3] || '',
-                    religion: values[4] || '',
-                    latitude: parseFloat(values[5]) || 0,
-                    longitude: parseFloat(values[6]) || 0
+                    name: values[0] || '', // PeopleName
+                    country: values[1] || '', // Country
+                    population: parseInt(values[2]) || 0, // Population
+                    language: values[3] || '', // Language
+                    religion: values[4] || '', // Religion
+                    latitude: parseFloat(values[5]) || 0, // Latitude
+                    longitude: parseFloat(values[6]) || 0 // Longitude
                 };
             } catch (err) {
                 console.error(`Error parsing line ${index + 2} of UUPGs:`, err);
                 return null;
             }
-        }).filter(Boolean);
+        }).filter(Boolean); // Remove any null entries from parsing errors
+
+        console.log(`Parsed ${uupgData.length} UUPGs`);
 
         console.log('Data loading complete:', {
             existingUpgs: existingUpgData.length,
@@ -250,6 +252,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 // Function to search for nearby people groups
 async function searchNearby(country, upgName, radius, units = 'kilometers') {
     console.log('Starting search with:', { country, upgName, radius, units });
+    console.log('Total UUPGs in dataset:', uupgData.length);
 
     // Find the reference UPG from existing UPGs
     const referenceUPG = existingUpgData.find(upg => 
@@ -265,18 +268,28 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
 
     // Search for nearby UUPGs from updated_uupg.csv data
     const uupgs = uupgData
-        .map(upg => ({
-            ...upg,
-            distance: calculateDistance(
+        .map(upg => {
+            const distance = calculateDistance(
                 referenceUPG.latitude,
                 referenceUPG.longitude,
                 upg.latitude,
                 upg.longitude,
                 units
-            )
-        }))
-        .filter(upg => upg.distance <= parseFloat(radius))
-        .sort((a, b) => b.distance - a.distance);
+            );
+            console.log(`Distance to ${upg.name} (${upg.country}):`, distance, units);
+            return {
+                ...upg,
+                distance
+            };
+        })
+        .filter(upg => {
+            const withinRadius = upg.distance <= parseFloat(radius);
+            if (withinRadius) {
+                console.log(`Found UUPG within radius: ${upg.name} (${upg.distance} ${units})`);
+            }
+            return withinRadius;
+        })
+        .sort((a, b) => a.distance - b.distance);
 
     console.log('Found UUPGs:', uupgs.length);
 
@@ -299,7 +312,7 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
 
     return {
         uupgs,
-        fpgs: fpgs.sort((a, b) => b.distance - a.distance)
+        fpgs: fpgs.sort((a, b) => a.distance - b.distance)
     };
 }
 
