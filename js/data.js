@@ -61,7 +61,7 @@ function parseCSVLine(line) {
 export async function loadUUPGData() {
     try {
         console.log('Loading UUPG data...');
-        const response = await fetch('/frontier-finder/public/data/updated_uupg.csv');
+        const response = await fetch('/frontier-finder/data/updated_uupg.csv');
         if (!response.ok) {
             console.error('Failed to load UUPG data:', response.status, response.statusText);
             throw new Error(`Failed to load UUPG data: ${response.status} ${response.statusText}`);
@@ -122,7 +122,7 @@ export async function loadUUPGData() {
 export async function loadExistingUPGs() {
     try {
         console.log('Loading existing UPGs data...');
-        const response = await fetch('/frontier-finder/public/data/existing_upgs_updated.csv');
+        const response = await fetch('/frontier-finder/data/existing_upgs_updated.csv');
         if (!response.ok) {
             console.error('Failed to load existing UPGs data:', response.status, response.statusText);
             throw new Error(`Failed to load existing UPGs data: ${response.status} ${response.statusText}`);
