@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Populate countries dropdown
         const countries = await getUniqueCountries();
+        countrySelect.innerHTML = '<option value="">Select a country</option>';
         countries.forEach(country => {
             const option = document.createElement('option');
             option.value = country;
@@ -26,14 +27,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Update UPGs when country is selected
         countrySelect.addEventListener('change', async function() {
-            upgSelect.innerHTML = '<option value="">Choose a UPG...</option>';
+            upgSelect.innerHTML = '<option value="">Select a UPG</option>';
             upgSelect.disabled = true;
 
             if (this.value) {
                 const upgs = await getUpgsForCountry(this.value);
                 upgs.forEach(upg => {
                     const option = document.createElement('option');
-                    option.value = upg.id;
+                    option.value = upg.name;
                     option.textContent = upg.name;
                     upgSelect.appendChild(option);
                 });
@@ -53,15 +54,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 type: document.getElementById('type').value
             };
 
-            const results = await searchNearby(
-                searchData.country,
-                searchData.upg,
-                parseFloat(searchData.radius),
-                searchData.units,
-                searchData.type
-            );
+            try {
+                const results = await searchNearby(
+                    searchData.country,
+                    searchData.upg,
+                    parseFloat(searchData.radius),
+                    searchData.units,
+                    searchData.type
+                );
 
-            displayResults(results);
+                displayResults(results);
+            } catch (error) {
+                console.error('Error searching:', error);
+                alert('Error performing search. Please try again.');
+            }
         });
     } catch (error) {
         console.error('Error initializing form:', error);

@@ -50,26 +50,30 @@ export async function loadAllData() {
         console.log('Loading existing UPGs data...');
         const existingResponse = await fetch('data/existing_upgs_updated.csv');
         const existingText = await existingResponse.text();
-        const existingLines = existingText.split('\n');
+        const existingLines = existingText.split('\n').filter(line => line.trim());
         
         // Skip header row and parse data
         const header = existingLines[0].split(',');
         existingUpgData = existingLines.slice(1).map(line => {
             const values = parseCSVLine(line);
             return {
-                country: values[0],
-                name: values[1],
-                latitude: parseFloat(values[2]),
-                longitude: parseFloat(values[3]),
-                id: values[4] || values[1] // Use name as ID if no ID provided
+                name: values[0],
+                country: values[1],
+                latitude: parseFloat(values[2]) || 0,
+                longitude: parseFloat(values[3]) || 0,
+                population: parseInt(values[4]) || 0,
+                evangelical: values[5],
+                language: values[6],
+                religion: values[7],
+                description: values[8]
             };
-        });
+        }).filter(upg => upg.country && upg.name); // Filter out any entries without country or name
 
         // Load UUPGs for search
         console.log('Loading UUPGs data...');
         const uupgResponse = await fetch('data/uupgs.csv');
         const uupgText = await uupgResponse.text();
-        const uupgLines = uupgText.split('\n');
+        const uupgLines = uupgText.split('\n').filter(line => line.trim());
         
         // Skip header row and parse data
         uupgData = uupgLines.slice(1).map(line => {
@@ -77,13 +81,13 @@ export async function loadAllData() {
             return {
                 country: values[0],
                 name: values[1],
-                latitude: parseFloat(values[2]),
-                longitude: parseFloat(values[3]),
-                population: parseInt(values[4], 10),
+                latitude: parseFloat(values[2]) || 0,
+                longitude: parseFloat(values[3]) || 0,
+                population: parseInt(values[4]) || 0,
                 language: values[5],
                 religion: values[6]
             };
-        });
+        }).filter(uupg => uupg.country && uupg.name); // Filter out any entries without country or name
 
         console.log('Data loaded successfully');
         return true;
@@ -95,13 +99,24 @@ export async function loadAllData() {
 
 // Function to get unique countries from existing UPGs
 export function getUniqueCountries() {
-    const countries = new Set(existingUpgData.map(upg => upg.country));
-    return Array.from(countries).sort();
+    // Get unique countries and sort them
+    const countries = [...new Set(existingUpgData.map(upg => upg.country))]
+        .filter(country => country) // Remove empty values
+        .sort();
+    
+    console.log('Unique countries:', countries);
+    return countries;
 }
 
 // Function to get UPGs for a country
 export function getUpgsForCountry(country) {
-    return existingUpgData.filter(upg => upg.country === country);
+    // Filter UPGs by country and sort by name
+    const upgs = existingUpgData
+        .filter(upg => upg.country === country)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log(`UPGs for ${country}:`, upgs);
+    return upgs;
 }
 
 // Function to fetch FPGs from Joshua Project API
@@ -140,10 +155,13 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
 }
 
 // Function to search for nearby people groups
-export async function searchNearby(country, upgId, radius, units = 'kilometers', type = 'both') {
+export async function searchNearby(country, upgName, radius, units = 'kilometers', type = 'both') {
     try {
         // Find the selected UPG
-        const selectedUpg = existingUpgData.find(upg => upg.id === upgId);
+        const selectedUpg = existingUpgData.find(upg => 
+            upg.country === country && upg.name === upgName
+        );
+        
         if (!selectedUpg) {
             throw new Error('Selected UPG not found');
         }
@@ -155,19 +173,19 @@ export async function searchNearby(country, upgId, radius, units = 'kilometers',
 
         // Search for UUPGs if type is 'both' or 'uupg'
         if (type === 'both' || type === 'uupg') {
-            results.uupgs = uupgData.filter(uupg => {
-                const distance = calculateDistance(
-                    selectedUpg.latitude,
-                    selectedUpg.longitude,
-                    uupg.latitude,
-                    uupg.longitude,
-                    units
-                );
-                if (distance <= radius) {
+            results.uupgs = uupgData
+                .map(uupg => {
+                    const distance = calculateDistance(
+                        selectedUpg.latitude,
+                        selectedUpg.longitude,
+                        uupg.latitude,
+                        uupg.longitude,
+                        units
+                    );
                     return { ...uupg, distance };
-                }
-                return false;
-            });
+                })
+                .filter(uupg => uupg.distance <= radius)
+                .sort((a, b) => a.distance - b.distance);
         }
 
         // Search for FPGs if type is 'both' or 'fpg'
