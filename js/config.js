@@ -1,7 +1,7 @@
 // Joshua Project API configuration
 const config = {
     apiKey: '080e14ad747e', // Joshua Project API key
-    apiBaseUrl: 'https://api.joshuaproject.net/v1',
+    apiBaseUrl: 'https://api.joshuaproject.net', // Remove /v1 as it's not in the docs
     headers: {
         'Accept': 'application/json'
     }

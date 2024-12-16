@@ -145,32 +145,53 @@ function getUPGsByCountry(country) {
 async function fetchFPGs(latitude, longitude, radius, units) {
     // Validate API key before making the request
     if (!window.validateApiKey()) {
+        console.error('API key validation failed');
         return [];
     }
 
     try {
-        const response = await fetch(`${window.jpConfig.apiBaseUrl}/people_groups/search?api_key=${window.jpConfig.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${units}&is_frontier=true`);
+        // Convert units to match Joshua Project's expectations
+        const jpUnits = units === 'kilometers' ? 'km' : 'mi';
+        
+        // Construct API URL with correct parameters
+        const apiUrl = `${window.jpConfig.apiBaseUrl}/v1/people_groups.json?api_key=${window.jpConfig.apiKey}&latitude=${latitude}&longitude=${longitude}&radius=${radius}&radius_units=${jpUnits}&frontier_only=1`;
+        console.log('Fetching FPGs with URL:', apiUrl);
+
+        const response = await fetch(apiUrl);
+        console.log('FPG API Response status:', response.status);
+        
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
+            console.error('FPG API Error:', errorData);
             throw new Error(`Failed to fetch FPGs: ${errorData.message || response.statusText}`);
         }
+        
         const data = await response.json();
-        return data.map(fpg => ({
-            name: fpg.peo_name,
-            country: fpg.cntry_name,
-            latitude: fpg.latitude,
-            longitude: fpg.longitude,
-            population: fpg.population,
-            language: fpg.primary_language_name,
-            religion: fpg.religion_primary_name,
+        console.log('FPG API Response data:', data);
+
+        // Handle both array and object responses
+        const peopleGroups = Array.isArray(data) ? data : data.people_groups || [];
+        console.log('People groups found:', peopleGroups.length);
+
+        const mappedData = peopleGroups.map(fpg => ({
+            name: fpg.peo_name || fpg.PeopNameInCountry,
+            country: fpg.cntry_name || fpg.Ctry,
+            latitude: parseFloat(fpg.latitude || fpg.Latitude) || 0,
+            longitude: parseFloat(fpg.longitude || fpg.Longitude) || 0,
+            population: parseInt(fpg.population || fpg.Population) || 0,
+            language: fpg.primary_language_name || fpg.PrimaryLanguageName,
+            religion: fpg.religion_primary_name || fpg.PrimaryReligion,
             distance: calculateDistance(
                 latitude,
                 longitude,
-                fpg.latitude,
-                fpg.longitude,
+                parseFloat(fpg.latitude || fpg.Latitude) || 0,
+                parseFloat(fpg.longitude || fpg.Longitude) || 0,
                 units
             )
         }));
+
+        console.log('Mapped FPG data:', mappedData);
+        return mappedData;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
         document.getElementById('fpgList').innerHTML = 
@@ -181,6 +202,8 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 
 // Function to search for nearby people groups
 async function searchNearby(country, upgName, radius, units = 'kilometers') {
+    console.log('Starting search with:', { country, upgName, radius, units });
+
     // Find the reference UPG from existing UPGs
     const referenceUPG = existingUpgData.find(upg => 
         upg.country === country && upg.name === upgName
@@ -208,8 +231,24 @@ async function searchNearby(country, upgName, radius, units = 'kilometers') {
         .filter(upg => upg.distance <= parseFloat(radius))
         .sort((a, b) => a.distance - b.distance);
 
+    console.log('Found UUPGs:', uupgs.length);
+
     // Fetch FPGs from Joshua Project API
-    const fpgs = await fetchFPGs(referenceUPG.latitude, referenceUPG.longitude, radius, units);
+    console.log('Fetching FPGs for coordinates:', {
+        lat: referenceUPG.latitude,
+        lon: referenceUPG.longitude,
+        radius,
+        units
+    });
+    
+    const fpgs = await fetchFPGs(
+        referenceUPG.latitude,
+        referenceUPG.longitude,
+        radius,
+        units
+    );
+
+    console.log('Found FPGs:', fpgs.length);
 
     return {
         uupgs,
