@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontier Finder | Crossover Global</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Crossover Global Logo" class="logo">
+            <h1>Frontier Finder</h1>
+            <p class="mission-statement">"We provide gospel access to unreached people groups."</p>
+        </header>
+
+        <section class="search-section">
+            <h2>Find Unreached People Groups</h2>
+            <p class="description">
+                Search for Unreached People Groups (UPGs) and Unengaged Unreached People Groups (UUPGs) 
+                to help provide Gospel access where it's needed most.
+            </p>
+            
+            <form class="search-form">
+                <div class="form-group">
+                    <label for="country">Select Country</label>
+                    <select id="country" required>
+                        <option value="" disabled selected>Choose a country...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="upg">Select Reference UPG</label>
+                    <select id="upg" required>
+                        <option value="" disabled selected>Choose a UPG...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="radius">Search Radius</label>
+                    <div class="radius-group">
+                        <input type="number" id="radius" value="100" min="1" required>
+                        <select id="units">
+                            <option value="kilometers">Kilometers</option>
+                            <option value="miles">Miles</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Search Type</label>
+                    <select id="type">
+                        <option value="both">Both UUPGs and FPGs</option>
+                        <option value="uupg">UUPGs Only</option>
+                        <option value="fpg">FPGs Only</option>
+                    </select>
+                </div>
+                
+                <button type="submit" id="search">
+                    Search People Groups
+                </button>
+            </form>
+        </section>
+
+        <section class="results-section">
+            <div id="uupgs-results">
+                <h2>Unengaged Unreached People Groups</h2>
+                <div class="results-list"></div>
+            </div>
+            
+            <div id="fpgs-results">
+                <h2>Frontier People Groups</h2>
+                <div class="results-list"></div>
+            </div>
+        </section>
+
+        <footer>
+            <p class="stat-quote">"42% of the world's population is unreached with the gospel."</p>
+            <p class="footer-mission">"Making Christ's last command our first priority."</p>
+            <p class="copyright"> {{ year }} Crossover Global. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
