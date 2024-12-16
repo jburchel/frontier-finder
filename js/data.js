@@ -31,15 +31,29 @@ function parseCSVLine(line) {
         const char = line[i];
         
         if (char === '"') {
-            withinQuotes = !withinQuotes;
+            if (withinQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                // Handle escaped quotes ("") within quoted values
+                currentValue += '"';
+                i++; // Skip the next quote
+            } else {
+                withinQuotes = !withinQuotes;
+            }
         } else if (char === ',' && !withinQuotes) {
-            values.push(currentValue.trim());
+            values.push(currentValue.trim().replace(/^"(.*)"$/, '$1')); // Remove surrounding quotes
             currentValue = '';
         } else {
             currentValue += char;
         }
     }
-    values.push(currentValue.trim());
+    
+    // Add the last value
+    values.push(currentValue.trim().replace(/^"(.*)"$/, '$1')); // Remove surrounding quotes
+    
+    // Trim trailing empty values
+    while (values.length > 0 && values[values.length - 1] === '') {
+        values.pop();
+    }
+    
     return values;
 }
 
@@ -47,33 +61,48 @@ function parseCSVLine(line) {
 export async function loadUUPGData() {
     try {
         console.log('Loading UUPG data...');
-        const response = await fetch('../data/updated_uupg.csv');
+        const response = await fetch('/data/updated_uupg.csv');
         if (!response.ok) {
+            console.error('Failed to load UUPG data:', response.status, response.statusText);
             throw new Error(`Failed to load UUPG data: ${response.status} ${response.statusText}`);
         }
         const csvText = await response.text();
+        console.log('UUPG CSV text length:', csvText.length);
         
         // Parse CSV
         const lines = csvText.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
+        console.log('UUPG CSV lines:', lines.length);
+        
+        if (lines.length === 0) {
+            throw new Error('UUPG CSV file is empty');
+        }
+        
+        const headers = parseCSVLine(lines[0]);
+        console.log('UUPG headers:', headers);
         
         uupgData = lines.slice(1)
             .filter(line => line.trim())
-            .map(line => {
-                const values = line.split(',').map(v => v.trim());
-                const obj = {};
-                headers.forEach((header, index) => {
-                    if (index < values.length) { // Only assign if value exists
-                        obj[header] = values[index];
-                    }
-                });
-                // Convert numeric fields
-                obj.latitude = parseFloat(obj.latitude) || 0;
-                obj.longitude = parseFloat(obj.longitude) || 0;
-                obj.population = parseInt(obj.population.replace(/,/g, '')) || 0;
-                return obj;
+            .map((line, index) => {
+                try {
+                    const values = parseCSVLine(line);
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        if (index < values.length) { // Only assign if value exists
+                            obj[header] = values[index];
+                        }
+                    });
+                    // Convert numeric fields
+                    obj.latitude = parseFloat(obj.latitude) || 0;
+                    obj.longitude = parseFloat(obj.longitude) || 0;
+                    obj.population = parseInt((obj.population || '').replace(/,/g, '')) || 0;
+                    return obj;
+                } catch (error) {
+                    console.error(`Error parsing UUPG line ${index + 2}:`, error);
+                    console.error('Line content:', line);
+                    return null;
+                }
             })
-            .filter(obj => obj.country && obj.name); // Filter out invalid entries
+            .filter(obj => obj && obj.country && obj.name); // Filter out invalid entries
             
         console.log(`Loaded ${uupgData.length} UUPGs from CSV`);
         return uupgData;
@@ -87,33 +116,48 @@ export async function loadUUPGData() {
 export async function loadExistingUPGs() {
     try {
         console.log('Loading existing UPGs data...');
-        const response = await fetch('../data/existing_upgs_updated.csv');
+        const response = await fetch('/data/existing_upgs_updated.csv');
         if (!response.ok) {
+            console.error('Failed to load existing UPGs data:', response.status, response.statusText);
             throw new Error(`Failed to load existing UPGs data: ${response.status} ${response.statusText}`);
         }
         const csvText = await response.text();
+        console.log('Existing UPGs CSV text length:', csvText.length);
         
         // Parse CSV
         const lines = csvText.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
+        console.log('Existing UPGs CSV lines:', lines.length);
+        
+        if (lines.length === 0) {
+            throw new Error('Existing UPGs CSV file is empty');
+        }
+        
+        const headers = parseCSVLine(lines[0]);
+        console.log('Existing UPGs headers:', headers);
         
         existingUpgData = lines.slice(1)
             .filter(line => line.trim())
-            .map(line => {
-                const values = line.split(',').map(v => v.trim());
-                const obj = {};
-                headers.forEach((header, index) => {
-                    if (index < values.length) { // Only assign if value exists
-                        obj[header] = values[index];
-                    }
-                });
-                // Convert numeric fields
-                obj.latitude = parseFloat(obj.latitude) || 0;
-                obj.longitude = parseFloat(obj.longitude) || 0;
-                obj.population = parseInt(obj.population.replace(/,/g, '')) || 0;
-                return obj;
+            .map((line, index) => {
+                try {
+                    const values = parseCSVLine(line);
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        if (index < values.length) { // Only assign if value exists
+                            obj[header] = values[index];
+                        }
+                    });
+                    // Convert numeric fields
+                    obj.latitude = parseFloat(obj.latitude) || 0;
+                    obj.longitude = parseFloat(obj.longitude) || 0;
+                    obj.population = parseInt((obj.population || '').replace(/,/g, '')) || 0;
+                    return obj;
+                } catch (error) {
+                    console.error(`Error parsing existing UPG line ${index + 2}:`, error);
+                    console.error('Line content:', line);
+                    return null;
+                }
             })
-            .filter(obj => obj.country && obj.name); // Filter out invalid entries
+            .filter(obj => obj && obj.country && obj.name); // Filter out invalid entries
             
         console.log(`Loaded ${existingUpgData.length} existing UPGs from CSV`);
         return existingUpgData;
@@ -123,25 +167,60 @@ export async function loadExistingUPGs() {
     }
 }
 
+// Function to load all data
+export async function loadAllData() {
+    try {
+        console.log('Loading all data...');
+        await Promise.all([
+            loadUUPGData(),
+            loadExistingUPGs()
+        ]);
+        console.log('All data loaded successfully');
+    } catch (error) {
+        console.error('Error loading data:', error);
+        throw error;
+    }
+}
+
 // Function to get unique countries from existing UPGs
 export function getUniqueCountries() {
+    console.log('Getting unique countries from', existingUpgData.length, 'UPGs');
+    
+    if (existingUpgData.length === 0) {
+        console.error('No existing UPG data available');
+        return [];
+    }
+    
     // Get unique countries and sort them
     const countries = [...new Set(existingUpgData.map(upg => upg.country))]
-        .filter(country => country) // Remove empty values
+        .filter(country => country && country.trim()) // Remove empty values
         .sort();
     
-    console.log('Unique countries:', countries);
+    console.log('Found', countries.length, 'unique countries:', countries);
     return countries;
 }
 
 // Function to get UPGs for a country
 export function getUpgsForCountry(country) {
+    console.log('Getting UPGs for country:', country);
+    console.log('Total existing UPGs:', existingUpgData.length);
+    
+    if (existingUpgData.length === 0) {
+        console.error('No existing UPG data available');
+        return [];
+    }
+    
+    if (!country) {
+        console.error('No country specified');
+        return [];
+    }
+    
     // Filter UPGs by country and sort by name
     const upgs = existingUpgData
         .filter(upg => upg.country === country)
         .sort((a, b) => a.name.localeCompare(b.name));
     
-    console.log(`UPGs for ${country}:`, upgs);
+    console.log(`Found ${upgs.length} UPGs for ${country}:`, upgs);
     return upgs;
 }
 

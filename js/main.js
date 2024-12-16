@@ -9,6 +9,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     const searchParams = document.getElementById('searchParams');
     const sortOptions = document.getElementById('sortOptions');
 
+    if (!countrySelect || !upgSelect || !searchForm) {
+        console.error('Required elements not found:', {
+            countrySelect: !!countrySelect,
+            upgSelect: !!upgSelect,
+            searchForm: !!searchForm
+        });
+        throw new Error('Required form elements not found');
+    }
+
     try {
         // Load all data first
         console.log('Loading data...');
@@ -21,8 +30,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         // Populate countries dropdown
+        console.log('Getting unique countries...');
         const countries = await getUniqueCountries();
+        console.log('Countries received:', countries);
+        
         if (!countries || countries.length === 0) {
+            console.error('No countries found in the data');
             throw new Error('No countries found in the data');
         }
         
@@ -33,15 +46,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             option.textContent = country;
             countrySelect.appendChild(option);
         });
+        console.log('Countries dropdown populated');
 
         // Update UPGs when country is selected
         countrySelect.addEventListener('change', async function() {
+            console.log('Country selected:', this.value);
             upgSelect.innerHTML = '<option value="">Select a UPG</option>';
             upgSelect.disabled = true;
 
             if (this.value) {
+                console.log('Getting UPGs for country:', this.value);
                 const upgs = await getUpgsForCountry(this.value);
+                console.log('UPGs received:', upgs);
+                
                 if (!upgs || upgs.length === 0) {
+                    console.log('No UPGs found for country:', this.value);
                     upgSelect.innerHTML = '<option value="">No UPGs found for this country</option>';
                     return;
                 }
@@ -53,6 +72,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     upgSelect.appendChild(option);
                 });
                 upgSelect.disabled = false;
+                console.log('UPGs dropdown populated');
             }
         });
 
@@ -70,11 +90,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Validate form data
             if (!searchData.country || !searchData.upg) {
+                console.error('Invalid form data:', searchData);
                 alert('Please select both a country and a UPG');
                 return;
             }
 
             if (!searchData.radius || isNaN(searchData.radius) || searchData.radius <= 0) {
+                console.error('Invalid radius:', searchData.radius);
                 alert('Please enter a valid radius greater than 0');
                 return;
             }
@@ -89,6 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
 
             // Redirect to results page
+            console.log('Redirecting to results page...');
             window.location.href = `results.html?${searchParams.toString()}`;
         });
 
@@ -96,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelectorAll('.sort-button').forEach(button => {
             button.addEventListener('click', function() {
                 const sortBy = this.dataset.sort;
+                console.log('Sorting by:', sortBy);
                 sortResults(sortBy);
             });
         });
