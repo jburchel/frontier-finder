@@ -160,15 +160,63 @@ button:hover {
 }
 
 .result-item {
-    background: #f8f9fa;
+    background: white;
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+    position: relative;
+    border-left: 4px solid var(--button-color);  /* Using company green */
+}
+
+.result-item.fpg {
+    border-left-color: #e74c3c;  /* Red for FPGs */
+}
+
+.result-item.uupg {
+    border-left-color: #3498db;  /* Blue for UUPGs */
+}
+
+.result-item h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.result-details span {
+    display: block;
+    font-size: 0.95rem;
+}
+
+.group-type {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.fpg .group-type {
+    background-color: #fde8e7;  /* Light red background */
+    color: #e74c3c;  /* Red text */
+}
+
+.uupg .group-type {
+    background-color: #e8f4fc;  /* Light blue background */
+    color: #3498db;  /* Blue text */
 }
 
 .result-item:hover {
     transform: translateY(-2px);
-    box-shadow: var(--box-shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .result-item h3 {

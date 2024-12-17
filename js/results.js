@@ -57,10 +57,11 @@ async function displayResults() {
                     <h3>${fpg.name}</h3>
                     <div class="result-details">
                         <span><strong>Country:</strong> ${fpg.country}</span>
-                        <span><strong>Distance:</strong> ${fpg.distance.toFixed(1)} ${units}</span>
+                        <span><strong>Distance:</strong> ${fpg.distance !== null ? `${fpg.distance.toFixed(1)} ${units}` : 'Unknown'}</span>
                         <span><strong>Population:</strong> ${fpg.population.toLocaleString()}</span>
                         <span><strong>Language:</strong> ${fpg.language || 'Unknown'}</span>
                         <span><strong>Religion:</strong> ${fpg.religion || 'Unknown'}</span>
+                        <span><strong>JP Scale:</strong> ${fpg.jpScale || 'Unknown'}</span>
                     </div>
                 </div>
             `).join('');
@@ -78,10 +79,11 @@ async function displayResults() {
                     <h3>${uupg.name}</h3>
                     <div class="result-details">
                         <span><strong>Country:</strong> ${uupg.country}</span>
-                        <span><strong>Distance:</strong> ${uupg.distance.toFixed(1)} ${units}</span>
+                        <span><strong>Distance:</strong> ${uupg.distance !== null ? `${uupg.distance.toFixed(1)} ${units}` : 'Unknown'}</span>
                         <span><strong>Population:</strong> ${uupg.population.toLocaleString()}</span>
                         <span><strong>Language:</strong> ${uupg.language || 'Unknown'}</span>
                         <span><strong>Religion:</strong> ${uupg.religion || 'Unknown'}</span>
+                        <span><strong>JP Scale:</strong> ${uupg.jpScale || 'Unknown'}</span>
                     </div>
                 </div>
             `).join('');

@@ -3,22 +3,19 @@ let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
 
 // Function to calculate distance between two points using Haversine formula
-export function calculateDistance(lat1, lon1, lat2, lon2, units = 'km') {
-    const R = units === 'km' ? 6371 : 3959; // Earth's radius in km or miles
+function calculateDistance(lat1, lon1, lat2, lon2, unit = 'mi') {
+    const R = unit === 'km' ? 6371 : 3959; // Earth's radius in km or miles
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
-    
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
 
-// Helper function to convert degrees to radians
 function toRad(degrees) {
-    return degrees * Math.PI / 180;
+    return degrees * (Math.PI / 180);
 }
 
 // Parse CSV line, handling quoted values correctly
@@ -61,60 +58,61 @@ function parseCSVLine(line) {
 export async function loadUUPGData() {
     try {
         console.log('Loading UUPG data...');
-        const response = await fetch('/frontier-finder/data/updated_uupg.csv');
-        if (!response.ok) {
-            console.error('Failed to load UUPG data:', response.status, response.statusText);
-            throw new Error(`Failed to load UUPG data: ${response.status} ${response.statusText}`);
-        }
+        const response = await fetch('updated_uupg.csv');
         const csvText = await response.text();
         console.log('UUPG CSV text length:', csvText.length);
-        
-        // Parse CSV
-        const lines = csvText.split('\n');
+
+        // Split the CSV into lines and remove empty lines
+        const lines = csvText.split('\n').filter(line => line.trim());
         console.log('UUPG CSV lines:', lines.length);
-        
-        if (lines.length === 0) {
-            throw new Error('UUPG CSV file is empty');
-        }
-        
-        const headers = parseCSVLine(lines[0]);
+
+        // Parse headers (first line)
+        const headers = lines[0].split(',').map(header => header.trim());
         console.log('UUPG headers:', headers);
-        
-        uupgData = lines.slice(1)
-            .filter(line => line.trim())
-            .map((line, index) => {
-                try {
-                    const values = parseCSVLine(line);
-                    const obj = {};
-                    headers.forEach((header, index) => {
-                        if (index < values.length) { // Only assign if value exists
-                            obj[header] = values[index];
-                        }
-                    });
-                    // Map PeopleName to name for consistency
-                    if (obj.PeopleName) {
-                        obj.name = obj.PeopleName;
-                    }
-                    // Convert numeric fields
-                    obj.latitude = parseFloat(obj.Latitude || obj.latitude) || 0;
-                    obj.longitude = parseFloat(obj.Longitude || obj.longitude) || 0;
-                    obj.population = parseInt((obj.Population || obj.population || '').replace(/,/g, '')) || 0;
-                    obj.language = obj.Language || obj.language || 'Unknown';
-                    obj.religion = obj.Religion || obj.religion || 'Unknown';
-                    return obj;
-                } catch (error) {
-                    console.error(`Error parsing UUPG line ${index + 2}:`, error);
-                    console.error('Line content:', line);
-                    return null;
+
+        // Parse data rows
+        const uupgs = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(value => value.trim());
+            if (values.length !== headers.length) continue;
+
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index];
+            });
+
+            // Debug log for filtering
+            console.log(`Row ${i} engagement:`, row['Evangelical Engagement']);
+
+            // Only include if Evangelical Engagement is exactly 'Unengaged'
+            if (row['Evangelical Engagement'] === 'Unengaged') {
+                const latitude = parseFloat(row['Latitude']);
+                const longitude = parseFloat(row['Longitude']);
+
+                // Skip if coordinates are invalid
+                if (isNaN(latitude) || isNaN(longitude)) {
+                    console.log(`Skipping UUPG with invalid coordinates: ${row['PeopleName']}`);
+                    continue;
                 }
-            })
-            .filter(obj => obj && obj.country && obj.name); // Filter out invalid entries
-            
-        console.log(`Loaded ${uupgData.length} UUPGs from CSV`);
-        return uupgData;
+
+                uupgs.push({
+                    name: row['PeopleName'] || 'Unknown',
+                    country: row['Country'] || 'Unknown',
+                    population: parseInt(String(row['Population']).replace(/[^\d]/g, '') || '0'),
+                    language: row['Language'] || 'Unknown',
+                    religion: row['Religion'] || 'Unknown',
+                    latitude: latitude,
+                    longitude: longitude,
+                    isUUPG: true
+                });
+            }
+        }
+
+        console.log(`Loaded ${uupgs.length} UUPGs from CSV`);
+        return uupgs;
     } catch (error) {
         console.error('Error loading UUPG data:', error);
-        throw error;
+        return [];
     }
 }
 
@@ -233,11 +231,12 @@ export function getUpgsForCountry(country) {
 // Function to fetch FPGs from Joshua Project API
 export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
-        const apiKey = window.env.VITE_JOSHUA_PROJECT_API_KEY;
-        console.log('API Key available:', !!apiKey);
+        console.log('Environment:', window.env);
+        const apiKey = window.env?.VITE_JOSHUA_PROJECT_API_KEY;
+        console.log('API Key:', apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'not found');
         
         if (!apiKey) {
-            throw new Error('Joshua Project API key not found. Please add VITE_JOSHUA_PROJECT_API_KEY to your .env file.');
+            throw new Error('Joshua Project API key not found');
         }
 
         console.log('Fetching FPGs with params:', {
@@ -247,47 +246,69 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             units: units === 'kilometers' ? 'km' : 'mi'
         });
 
-        const baseUrl = 'https://api.joshuaproject.net/v1/people_groups.json';
         const params = new URLSearchParams({
             api_key: apiKey,
-            latitude,
-            longitude,
-            radius,
-            radius_units: units === 'kilometers' ? 'km' : 'mi',
-            frontier_only: 1,
-            limit: 100 // Increase limit to get more results
+            latitude: latitude,
+            longitude: longitude,
+            distance: radius,
+            distance_units: units === 'kilometers' ? 'km' : 'mi',
+            filter: 'frontier_only',
+            limit: 100
         });
 
-        const url = `${baseUrl}?${params}`;
-        console.log('Fetching from URL:', url.replace(apiKey, '[REDACTED]')); // Log URL without exposing API key
+        const url = `https://api.joshuaproject.net/v1/people_groups.json?${params.toString()}`;
+        console.log('Requesting URL:', url.replace(apiKey, '***API_KEY***'));
 
         const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API Response:', {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText
-            });
-            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText} - ${errorText}`);
+            throw new Error(`Failed to fetch FPGs: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('API Response data:', data);
+
+        if (!Array.isArray(data)) {
+            console.log('API response is not an array:', data);
+            return [];
+        }
+
         console.log(`Found ${data.length} FPGs from Joshua Project API`);
-        
-        return data.map(fpg => ({
-            country: fpg.country?.name || fpg.country || 'Unknown',
-            name: fpg.peo_name || fpg.name || 'Unknown',
-            latitude: parseFloat(fpg.latitude) || 0,
-            longitude: parseFloat(fpg.longitude) || 0,
-            population: parseInt(fpg.population) || 0,
-            language: fpg.primary_language_name || 'Unknown',
-            religion: fpg.primary_religion || 'Unknown',
-            distance: calculateDistance(latitude, longitude, fpg.latitude, fpg.longitude, units)
-        }));
+        return data.map(pg => {
+            // Safely handle population parsing
+            let population = 0;
+            try {
+                population = parseInt(String(pg.Population || '0').replace(/[^\d]/g, ''));
+            } catch (e) {
+                console.warn('Error parsing population:', e);
+            }
+
+            // Calculate distance if not provided by API
+            let distance = pg.Distance ? parseFloat(pg.Distance) : calculateDistance(
+                latitude,
+                longitude,
+                parseFloat(pg.Latitude),
+                parseFloat(pg.Longitude),
+                units === 'kilometers' ? 'km' : 'mi'
+            );
+
+            return {
+                name: pg.PeopNameInCountry || pg.PeopName || 'Unknown',
+                country: pg.Ctry || 'Unknown',
+                distance: distance,
+                population: population,
+                language: pg.PrimaryLanguageName || 'Unknown',
+                religion: pg.PrimaryReligion || 'Unknown',
+                latitude: parseFloat(pg.Latitude) || 0,
+                longitude: parseFloat(pg.Longitude) || 0,
+                jpScale: pg.JPScale || 'Unknown',
+                isFPG: true
+            };
+        });
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        throw error;
+        return [];
     }
 }
 
@@ -339,30 +360,12 @@ export async function searchNearby(country, upgName, radius, units = 'kilometers
         // Search for UUPGs if type is 'both' or 'uupg'
         if (type === 'both' || type === 'uupg') {
             console.log('Searching for UUPGs...');
-            results.uupgs = uupgData
-                .filter(uupg => {
-                    // Make sure we have valid coordinates
-                    if (!uupg.latitude || !uupg.longitude) {
-                        console.warn('UUPG missing coordinates:', uupg);
-                        return false;
-                    }
-                    
-                    if (uupg.country === country && uupg.name === upgName) {
-                        return false; // Exclude the selected UPG
-                    }
-                    
-                    const distance = calculateDistance(
-                        selectedUpg.latitude,
-                        selectedUpg.longitude,
-                        uupg.latitude,
-                        uupg.longitude,
-                        units
-                    );
-                    uupg.distance = distance; // Add distance to UUPG object
-                    return distance <= radius;
-                })
-                .sort((a, b) => a.distance - b.distance);
-            
+            results.uupgs = await searchUUPGs(
+                selectedUpg.latitude,
+                selectedUpg.longitude,
+                radius,
+                units
+            );
             console.log('UUPGs found:', results.uupgs.length);
         }
 
@@ -370,5 +373,60 @@ export async function searchNearby(country, upgName, radius, units = 'kilometers
     } catch (error) {
         console.error('Error in searchNearby:', error);
         throw error;
+    }
+}
+
+// Function to search for UUPGs near a location
+async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
+    console.log('Searching for UUPGs with params:', { latitude, longitude, radius, units });
+    try {
+        // Get all UUPGs
+        const allUUPGs = await loadUUPGData();
+        console.log('Loaded UUPGs:', allUUPGs.length);
+        
+        if (allUUPGs.length > 0) {
+            console.log('Sample UUPG data:', allUUPGs[0]);
+        }
+
+        // Filter UUPGs by distance
+        const nearbyUUPGs = allUUPGs.filter(uupg => {
+            const distance = calculateDistance(
+                latitude,
+                longitude,
+                uupg.latitude,
+                uupg.longitude,
+                units
+            );
+            uupg.distance = distance; // Add distance to UUPG object
+            return distance <= radius;
+        });
+
+        console.log(`Found ${nearbyUUPGs.length} UUPGs within ${radius} ${units}`);
+        if (nearbyUUPGs.length > 0) {
+            console.log('Sample nearby UUPG:', nearbyUUPGs[0]);
+        }
+
+        // Map UUPGs to common format
+        const mappedUUPGs = nearbyUUPGs.map(uupg => ({
+            name: uupg.name,
+            country: uupg.country,
+            distance: uupg.distance,
+            population: uupg.population,
+            language: uupg.language,
+            religion: uupg.religion,
+            latitude: uupg.latitude,
+            longitude: uupg.longitude,
+            isUUPG: true
+        }));
+
+        console.log('Mapped UUPGs:', mappedUUPGs.length);
+        if (mappedUUPGs.length > 0) {
+            console.log('Sample mapped UUPG:', mappedUUPGs[0]);
+        }
+
+        return mappedUUPGs;
+    } catch (error) {
+        console.error('Error searching UUPGs:', error);
+        return [];
     }
 }
