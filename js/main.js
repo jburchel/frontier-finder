@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     try {
+        // Initialize UI components
+        await initializeUI();
+
         // Update year in footer
         if (yearSpan) {
             yearSpan.textContent = new Date().getFullYear();
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const upg = document.getElementById('upg').value;
             const radius = document.getElementById('radius').value;
             const units = document.getElementById('units').value;
-            const searchType = document.getElementById('searchType').value;
+            const searchType = document.getElementById('type').value;
             
             if (!country || !upg || !radius) {
                 alert('Please fill in all required fields');

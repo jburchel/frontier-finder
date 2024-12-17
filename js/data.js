@@ -496,9 +496,11 @@ function getUpgsForCountry(country) {
 export {
     loadAllData,
     searchNearby,
-    searchUUPGs,
+    initializeUI,
+    getUniqueCountries,
+    getUpgsForCountry,
     fetchFPGs,
-    initializeUI
+    searchUUPGs
 };
 
 // Initialize when the DOM is loaded
