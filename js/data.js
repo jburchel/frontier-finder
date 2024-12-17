@@ -9,8 +9,8 @@ const DATA_PATHS = {
 };
 
 const REQUIRED_FIELDS = {
-    UUPG: ['PeopleName', 'Country', 'Latitude', 'Longitude', 'Population', 'Language', 'Religion', 'Evangelical Engagement'],
-    EXISTING_UPGS: ['name', 'country', 'latitude', 'longitude']
+    UUPG: ['PeopleName', 'Country', 'Latitude', 'Longitude', 'Population', 'Language', 'Religion', 'Evangelical Engagement', 'pronunciation'],
+    EXISTING_UPGS: ['name', 'country', 'latitude', 'longitude', 'pronunciation']
 };
 
 // Cache for loaded data
@@ -50,29 +50,16 @@ function parseCSVLine(line) {
         const char = line[i];
         
         if (char === '"') {
-            if (withinQuotes && i + 1 < line.length && line[i + 1] === '"') {
-                // Handle escaped quotes ("") within quoted values
-                currentValue += '"';
-                i++; // Skip the next quote
-            } else {
-                withinQuotes = !withinQuotes;
-            }
+            withinQuotes = !withinQuotes;
         } else if (char === ',' && !withinQuotes) {
-            values.push(currentValue.trim().replace(/^"(.*)"$/, '$1')); // Remove surrounding quotes
+            values.push(currentValue.trim());
             currentValue = '';
         } else {
             currentValue += char;
         }
     }
     
-    // Add the last value
-    values.push(currentValue.trim().replace(/^"(.*)"$/, '$1')); // Remove surrounding quotes
-    
-    // Trim trailing empty values
-    while (values.length > 0 && values[values.length - 1] === '') {
-        values.pop();
-    }
-    
+    values.push(currentValue.trim());
     return values;
 }
 
@@ -81,10 +68,7 @@ function validateCoordinates(lat, lon) {
     if (!isValidCoordinate(lat) || !isValidCoordinate(lon)) {
         throw new Error(`Invalid coordinates: ${lat}, ${lon}`);
     }
-    if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
-        throw new Error(`Coordinates out of range: ${lat}, ${lon}`);
-    }
-    return true;
+    return { lat: parseFloat(lat), lon: parseFloat(lon) };
 }
 
 function isValidCoordinate(coord) {
@@ -115,6 +99,13 @@ export async function loadUUPGData() {
         const lines = csvText.split('\n').filter(line => line.trim());
         const headers = parseCSVLine(lines[0]);
         
+        // Validate required fields
+        for (const field of REQUIRED_FIELDS.UUPG) {
+            if (!headers.includes(field)) {
+                throw new Error(`Required field '${field}' not found in UUPG CSV`);
+            }
+        }
+
         const uupgs = [];
         for (let i = 1; i < lines.length; i++) {
             try {
@@ -135,9 +126,11 @@ export async function loadUUPGData() {
                             population: parseInt(String(row['Population']).replace(/[^\d]/g, '') || '0'),
                             language: row['Language'] || 'Unknown',
                             religion: row['Religion'] || 'Unknown',
+                            pronunciation: row['pronunciation'] || '',
                             latitude,
                             longitude,
-                            isUUPG: true
+                            isUUPG: true,
+                            distance: null // Initialize distance as null
                         });
                     } else {
                         console.warn(`Skipping UUPG with invalid coordinates: ${row['PeopleName']}`);
@@ -160,193 +153,122 @@ export async function loadUUPGData() {
 
 // Function to load existing UPGs data
 export async function loadExistingUPGs() {
-    if (dataCache.existingUpgs) {
-        console.log('Returning cached existing UPGs data');
+    // Check cache with 5-minute expiration
+    const now = Date.now();
+    if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
         return dataCache.existingUpgs;
     }
 
     try {
-        console.log('Loading existing UPGs data...');
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
         if (!response.ok) {
-            throw new Error(`Failed to load existing UPGs data: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to load existing UPGs: ${response.status} ${response.statusText}`);
         }
 
         const csvText = await response.text();
-        console.log('Existing UPGs CSV text length:', csvText.length);
-        
-        // Parse CSV
-        const lines = csvText.split('\n');
-        console.log('Existing UPGs CSV lines:', lines.length);
-        
-        if (lines.length === 0) {
+        if (!csvText.trim()) {
             throw new Error('Existing UPGs CSV file is empty');
         }
-        
+
+        const lines = csvText.split('\n').filter(line => line.trim());
         const headers = parseCSVLine(lines[0]);
-        console.log('Existing UPGs headers:', headers);
-        
-        existingUpgData = lines.slice(1)
-            .filter(line => line.trim())
-            .map((line, index) => {
-                try {
-                    const values = parseCSVLine(line);
-                    const obj = {};
-                    headers.forEach((header, index) => {
-                        if (index < values.length) { // Only assign if value exists
-                            obj[header] = values[index];
-                        }
+
+        // Validate required fields
+        for (const field of REQUIRED_FIELDS.EXISTING_UPGS) {
+            if (!headers.includes(field)) {
+                throw new Error(`Required field '${field}' not found in existing UPGs CSV`);
+            }
+        }
+
+        const upgs = [];
+        for (let i = 1; i < lines.length; i++) {
+            try {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+
+                const latitude = parseFloat(row['latitude']);
+                const longitude = parseFloat(row['longitude']);
+
+                if (!isNaN(latitude) && !isNaN(longitude)) {
+                    upgs.push({
+                        name: row['name'] || 'Unknown',
+                        country: row['country'] || 'Unknown',
+                        latitude,
+                        longitude,
+                        pronunciation: row['pronunciation'] || '',
+                        distance: null // Initialize distance as null
                     });
-                    // Convert numeric fields
-                    obj.latitude = parseFloat(obj.latitude) || 0;
-                    obj.longitude = parseFloat(obj.longitude) || 0;
-                    obj.population = parseInt((obj.population || '').replace(/,/g, '')) || 0;
-                    return obj;
-                } catch (error) {
-                    console.error(`Error parsing existing UPG line ${index + 2}:`, error);
-                    console.error('Line content:', line);
-                    return null;
+                } else {
+                    console.warn(`Skipping UPG with invalid coordinates: ${row['name']}`);
                 }
-            })
-            .filter(obj => obj && obj.country && obj.name); // Filter out invalid entries
-            
-        console.log(`Loaded ${existingUpgData.length} existing UPGs from CSV`);
-        dataCache.existingUpgs = existingUpgData;
-        return existingUpgData;
+            } catch (error) {
+                console.warn(`Error processing row ${i + 1}:`, error);
+            }
+        }
+
+        console.log(`Loaded ${upgs.length} existing UPGs from CSV`);
+        dataCache.existingUpgs = upgs;
+        dataCache.lastFetch = now;
+        return upgs;
     } catch (error) {
-        console.error('Error loading existing UPGs data:', error);
+        console.error('Error loading existing UPGs:', error);
         throw error;
     }
-}
-
-// Function to load all data
-export async function loadAllData() {
-    try {
-        console.log('Loading all data...');
-        await Promise.all([
-            loadUUPGData(),
-            loadExistingUPGs()
-        ]);
-        console.log('All data loaded successfully');
-    } catch (error) {
-        console.error('Error loading data:', error);
-        throw error;
-    }
-}
-
-// Function to get unique countries from existing UPGs
-export function getUniqueCountries() {
-    console.log('Getting unique countries from', existingUpgData.length, 'UPGs');
-    
-    if (existingUpgData.length === 0) {
-        console.error('No existing UPG data available');
-        return [];
-    }
-    
-    // Get unique countries and sort them
-    const countries = [...new Set(existingUpgData.map(upg => upg.country))]
-        .filter(country => country && country.trim()) // Remove empty values
-        .sort();
-    
-    console.log('Found', countries.length, 'unique countries:', countries);
-    return countries;
-}
-
-// Function to get UPGs for a country
-export function getUpgsForCountry(country) {
-    console.log('Getting UPGs for country:', country);
-    console.log('Total existing UPGs:', existingUpgData.length);
-    
-    if (existingUpgData.length === 0) {
-        console.error('No existing UPG data available');
-        return [];
-    }
-    
-    if (!country) {
-        console.error('No country specified');
-        return [];
-    }
-    
-    // Filter UPGs by country and sort by name
-    const upgs = existingUpgData
-        .filter(upg => upg.country === country)
-        .sort((a, b) => a.name.localeCompare(b.name));
-    
-    console.log(`Found ${upgs.length} UPGs for ${country}:`, upgs);
-    return upgs;
 }
 
 // Function to fetch FPGs from Joshua Project API
-export async function fetchFPGs(latitude, longitude, radius, units) {
+async function fetchFPGs(latitude, longitude, radius, units) {
+    console.log('Fetching FPGs with params:', { latitude, longitude, radius, units });
     try {
-        if (!latitude || !longitude || !radius) {
-            throw new Error('Missing required parameters: latitude, longitude, and radius are required');
+        const apiKey = config.joshuaProjectApiKey;
+        if (!apiKey) {
+            throw new Error('Joshua Project API key not configured');
         }
 
-        if (!config || !config.apiKey) {
-            throw new Error('Joshua Project API key not found in configuration');
-        }
-
-        // Validate parameters
-        const validatedLat = parseFloat(latitude);
-        const validatedLon = parseFloat(longitude);
-        const validatedRadius = parseFloat(radius);
-
-        if (isNaN(validatedLat) || isNaN(validatedLon) || isNaN(validatedRadius)) {
-            throw new Error('Invalid parameters: latitude, longitude, and radius must be numbers');
-        }
-
-        if (Math.abs(validatedLat) > 90 || Math.abs(validatedLon) > 180) {
-            throw new Error('Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180');
-        }
-
-        if (validatedRadius <= 0) {
-            throw new Error('Invalid radius: must be greater than 0');
-        }
-
-        console.log('Fetching FPGs with params:', {
-            latitude: validatedLat,
-            longitude: validatedLon,
-            radius: validatedRadius,
-            units: units === 'kilometers' ? 'km' : 'mi'
-        });
+        // Convert radius to kilometers if needed
+        const radiusInKm = units === 'miles' ? radius * 1.60934 : radius;
 
         const params = new URLSearchParams({
-            api_key: config.apiKey,
-            latitude: validatedLat.toString(),
-            longitude: validatedLon.toString(),
-            distance: validatedRadius.toString(),
-            distance_units: units === 'kilometers' ? 'km' : 'mi',
-            filter: 'frontier_only',
-            limit: '100',
-            fields: 'PeopNameInCountry,PeopNameInCountry_Pronunciation,PeopNameInCountry_PronounceMale,PeopNameInCountry_PronounceFemale,Latitude,Longitude,Population,PrimaryLanguageName,PrimaryReligion,JPScale'
+            api_key: apiKey,
+            latitude,
+            longitude,
+            radius: radiusInKm
         });
 
-        const response = await fetch(`${config.apiBaseUrl}/v1/people_groups.json?${params.toString()}`);
-        
+        const response = await fetch(`https://api.joshuaproject.net/v1/peoples/geo.json?${params}`);
         if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('API Response:', data);
+        console.log(`Found ${data.length} FPGs from Joshua Project API`);
 
-        return data.map(group => ({
-            name: group.PeopNameInCountry || group.PeopleGroupName,
-            country: group.ROG3,
-            latitude: parseFloat(group.Latitude),
-            longitude: parseFloat(group.Longitude),
-            population: parseInt(group.Population, 10),
-            language: group.PrimaryLanguageName,
-            religion: group.PrimaryReligion,
-            type: 'FPG',
-            pronunciation: group.PeopNameInCountry_Pronunciation || '',
-            pronounceMale: group.PeopNameInCountry_PronounceMale || '',
-            pronounceFemale: group.PeopNameInCountry_PronounceFemale || ''
+        // Map API response to our format
+        const fpgs = data.map(fpg => ({
+            name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
+            country: fpg.Ctry || 'Unknown',
+            distance: units === 'miles' ? fpg.Distance * 0.621371 : fpg.Distance, // Convert km to miles if needed
+            population: parseInt(fpg.Population) || 0,
+            language: fpg.PrimaryLanguageName || 'Unknown',
+            religion: fpg.PrimaryReligion || 'Unknown',
+            pronunciation: fpg.Pronunciation || '',
+            latitude: parseFloat(fpg.Latitude) || 0,
+            longitude: parseFloat(fpg.Longitude) || 0,
+            isFPG: true
         }));
+
+        console.log('Mapped FPGs:', fpgs.length);
+        if (fpgs.length > 0) {
+            console.log('Sample FPG:', fpgs[0]);
+        }
+
+        return fpgs;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        throw error;
+        return [];
     }
 }
 
@@ -467,4 +389,61 @@ async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
         console.error('Error searching UUPGs:', error);
         return [];
     }
+}
+
+// Function to load all data
+export async function loadAllData() {
+    try {
+        console.log('Loading all data...');
+        await Promise.all([
+            loadUUPGData(),
+            loadExistingUPGs()
+        ]);
+        console.log('All data loaded successfully');
+    } catch (error) {
+        console.error('Error loading data:', error);
+        throw error;
+    }
+}
+
+// Function to get unique countries from existing UPGs
+export function getUniqueCountries() {
+    console.log('Getting unique countries from', existingUpgData.length, 'UPGs');
+    
+    if (existingUpgData.length === 0) {
+        console.error('No existing UPG data available');
+        return [];
+    }
+    
+    // Get unique countries and sort them
+    const countries = [...new Set(existingUpgData.map(upg => upg.country))]
+        .filter(country => country && country.trim()) // Remove empty values
+        .sort();
+    
+    console.log('Found', countries.length, 'unique countries:', countries);
+    return countries;
+}
+
+// Function to get UPGs for a country
+export function getUpgsForCountry(country) {
+    console.log('Getting UPGs for country:', country);
+    console.log('Total existing UPGs:', existingUpgData.length);
+    
+    if (existingUpgData.length === 0) {
+        console.error('No existing UPG data available');
+        return [];
+    }
+    
+    if (!country) {
+        console.error('No country specified');
+        return [];
+    }
+    
+    // Filter UPGs by country and sort by name
+    const upgs = existingUpgData
+        .filter(upg => upg.country === country)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log(`Found ${upgs.length} UPGs for ${country}:`, upgs);
+    return upgs;
 }

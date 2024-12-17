@@ -6,6 +6,12 @@
     <link rel="icon" type="image/png" href="images/favicon.png">
     <title>Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>
+    function speakText(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -115,6 +121,10 @@
         <script type="module" src="js/firebase-config.js"></script>
         <script type="module" src="js/data.js"></script>
         <script type="module" src="js/main.js"></script>
+
+        <!-- Responsive Voice Search -->
+        <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
+        
     </div>
 </body>
 </html>

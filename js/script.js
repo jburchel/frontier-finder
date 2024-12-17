@@ -47,3 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize country dropdown
     initializeCountryDropdown();
 });
+
+// Add click handler for pronunciation
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('pronunciation')) {
+        speakText(e.target.textContent);
+    }
+});
