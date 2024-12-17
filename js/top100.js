@@ -1,5 +1,5 @@
 // Import Firebase configuration and Firestore functions
-import { db, collection, getDocs, addDoc, deleteDoc, doc } from './firebase-config.js';
+import { db, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from './firebase-config.js';
 
 // Top 100 List Management
 class Top100Manager {
@@ -83,43 +83,75 @@ class Top100Manager {
             const uniqueGroups = new Map();
             const duplicates = [];
 
+            // First, process all documents and collect their IDs
             querySnapshot.docs.forEach(doc => {
                 const data = doc.data();
                 const key = `${data.name}-${data.country}`.toLowerCase();
-                console.log('Processing document:', { id: doc.id, name: data.name, country: data.country });
+                
+                // Create item with ID from document
+                const item = {
+                    id: doc.id,  // Set ID first
+                    ...data      // Then spread the data
+                };
+                
+                console.log('Processing document:', {
+                    id: item.id,
+                    name: item.name,
+                    country: item.country
+                });
 
                 if (!uniqueGroups.has(key)) {
-                    // First occurrence - keep this one and ensure ID is set
-                    const item = {
-                        ...data,
-                        id: doc.id  // Explicitly set the ID from the document
-                    };
                     uniqueGroups.set(key, item);
-                    console.log('Added unique item:', { id: item.id, name: item.name });
+                    console.log('Added unique item:', {
+                        id: item.id,
+                        name: item.name,
+                        key: key
+                    });
                 } else {
-                    // Duplicate found - mark for deletion
-                    duplicates.push(doc.id);
-                    console.log('Found duplicate with ID:', doc.id);
+                    // If we find a duplicate, keep the newer one
+                    const existing = uniqueGroups.get(key);
+                    const existingDate = new Date(existing.dateAdded || 0);
+                    const newDate = new Date(data.dateAdded || 0);
+                    
+                    if (newDate > existingDate) {
+                        // Keep the newer one, delete the older one
+                        duplicates.push(existing.id);
+                        uniqueGroups.set(key, item);
+                        console.log('Replaced older item with newer version:', {
+                            oldId: existing.id,
+                            newId: item.id,
+                            name: item.name
+                        });
+                    } else {
+                        // Keep the existing one, delete the newer one
+                        duplicates.push(doc.id);
+                        console.log('Keeping older item, marking newer as duplicate:', {
+                            keepingId: existing.id,
+                            duplicateId: doc.id,
+                            name: item.name
+                        });
+                    }
                 }
             });
 
             // Delete duplicates from Firestore
             if (duplicates.length > 0) {
-                console.log(`Found ${duplicates.length} duplicates. Removing...`);
-                await Promise.all(duplicates.map(id => {
+                console.log('Deleting duplicates:', duplicates);
+                await Promise.all(duplicates.map(async (id) => {
                     console.log('Deleting duplicate:', id);
-                    return deleteDoc(doc(db, 'top100', id));
+                    await deleteDoc(doc(db, 'top100', id));
                 }));
                 console.log('Duplicates removed successfully');
             }
 
-            // Convert map values to array and ensure IDs are present
+            // Convert map values to array
             this.top100List = Array.from(uniqueGroups.values());
             
-            // Verify IDs are present
+            // Verify all items have IDs
             const missingIds = this.top100List.filter(item => !item.id);
             if (missingIds.length > 0) {
                 console.error('Found items missing IDs:', missingIds);
+                throw new Error('Some items are missing IDs. This should never happen.');
             }
             
             console.log('Final list items:', this.top100List.map(item => ({
@@ -201,7 +233,11 @@ class Top100Manager {
             }
 
             return `
-                <div class="upg-card">
+                <div class="upg-card" 
+                    draggable="true" 
+                    data-id="${item.id || ''}" 
+                    data-rank="${index + 1}"
+                    ${item.id ? '' : 'disabled'}>
                     <div class="upg-header">
                         <div class="upg-title-container">
                             <span class="rank-badge">#${item.rank || index + 1}</span>
@@ -251,6 +287,83 @@ class Top100Manager {
                         alert('Failed to delete item. Please try again.');
                     }
                 }
+            });
+        });
+
+        // Add drag and drop event listeners
+        const cards = this.top100ListContainer.querySelectorAll('.upg-card');
+        cards.forEach(card => {
+            // Don't make delete button draggable
+            const deleteButton = card.querySelector('.delete-button');
+            deleteButton.draggable = false;
+            
+            card.addEventListener('dragstart', (e) => {
+                console.log('Drag started:', card.dataset.id);
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', card.dataset.id);
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingCard = this.top100ListContainer.querySelector('.dragging');
+                if (draggingCard === card) return;
+                
+                const cards = [...this.top100ListContainer.querySelectorAll('.upg-card:not(.dragging)')];
+                const draggedOverCard = card;
+                draggedOverCard.classList.add('drag-over');
+            });
+
+            card.addEventListener('dragleave', () => {
+                card.classList.remove('drag-over');
+            });
+
+            card.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                card.classList.remove('drag-over');
+                
+                const draggedId = e.dataTransfer.getData('text/plain');
+                const droppedOnId = card.dataset.id;
+                
+                if (draggedId === droppedOnId) return;
+                
+                console.log('Dropping', draggedId, 'onto', droppedOnId);
+                
+                // Find the indices of both cards
+                const draggedIndex = this.top100List.findIndex(item => item.id === draggedId);
+                const droppedIndex = this.top100List.findIndex(item => item.id === droppedOnId);
+                
+                if (draggedIndex === -1 || droppedIndex === -1) {
+                    console.error('Could not find indices:', { draggedIndex, droppedIndex });
+                    return;
+                }
+
+                // Reorder the array
+                const [draggedItem] = this.top100List.splice(draggedIndex, 1);
+                this.top100List.splice(droppedIndex, 0, draggedItem);
+
+                // Update ranks
+                this.top100List.forEach((item, index) => {
+                    item.rank = index + 1;
+                });
+
+                // Update Firestore documents with new ranks
+                try {
+                    console.log('Updating ranks in Firestore...');
+                    await Promise.all(this.top100List.map(item => 
+                        updateDoc(doc(db, 'top100', item.id), { rank: item.rank })
+                    ));
+                    console.log('Ranks updated successfully');
+                } catch (error) {
+                    console.error('Error updating ranks:', error);
+                    alert('Failed to update ranks. Please refresh the page.');
+                }
+
+                // Refresh the display
+                this.displayList();
             });
         });
     }

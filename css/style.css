@@ -1079,38 +1079,43 @@ footer {
 
 .upg-card {
     background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--box-shadow);
+    cursor: grab;
+    transition: all 0.2s ease;
 }
 
-.upg-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    gap: 20px;
+.upg-card:active {
+    cursor: grabbing;
 }
 
-.upg-title-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
+.upg-card.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.upg-card.drag-over {
+    border-top: 2px solid var(--primary-color);
+    padding-top: calc(1rem - 2px);
+}
+
+.upg-card * {
+    user-select: none;
 }
 
 .delete-button {
     background-color: #dc3545;
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
     width: auto;
     min-width: 80px;
     margin-left: auto;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
 }
 
 .delete-button:hover {
