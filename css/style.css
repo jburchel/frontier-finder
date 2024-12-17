@@ -1087,12 +1087,14 @@ footer {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    gap: 20px;
 }
 
 .upg-title-container {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1;
 }
 
 .delete-button {
@@ -1100,10 +1102,13 @@ footer {
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 8px 16px;
+    padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
+    white-space: nowrap;
+    min-width: fit-content;
+    flex-shrink: 0;
 }
 
 .delete-button:hover {
