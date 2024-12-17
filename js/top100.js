@@ -126,27 +126,41 @@ class Top100Manager {
 
     async deleteItem(id) {
         try {
-            console.log('Deleting item:', id);
+            console.log('Starting delete operation for item:', id);
             if (this.loadingIndicator) this.loadingIndicator.style.display = 'block';
             
+            if (!id) {
+                throw new Error('No item ID provided for deletion');
+            }
+
             // Delete from Firestore
+            console.log('Attempting to delete from Firestore, collection: top100, id:', id);
             const docRef = doc(db, 'top100', id);
             await deleteDoc(docRef);
-            console.log('Item deleted from Firestore');
+            console.log('Successfully deleted from Firestore');
             
             // Remove from local list
+            const beforeLength = this.top100List.length;
             this.top100List = this.top100List.filter(item => item.id !== id);
-            console.log('Item removed from local list');
+            const afterLength = this.top100List.length;
+            console.log(`Local list updated. Items removed: ${beforeLength - afterLength}`);
             
             // Update display
             this.displayList();
-            console.log('Item deleted successfully');
+            console.log('Display updated successfully');
         } catch (error) {
-            console.error('Error deleting item:', error);
+            console.error('Error in deleteItem:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                name: error.name,
+                stack: error.stack
+            });
             if (this.errorContainer) {
                 this.errorContainer.innerHTML = `<p>Error deleting item: ${error.message}</p>`;
                 this.errorContainer.style.display = 'block';
             }
+            throw error; // Re-throw to handle in the click handler
         } finally {
             if (this.loadingIndicator) this.loadingIndicator.style.display = 'none';
         }
@@ -189,8 +203,16 @@ class Top100Manager {
         deleteButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
                 const id = e.target.dataset.id;
+                console.log('Delete button clicked for id:', id);
+                
                 if (confirm('Are you sure you want to remove this people group from the Top 100 list?')) {
-                    await this.deleteItem(id);
+                    try {
+                        await this.deleteItem(id);
+                        console.log('Delete operation completed successfully');
+                    } catch (error) {
+                        console.error('Error in delete button handler:', error);
+                        alert('Failed to delete item. Please try again.');
+                    }
                 }
             });
         });
