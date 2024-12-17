@@ -676,6 +676,9 @@ footer {
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: background-color 0.2s ease;
+    width: auto;
+    min-width: 80px;
+    margin-left: auto;
 }
 
 .remove-button:hover {
@@ -1102,13 +1105,12 @@ footer {
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 6px 12px;
+    padding: 0.5rem 1rem;
+    width: auto;
+    min-width: 80px;
+    margin-left: auto;
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-    min-width: fit-content;
-    flex-shrink: 0;
+    transition: background-color 0.2s ease;
 }
 
 .delete-button:hover {
