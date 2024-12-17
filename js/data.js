@@ -24,6 +24,66 @@ const dataCache = {
 let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
 
+// Initialize the UI
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadAllData();
+        initializeCountryDropdown();
+        setupEventListeners();
+    } catch (error) {
+        console.error('Error initializing UI:', error);
+    }
+});
+
+// Function to initialize country dropdown
+function initializeCountryDropdown() {
+    const countrySelect = document.getElementById('country');
+    const countries = getUniqueCountries();
+    
+    // Clear existing options except the first one
+    while (countrySelect.options.length > 1) {
+        countrySelect.remove(1);
+    }
+    
+    // Add countries to dropdown
+    countries.forEach(country => {
+        if (country && country.trim()) {
+            const option = new Option(country, country);
+            countrySelect.add(option);
+        }
+    });
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    const countrySelect = document.getElementById('country');
+    const upgSelect = document.getElementById('upg');
+    
+    countrySelect.addEventListener('change', () => {
+        const selectedCountry = countrySelect.value;
+        populateUPGDropdown(selectedCountry);
+    });
+}
+
+// Function to populate UPG dropdown based on selected country
+function populateUPGDropdown(country) {
+    const upgSelect = document.getElementById('upg');
+    const upgs = getUpgsForCountry(country);
+    
+    // Clear existing options
+    upgSelect.innerHTML = '<option value="">Select a UPG</option>';
+    
+    // Enable/disable the UPG dropdown based on country selection
+    upgSelect.disabled = !country;
+    
+    if (country) {
+        upgs.forEach(upg => {
+            const option = new Option(upg.name, upg.name);
+            upgSelect.add(option);
+        });
+    }
+}
+
 // Function to calculate distance between two points using Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2, unit = 'mi') {
     const R = unit === 'km' ? 6371 : 3959; // Earth's radius in km or miles
@@ -407,7 +467,7 @@ export async function loadAllData() {
 }
 
 // Function to get unique countries from existing UPGs
-export function getUniqueCountries() {
+function getUniqueCountries() {
     console.log('Getting unique countries from', existingUpgData.length, 'UPGs');
     
     if (existingUpgData.length === 0) {
@@ -425,25 +485,9 @@ export function getUniqueCountries() {
 }
 
 // Function to get UPGs for a country
-export function getUpgsForCountry(country) {
-    console.log('Getting UPGs for country:', country);
-    console.log('Total existing UPGs:', existingUpgData.length);
+function getUpgsForCountry(country) {
+    if (!country) return [];
     
-    if (existingUpgData.length === 0) {
-        console.error('No existing UPG data available');
-        return [];
-    }
-    
-    if (!country) {
-        console.error('No country specified');
-        return [];
-    }
-    
-    // Filter UPGs by country and sort by name
-    const upgs = existingUpgData
-        .filter(upg => upg.country === country)
+    return existingUpgData.filter(upg => upg.country === country)
         .sort((a, b) => a.name.localeCompare(b.name));
-    
-    console.log(`Found ${upgs.length} UPGs for ${country}:`, upgs);
-    return upgs;
 }
