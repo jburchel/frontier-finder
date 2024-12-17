@@ -89,12 +89,13 @@ class Top100Manager {
                 console.log('Processing document:', { id: doc.id, name: data.name, country: data.country });
 
                 if (!uniqueGroups.has(key)) {
-                    // First occurrence - keep this one
-                    uniqueGroups.set(key, {
-                        id: doc.id,  // Ensure we're setting the ID
-                        ...data
-                    });
-                    console.log('Added unique item with ID:', doc.id);
+                    // First occurrence - keep this one and ensure ID is set
+                    const item = {
+                        ...data,
+                        id: doc.id  // Explicitly set the ID from the document
+                    };
+                    uniqueGroups.set(key, item);
+                    console.log('Added unique item:', { id: item.id, name: item.name });
                 } else {
                     // Duplicate found - mark for deletion
                     duplicates.push(doc.id);
@@ -105,15 +106,23 @@ class Top100Manager {
             // Delete duplicates from Firestore
             if (duplicates.length > 0) {
                 console.log(`Found ${duplicates.length} duplicates. Removing...`);
-                await Promise.all(duplicates.map(id => 
-                    deleteDoc(doc(db, 'top100', id))
-                ));
+                await Promise.all(duplicates.map(id => {
+                    console.log('Deleting duplicate:', id);
+                    return deleteDoc(doc(db, 'top100', id));
+                }));
                 console.log('Duplicates removed successfully');
             }
 
             // Convert map values to array and ensure IDs are present
             this.top100List = Array.from(uniqueGroups.values());
-            console.log('Final list items with IDs:', this.top100List.map(item => ({
+            
+            // Verify IDs are present
+            const missingIds = this.top100List.filter(item => !item.id);
+            if (missingIds.length > 0) {
+                console.error('Found items missing IDs:', missingIds);
+            }
+            
+            console.log('Final list items:', this.top100List.map(item => ({
                 id: item.id,
                 name: item.name,
                 country: item.country

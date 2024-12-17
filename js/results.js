@@ -169,12 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add selected groups to Firebase
             const top100Collection = collection(db, 'top100');
-            const promises = selectedGroups.map(group => 
-                addDoc(top100Collection, group)
+            const addedDocs = await Promise.all(
+                selectedGroups.map(async group => {
+                    const docRef = await addDoc(top100Collection, group);
+                    console.log('Added document with ID:', docRef.id);
+                    return docRef;
+                })
             );
             
-            await Promise.all(promises);
-            console.log('Successfully added groups to Top 100');
+            console.log('Successfully added groups to Top 100:', addedDocs.map(doc => doc.id));
             
             // Redirect to top100.html
             window.location.href = 'top100.html';
