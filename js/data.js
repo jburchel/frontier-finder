@@ -1,5 +1,5 @@
 // Constants for data paths and configuration
-const BASE_PATH = import.meta.env.DEV ? '' : '/frontier-finder';
+const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
     UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
     EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
