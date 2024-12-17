@@ -17,7 +17,6 @@ Visit the live application at: https://jburchel.github.io/frontier-finder/
 ## Technology Stack
 - HTML5, CSS3, JavaScript (ES6+)
 - Firebase Realtime Database
-- Vite.js for build and development
 - GitHub Pages for hosting
 
 ## Setup for Development
@@ -28,25 +27,60 @@ git clone https://github.com/jburchel/frontier-finder.git
 cd frontier-finder
 ```
 
-2. Install dependencies:
-```bash
-npm install
+2. Configure the application:
+
+   a. Copy the example configuration files:
+   ```bash
+   cp js/config.example.js js/config.js
+   ```
+
+   b. Update `js/config.js` with your Joshua Project API key (get one from https://api.joshuaproject.net/)
+
+   c. Update `js/firebase-config.js` with your Firebase configuration
+
+3. Start a local server:
+   You can use any local server. For example, with Python:
+   ```bash
+   # Python 3
+   python -m http.server 8000
+   # Or Python 2
+   python -m SimpleHTTPServer 8000
+   ```
+   Or with Node.js:
+   ```bash
+   npx serve
+   ```
+
+4. Open your browser and navigate to:
+   ```
+   http://localhost:8000
+   ```
+
+## Configuration Files
+
+### Joshua Project API Configuration
+The `js/config.js` file contains the Joshua Project API configuration:
+```javascript
+export const config = {
+    apiKey: 'your-joshua-project-api-key', // Get from https://api.joshuaproject.net/
+    apiBaseUrl: 'https://api.joshuaproject.net',
+    headers: {
+        'Accept': 'application/json'
+    }
+};
 ```
 
-3. Create a `.env` file in the project root with your Firebase configuration:
-```
-FIREBASE_API_KEY=your_api_key
-FIREBASE_AUTH_DOMAIN=your_auth_domain
-FIREBASE_DATABASE_URL=your_database_url
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_storage_bucket
-FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-FIREBASE_APP_ID=your_app_id
-```
-
-4. Start the development server:
-```bash
-npm run dev
+### Firebase Configuration
+The `js/firebase-config.js` file contains the Firebase configuration:
+```javascript
+export const firebaseConfig = {
+    apiKey: "your-firebase-api-key",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "your-sender-id",
+    appId: "your-app-id"
+};
 ```
 
 ## Project Structure

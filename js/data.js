@@ -1,3 +1,6 @@
+// Import config
+import { config } from './config.js';
+
 // Constants for data paths and configuration
 const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
@@ -280,9 +283,8 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             throw new Error('Missing required parameters: latitude, longitude, and radius are required');
         }
 
-        const apiKey = import.meta.env.VITE_JOSHUA_PROJECT_API_KEY;
-        if (!apiKey) {
-            throw new Error('Joshua Project API key not found in environment variables');
+        if (!config || !config.apiKey) {
+            throw new Error('Joshua Project API key not found in configuration');
         }
 
         // Validate parameters
@@ -302,8 +304,15 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             throw new Error('Invalid radius: must be greater than 0');
         }
 
+        console.log('Fetching FPGs with params:', {
+            latitude: validatedLat,
+            longitude: validatedLon,
+            radius: validatedRadius,
+            units: units === 'kilometers' ? 'km' : 'mi'
+        });
+
         const params = new URLSearchParams({
-            api_key: apiKey,
+            api_key: config.apiKey,
             latitude: validatedLat.toString(),
             longitude: validatedLon.toString(),
             distance: validatedRadius.toString(),
@@ -312,20 +321,26 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             limit: '100'
         });
 
-        const url = `https://api.joshuaproject.net/v1/people_groups.json?${params.toString()}`;
-        console.log('Fetching FPGs...', { latitude: validatedLat, longitude: validatedLon, radius: validatedRadius, units });
+        const url = `${config.apiBaseUrl}/v1/people_groups.json?${params.toString()}`;
+        console.log('Requesting URL:', url.replace(config.apiKey, '***API_KEY***'));
 
         const response = await fetch(url);
+        console.log('Response status:', response.status);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Joshua Project API error (${response.status}): ${errorText}`);
+            throw new Error(`Failed to fetch FPGs: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('API Response data:', data);
+
         if (!Array.isArray(data)) {
-            throw new Error('Invalid API response format: expected an array');
+            console.log('API response is not an array:', data);
+            return [];
         }
 
+        console.log(`Found ${data.length} FPGs from Joshua Project API`);
+        
         // Process and filter FPGs by distance
         const fpgs = data.map(pg => {
             const distance = pg.Distance ? parseFloat(pg.Distance) : calculateDistance(
