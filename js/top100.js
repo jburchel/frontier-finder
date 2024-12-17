@@ -268,7 +268,10 @@ class Top100Manager {
                     <div class="upg-header">
                         <div class="upg-title-container">
                             <div class="rank-badge">#${item.rank || index + 1}</div>
-                            <h3 class="upg-title">${item.name}</h3>
+                            <h3 class="upg-title">
+                                ${item.name}
+                                ${item.pronunciation ? `<span class="pronunciation">(${item.pronunciation})</span>` : ''}
+                            </h3>
                         </div>
                         <button class="rank-badge delete-button" data-id="${item.id || ''}" ${item.id ? '' : 'disabled'}>Delete</button>
                     </div>
@@ -281,6 +284,11 @@ class Top100Manager {
                         <div class="upg-column">
                             <p><strong>Language:</strong> ${item.language}</p>
                             <p><strong>Religion:</strong> ${item.religion}</p>
+                            ${(item.pronounceMale || item.pronounceFemale) ? `
+                            <p class="pronunciation-details">
+                                ${item.pronounceMale ? `<span><strong>♂:</strong> ${item.pronounceMale}</span>` : ''}
+                                ${item.pronounceFemale ? `<span><strong>♀:</strong> ${item.pronounceFemale}</span>` : ''}
+                            </p>` : ''}
                         </div>
                     </div>
                 </div>

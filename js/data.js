@@ -318,56 +318,32 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             distance: validatedRadius.toString(),
             distance_units: units === 'kilometers' ? 'km' : 'mi',
             filter: 'frontier_only',
-            limit: '100'
+            limit: '100',
+            fields: 'PeopNameInCountry,PeopNameInCountry_Pronunciation,PeopNameInCountry_PronounceMale,PeopNameInCountry_PronounceFemale,Latitude,Longitude,Population,PrimaryLanguageName,PrimaryReligion,JPScale'
         });
 
-        const url = `${config.apiBaseUrl}/v1/people_groups.json?${params.toString()}`;
-        console.log('Requesting URL:', url.replace(config.apiKey, '***API_KEY***'));
-
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-
+        const response = await fetch(`${config.apiBaseUrl}/v1/people_groups.json?${params.toString()}`);
+        
         if (!response.ok) {
-            throw new Error(`Failed to fetch FPGs: ${response.status}`);
+            throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('API Response data:', data);
+        console.log('API Response:', data);
 
-        if (!Array.isArray(data)) {
-            console.log('API response is not an array:', data);
-            return [];
-        }
-
-        console.log(`Found ${data.length} FPGs from Joshua Project API`);
-        
-        // Process and filter FPGs by distance
-        const fpgs = data.map(pg => {
-            const distance = pg.Distance ? parseFloat(pg.Distance) : calculateDistance(
-                validatedLat,
-                validatedLon,
-                parseFloat(pg.Latitude),
-                parseFloat(pg.Longitude),
-                units === 'kilometers' ? 'km' : 'mi'
-            );
-
-            return {
-                name: pg.PeopNameInCountry || pg.PeopName || 'Unknown',
-                country: pg.Ctry || 'Unknown',
-                distance,
-                population: parseInt(String(pg.Population || '0').replace(/[^\d]/g, '')),
-                language: pg.PrimaryLanguageName || 'Unknown',
-                religion: pg.PrimaryReligion || 'Unknown',
-                latitude: parseFloat(pg.Latitude) || 0,
-                longitude: parseFloat(pg.Longitude) || 0,
-                jpScale: pg.JPScale || 'Unknown',
-                isFPG: true
-            };
-        }).filter(fpg => fpg.distance <= validatedRadius);
-
-        console.log(`Found ${fpgs.length} FPGs within ${validatedRadius} ${units}`);
-        return fpgs;
-
+        return data.map(group => ({
+            name: group.PeopNameInCountry || group.PeopleGroupName,
+            country: group.ROG3,
+            latitude: parseFloat(group.Latitude),
+            longitude: parseFloat(group.Longitude),
+            population: parseInt(group.Population, 10),
+            language: group.PrimaryLanguageName,
+            religion: group.PrimaryReligion,
+            type: 'FPG',
+            pronunciation: group.PeopNameInCountry_Pronunciation || '',
+            pronounceMale: group.PeopNameInCountry_PronounceMale || '',
+            pronounceFemale: group.PeopNameInCountry_PronounceFemale || ''
+        }));
     } catch (error) {
         console.error('Error fetching FPGs:', error);
         throw error;
