@@ -1,52 +1,130 @@
 import csv
-import requests
-import time
 import os
-from typing import Optional, Dict, List
+import eng_to_ipa as ipa
 
-class JoshuaProjectAPI:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.base_url = "https://api.joshuaproject.net/v1"
-        self.cache: Dict[str, Optional[str]] = {}
+def get_pronunciation(word: str) -> str:
+    """Get English pronunciation for a word using multiple methods."""
+    # Try eng_to_ipa first
+    ipa_pron = ipa.convert(word)
+    if ipa_pron and ipa_pron != word:
+        # Convert IPA to more readable format
+        readable = ipa_pron
+        # Replace IPA symbols with readable English approximations
+        replacements = {
+            'ˈ': '',  # Remove stress mark
+            'ʤ': 'j',
+            'ʒ': 'zh',
+            'ŋ': 'ng',
+            'θ': 'th',
+            'ð': 'th',
+            'ʃ': 'sh',
+            'ʧ': 'ch',
+            'ə': 'uh',
+            'ɪ': 'ih',
+            'æ': 'a',
+            'ɛ': 'eh',
+            'ʊ': 'oo',
+            'ʌ': 'uh',
+            'ɔ': 'aw',
+            'ɑ': 'ah',
+            'i': 'ee',
+            'u': 'oo',
+            'eɪ': 'ay',
+            'aɪ': 'eye',
+            'oʊ': 'oh',
+            'aʊ': 'ow',
+            'ɔɪ': 'oy'
+        }
         
-    def get_people_group_data(self, people_name: str) -> Optional[str]:
-        """
-        Query the Joshua Project API for a people group and return their pronunciation.
-        Returns None if no pronunciation is found or if the API request fails.
-        """
-        # Check cache first
-        if people_name in self.cache:
-            return self.cache[people_name]
-            
-        try:
-            # Remove quotes from people name
-            clean_name = people_name.replace('"', '')
-            
-            # Make API request
-            params = {
-                'api_key': self.api_key,
-                'people_name': clean_name
-            }
-            response = requests.get(f"{self.base_url}/peoples", params=params)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data and len(data) > 0:
-                    # Get pronunciation from the first matching result
-                    pronunciation = data[0].get('Pronunciation', '')
-                    self.cache[people_name] = pronunciation
-                    return pronunciation
-                    
-            # If we get here, no pronunciation was found
-            self.cache[people_name] = None
-            return None
-            
-        except Exception as e:
-            print(f"Error fetching data for {people_name}: {str(e)}")
-            return None
+        for ipa_char, eng_char in replacements.items():
+            readable = readable.replace(ipa_char, eng_char)
+        
+        # Clean up repeated vowels
+        for vowel in ['a', 'e', 'i', 'o', 'u']:
+            readable = readable.replace(vowel + vowel, vowel)
+        
+        # Add hyphens between syllables
+        syllables = []
+        current = ''
+        consonant_cluster = ''
+        
+        for i, char in enumerate(readable):
+            if char in 'aeiou':
+                # If we have a consonant cluster, decide how to split it
+                if consonant_cluster:
+                    if len(consonant_cluster) > 1:
+                        # Split consonant clusters between syllables
+                        mid = len(consonant_cluster) // 2
+                        current += consonant_cluster[:mid]
+                        if current:
+                            syllables.append(current)
+                        current = consonant_cluster[mid:]
+                    else:
+                        current += consonant_cluster
+                    consonant_cluster = ''
+                current += char
+                if i < len(readable) - 1 and readable[i + 1] not in 'aeiou':
+                    if current:
+                        syllables.append(current)
+                        current = ''
+            else:
+                consonant_cluster += char
+        
+        # Add any remaining parts
+        if consonant_cluster:
+            current += consonant_cluster
+        if current:
+            syllables.append(current)
+        
+        # Join syllables and clean up
+        result = '-'.join(syllables)
+        result = result.replace('--', '-')
+        result = result.strip('-')
+        
+        return result
+    
+    # If no pronunciation found, return original word with basic syllable breaks
+    return add_syllable_breaks(word)
 
-def process_csv_file(input_file: str, jp_api: JoshuaProjectAPI, name_column: str) -> None:
+def add_syllable_breaks(word: str) -> str:
+    """Add basic syllable breaks to a word."""
+    vowels = 'aeiou'
+    syllables = []
+    current = ''
+    consonant_cluster = ''
+    
+    for i, char in enumerate(word.lower()):
+        if char in vowels:
+            if consonant_cluster:
+                if len(consonant_cluster) > 1:
+                    mid = len(consonant_cluster) // 2
+                    current += consonant_cluster[:mid]
+                    if current:
+                        syllables.append(current)
+                    current = consonant_cluster[mid:]
+                else:
+                    current += consonant_cluster
+                consonant_cluster = ''
+            current += char
+            if i < len(word) - 1 and word[i + 1].lower() not in vowels:
+                if current:
+                    syllables.append(current)
+                    current = ''
+        else:
+            consonant_cluster += char
+    
+    # Add any remaining parts
+    if consonant_cluster:
+        current += consonant_cluster
+    if current:
+        syllables.append(current)
+    
+    # Join syllables and clean up
+    result = '-'.join(syllables)
+    result = result.replace('--', '-')
+    return result.strip('-')
+
+def process_csv_file(input_file: str) -> None:
     """Process a CSV file and update pronunciations."""
     temp_file = input_file + '.temp'
     
@@ -73,27 +151,34 @@ def process_csv_file(input_file: str, jp_api: JoshuaProjectAPI, name_column: str
             processed = 0
             
             # Find the indices for the name and pronunciation columns
-            name_idx = header.index(name_column)
+            name_idx = header.index('name')
             pron_idx = header.index('pronunciation')
             
             for row in rows:
                 if row and len(row) > name_idx:
                     people_name = row[name_idx]
                     if people_name:
-                        pronunciation = jp_api.get_people_group_data(people_name)
+                        # Handle names with commas (e.g., "Last, First")
+                        name_parts = [part.strip() for part in people_name.split(',')]
+                        pronunciations = []
+                        for part in name_parts:
+                            pron = get_pronunciation(part)
+                            if pron:
+                                pronunciations.append(pron)
+                        
+                        # Join pronunciations with commas if there were multiple parts
+                        pronunciation = ', '.join(pronunciations) if pronunciations else ''
+                        
                         # Ensure row has enough columns
                         while len(row) <= pron_idx:
                             row.append('')
-                        row[pron_idx] = pronunciation if pronunciation else ''
+                        row[pron_idx] = pronunciation
                 
                 writer.writerow(row)
                 
                 processed += 1
                 if processed % 10 == 0:  # Show progress every 10 rows
                     print(f"Processed {processed}/{total_rows} rows")
-                
-                # Add a small delay to avoid hitting API rate limits
-                time.sleep(0.5)
         
         # Replace original file with updated file
         os.replace(temp_file, input_file)
@@ -106,25 +191,10 @@ def process_csv_file(input_file: str, jp_api: JoshuaProjectAPI, name_column: str
             os.remove(temp_file)
 
 def main():
-    # Replace with your Joshua Project API key
-    API_KEY = "080e14ad747e"
-    jp_api = JoshuaProjectAPI(API_KEY)
-    
-    # Process both files
-    files_to_process = [
-        {
-            'file': 'data/existing_upgs_updated.csv',
-            'name_column': 'name'
-        },
-        {
-            'file': 'data/updated_uupg.csv',
-            'name_column': 'PeopleName'
-        }
-    ]
-    
-    for file_info in files_to_process:
-        print(f"\nProcessing {file_info['file']}...")
-        process_csv_file(file_info['file'], jp_api, file_info['name_column'])
+    # Process the file
+    file_to_process = 'data/existing_upgs_updated.csv'
+    print(f"\nProcessing {file_to_process}...")
+    process_csv_file(file_to_process)
 
 if __name__ == "__main__":
     main()
