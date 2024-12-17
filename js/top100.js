@@ -77,6 +77,7 @@ class Top100Manager {
             if (this.errorContainer) this.errorContainer.style.display = 'none';
 
             const querySnapshot = await getDocs(collection(db, 'top100'));
+            console.log('Fetched documents:', querySnapshot.size);
             
             // Create a map to track unique entries
             const uniqueGroups = new Map();
@@ -85,16 +86,19 @@ class Top100Manager {
             querySnapshot.docs.forEach(doc => {
                 const data = doc.data();
                 const key = `${data.name}-${data.country}`.toLowerCase();
+                console.log('Processing document:', { id: doc.id, name: data.name, country: data.country });
 
                 if (!uniqueGroups.has(key)) {
                     // First occurrence - keep this one
                     uniqueGroups.set(key, {
-                        id: doc.id,
+                        id: doc.id,  // Ensure we're setting the ID
                         ...data
                     });
+                    console.log('Added unique item with ID:', doc.id);
                 } else {
                     // Duplicate found - mark for deletion
                     duplicates.push(doc.id);
+                    console.log('Found duplicate with ID:', doc.id);
                 }
             });
 
@@ -107,9 +111,13 @@ class Top100Manager {
                 console.log('Duplicates removed successfully');
             }
 
-            // Convert map values to array
+            // Convert map values to array and ensure IDs are present
             this.top100List = Array.from(uniqueGroups.values());
-            console.log(`Loaded ${this.top100List.length} unique items`);
+            console.log('Final list items with IDs:', this.top100List.map(item => ({
+                id: item.id,
+                name: item.name,
+                country: item.country
+            })));
 
             this.sortList();
             this.displayList();
@@ -170,8 +178,19 @@ class Top100Manager {
         if (!this.top100ListContainer) return;
 
         const filteredList = this.filterList();
+        console.log('Displaying filtered list:', filteredList.map(item => ({
+            id: item.id,
+            name: item.name
+        })));
+
         const html = filteredList.map((item, index) => {
             const typeClass = item.type === 'FPG' ? 'fpg-type' : 'uupg-type';
+            console.log('Generating HTML for item:', { id: item.id, name: item.name });
+            
+            if (!item.id) {
+                console.error('Missing ID for item:', item);
+            }
+
             return `
                 <div class="upg-card">
                     <div class="upg-header">
@@ -179,7 +198,7 @@ class Top100Manager {
                             <span class="rank-badge">#${item.rank || index + 1}</span>
                             <h3 class="upg-title">${item.name}</h3>
                         </div>
-                        <button class="delete-button" data-id="${item.id}">Delete</button>
+                        <button class="delete-button" data-id="${item.id || ''}" ${item.id ? '' : 'disabled'}>Delete</button>
                     </div>
                     <div class="upg-details">
                         <div class="upg-column">
