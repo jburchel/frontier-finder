@@ -267,10 +267,10 @@ class Top100Manager {
                     ${item.id ? '' : 'disabled'}>
                     <div class="upg-header">
                         <div class="upg-title-container">
-                            <span class="rank-badge">#${item.rank || index + 1}</span>
+                            <div class="rank-badge">#${item.rank || index + 1}</div>
                             <h3 class="upg-title">${item.name}</h3>
                         </div>
-                        <button class="delete-button" data-id="${item.id || ''}" ${item.id ? '' : 'disabled'}>Delete</button>
+                        <button class="rank-badge delete-button" data-id="${item.id || ''}" ${item.id ? '' : 'disabled'}>Delete</button>
                     </div>
                     <div class="upg-details">
                         <div class="upg-column">
