@@ -202,8 +202,17 @@ class Top100Manager {
         const deleteButtons = this.top100ListContainer.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
-                const id = e.target.dataset.id;
+                // Get the ID from the clicked button, handling event delegation
+                const button = e.target.closest('.delete-button');
+                const id = button ? button.dataset.id : null;
+                console.log('Delete button clicked, element:', button);
                 console.log('Delete button clicked for id:', id);
+                
+                if (!id) {
+                    console.error('No item ID found on delete button');
+                    alert('Error: Could not identify item to delete');
+                    return;
+                }
                 
                 if (confirm('Are you sure you want to remove this people group from the Top 100 list?')) {
                     try {
