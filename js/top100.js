@@ -169,7 +169,7 @@ class Top100Manager {
                     </div>
                     <div class="upg-details">
                         <div class="upg-column">
-                            <p><strong>Type:</strong> <span class="${typeClass}">${item.type}</span></p>
+                            <p><strong>Type:</strong> <span class="${typeClass}">${item.type.toUpperCase()}</span></p>
                             <p><strong>Country:</strong> ${item.country}</p>
                             <p><strong>Population:</strong> ${item.population.toLocaleString()}</p>
                         </div>
