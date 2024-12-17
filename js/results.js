@@ -107,7 +107,7 @@ function createResultItem(group, type) {
 
     const html = `
         <div class="checkbox-wrapper">
-            <input type="checkbox" class="group-select" data-group-id="${group.id || ''}" data-group-type="${type}">
+            <input type="checkbox" class="group-select" data-group-type="${type}">
         </div>
         <div class="content-wrapper">
             <h3>${group.name}</h3>
@@ -156,11 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const groupItem = checkbox.closest('.result-item');
                 const groupData = JSON.parse(groupItem.dataset.info);
                 const groupType = checkbox.dataset.groupType;
-                const groupId = checkbox.dataset.groupId;
                 
                 selectedGroups.push({
                     ...groupData,
-                    id: groupId,
                     type: groupType,
                     name: groupItem.querySelector('h3').textContent,
                     dateAdded: new Date().toISOString()
@@ -168,19 +166,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Add selected groups to Firebase
+            console.log('Adding groups to Top 100:', selectedGroups);
             const top100Collection = collection(db, 'top100');
-            const addedDocs = await Promise.all(
-                selectedGroups.map(async group => {
-                    const docRef = await addDoc(top100Collection, group);
-                    console.log('Added document with ID:', docRef.id);
-                    return docRef;
-                })
-            );
             
-            console.log('Successfully added groups to Top 100:', addedDocs.map(doc => doc.id));
-            
-            // Redirect to top100.html
-            window.location.href = 'top100.html';
+            try {
+                const results = await Promise.all(
+                    selectedGroups.map(async group => {
+                        // Add to Firestore and get the document reference
+                        const docRef = await addDoc(top100Collection, group);
+                        console.log('Added document with ID:', docRef.id);
+                        
+                        // Return both the ID and the data
+                        return {
+                            id: docRef.id,
+                            ...group
+                        };
+                    })
+                );
+                
+                console.log('Successfully added groups to Top 100:', results);
+                
+                // Redirect to top100.html
+                window.location.href = 'top100.html';
+            } catch (error) {
+                console.error('Error adding documents:', error);
+                throw error;
+            }
         } catch (error) {
             console.error('Error adding groups to Top 100:', error);
             errorElement.textContent = 'Error adding groups to Top 100. Please check your connection and try again.';
