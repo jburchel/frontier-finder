@@ -25,7 +25,7 @@ let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
 
 // Initialize the UI
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializeUI() {
     try {
         await loadAllData();
         initializeCountryDropdown();
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error initializing UI:', error);
     }
-});
+}
 
 // Function to initialize country dropdown
 function initializeCountryDropdown() {
@@ -136,7 +136,7 @@ function isValidCoordinate(coord) {
 }
 
 // Function to load UUPG data from CSV
-export async function loadUUPGData() {
+async function loadUUPGData() {
     // Check cache with 5-minute expiration
     const now = Date.now();
     if (dataCache.uupg && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
@@ -212,7 +212,7 @@ export async function loadUUPGData() {
 }
 
 // Function to load existing UPGs data
-export async function loadExistingUPGs() {
+async function loadExistingUPGs() {
     // Check cache with 5-minute expiration
     const now = Date.now();
     if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
@@ -333,7 +333,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 }
 
 // Function to search for nearby people groups
-export async function searchNearby(country, upgName, radius, units = 'kilometers', type = 'both') {
+async function searchNearby(country, upgName, radius, units = 'kilometers', type = 'both') {
     try {
         console.log('Starting search with parameters:', { country, upgName, radius, units, type });
         
@@ -452,7 +452,7 @@ async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
 }
 
 // Function to load all data
-export async function loadAllData() {
+async function loadAllData() {
     try {
         console.log('Loading all data...');
         await Promise.all([
@@ -491,3 +491,15 @@ function getUpgsForCountry(country) {
     return existingUpgData.filter(upg => upg.country === country)
         .sort((a, b) => a.name.localeCompare(b.name));
 }
+
+// Export functions that need to be accessible from other modules
+export {
+    loadAllData,
+    searchNearby,
+    searchUUPGs,
+    fetchFPGs,
+    initializeUI
+};
+
+// Initialize when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeUI);
