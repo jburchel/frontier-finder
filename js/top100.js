@@ -82,6 +82,7 @@ class Top100Manager {
             // Create a map to track unique entries
             const uniqueGroups = new Map();
             const duplicates = [];
+            const itemsToUpdate = [];
 
             // First, process all documents and collect their IDs
             querySnapshot.docs.forEach(doc => {
@@ -90,8 +91,8 @@ class Top100Manager {
                 
                 // Create item with ID from document
                 const item = {
-                    id: doc.id,  // Set ID first
-                    ...data      // Then spread the data
+                    ...data,     // Spread the data first
+                    id: doc.id   // Then set ID to override any potential id in data
                 };
                 
                 console.log('Processing document:', {
@@ -139,7 +140,11 @@ class Top100Manager {
                 console.log('Deleting duplicates:', duplicates);
                 await Promise.all(duplicates.map(async (id) => {
                     console.log('Deleting duplicate:', id);
-                    await deleteDoc(doc(db, 'top100', id));
+                    try {
+                        await deleteDoc(doc(db, 'top100', id));
+                    } catch (error) {
+                        console.error('Error deleting duplicate:', id, error);
+                    }
                 }));
                 console.log('Duplicates removed successfully');
             }
@@ -147,29 +152,51 @@ class Top100Manager {
             // Convert map values to array
             this.top100List = Array.from(uniqueGroups.values());
             
-            // Verify all items have IDs
+            // Verify all items have IDs and fix any that don't
             const missingIds = this.top100List.filter(item => !item.id);
             if (missingIds.length > 0) {
-                console.error('Found items missing IDs:', missingIds);
-                throw new Error('Some items are missing IDs. This should never happen.');
-            }
-            
-            console.log('Final list items:', this.top100List.map(item => ({
-                id: item.id,
-                name: item.name,
-                country: item.country
-            })));
+                console.log('Found items missing IDs:', missingIds);
+                
+                // Add new documents for items missing IDs
+                const updatedItems = await Promise.all(missingIds.map(async (item) => {
+                    try {
+                        // Create a new document
+                        const docRef = await addDoc(collection(db, 'top100'), {
+                            ...item,
+                            dateAdded: item.dateAdded || new Date().toISOString()
+                        });
+                        console.log('Created new document for:', item.name, 'with ID:', docRef.id);
+                        return { ...item, id: docRef.id };
+                    } catch (error) {
+                        console.error('Error creating new document for:', item.name, error);
+                        return item;
+                    }
+                }));
 
+                // Update the list with the new IDs
+                this.top100List = this.top100List.map(item => {
+                    const updatedItem = updatedItems.find(updated => 
+                        updated.name === item.name && 
+                        updated.country === item.country
+                    );
+                    return updatedItem || item;
+                });
+            }
+
+            // Sort the list by rank
             this.sortList();
             this.displayList();
+            
+            if (this.loadingIndicator) this.loadingIndicator.style.display = 'none';
+            console.log('Top 100 list loaded successfully');
         } catch (error) {
             console.error('Error loading Top 100 list:', error);
-            if (this.errorContainer) {
-                this.errorContainer.innerHTML = `<p>Error loading Top 100 list: ${error.message}</p>`;
-                this.errorContainer.style.display = 'block';
-            }
-        } finally {
             if (this.loadingIndicator) this.loadingIndicator.style.display = 'none';
+            if (this.errorContainer) {
+                this.errorContainer.style.display = 'block';
+                this.errorContainer.textContent = `Error loading Top 100 list: ${error.message}`;
+            }
+            throw error;
         }
     }
 
