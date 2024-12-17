@@ -32,6 +32,7 @@ async function initializeUI() {
         setupEventListeners();
     } catch (error) {
         console.error('Error initializing UI:', error);
+        throw error;
     }
 }
 
@@ -52,6 +53,9 @@ function initializeCountryDropdown() {
             countrySelect.add(option);
         }
     });
+
+    // Log the number of countries added
+    console.log(`Added ${countries.length} countries to dropdown`);
 }
 
 // Setup event listeners
@@ -455,11 +459,17 @@ async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
 async function loadAllData() {
     try {
         console.log('Loading all data...');
-        await Promise.all([
+        const [uupgs, upgs] = await Promise.all([
             loadUUPGData(),
             loadExistingUPGs()
         ]);
+        
+        // Update the global arrays
+        uupgData = uupgs;
+        existingUpgData = upgs;
+        
         console.log('All data loaded successfully');
+        console.log(`Loaded ${uupgData.length} UUPGs and ${existingUpgData.length} existing UPGs`);
     } catch (error) {
         console.error('Error loading data:', error);
         throw error;
@@ -468,9 +478,7 @@ async function loadAllData() {
 
 // Function to get unique countries from existing UPGs
 function getUniqueCountries() {
-    console.log('Getting unique countries from', existingUpgData.length, 'UPGs');
-    
-    if (existingUpgData.length === 0) {
+    if (!existingUpgData || existingUpgData.length === 0) {
         console.error('No existing UPG data available');
         return [];
     }
@@ -480,7 +488,7 @@ function getUniqueCountries() {
         .filter(country => country && country.trim()) // Remove empty values
         .sort();
     
-    console.log('Found', countries.length, 'unique countries:', countries);
+    console.log(`Found ${countries.length} unique countries`);
     return countries;
 }
 
