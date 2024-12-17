@@ -1,5 +1,5 @@
 // Import Firebase configuration and Firestore functions
-import { db, collection, getDocs, addDoc } from './firebase-config.js';
+import { db, collection, getDocs, addDoc, deleteDoc, doc } from './firebase-config.js';
 
 // Top 100 List Management
 class Top100Manager {
@@ -80,37 +80,51 @@ class Top100Manager {
     async loadTop100List() {
         try {
             console.log('Loading top 100 list...');
+            if (this.loadingIndicator) this.loadingIndicator.style.display = 'block';
+            if (this.errorContainer) this.errorContainer.style.display = 'none';
+
             const querySnapshot = await getDocs(collection(db, 'top100'));
-            
-            // Create a temporary map to check for duplicates
-            const uniqueGroups = new Map();
-            
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                // Create a unique key using name and country
-                const key = `${data.name}-${data.country}`.toLowerCase();
-                
-                // Only add if this group hasn't been added yet
-                if (!uniqueGroups.has(key)) {
-                    uniqueGroups.set(key, {
-                        id: doc.id,
-                        ...data,
-                        // Ensure type is uppercase
-                        type: data.type ? data.type.toUpperCase() : 'BOTH'
-                    });
-                } else {
-                    console.log(`Duplicate entry found: ${data.name} in ${data.country}`);
-                }
-            });
-            
-            // Convert map values back to array
-            this.top100List = Array.from(uniqueGroups.values());
-            
-            this.renderList();
-            console.log('Top 100 list loaded successfully');
+            this.top100List = querySnapshot.docs.map(doc => ({
+                id: doc.id,  // Store the document ID
+                ...doc.data()
+            }));
+
+            console.log(`Loaded ${this.top100List.length} items`);
+            this.sortList();
+            this.displayList();
         } catch (error) {
             console.error('Error loading Top 100 list:', error);
-            throw error;
+            if (this.errorContainer) {
+                this.errorContainer.innerHTML = `<p>Error loading Top 100 list: ${error.message}</p>`;
+                this.errorContainer.style.display = 'block';
+            }
+        } finally {
+            if (this.loadingIndicator) this.loadingIndicator.style.display = 'none';
+        }
+    }
+
+    async deleteItem(id) {
+        try {
+            console.log('Deleting item:', id);
+            if (this.loadingIndicator) this.loadingIndicator.style.display = 'block';
+            
+            // Delete from Firestore
+            await deleteDoc(doc(db, 'top100', id));
+            
+            // Remove from local list
+            this.top100List = this.top100List.filter(item => item.id !== id);
+            
+            // Update display
+            this.displayList();
+            console.log('Item deleted successfully');
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            if (this.errorContainer) {
+                this.errorContainer.innerHTML = `<p>Error deleting item: ${error.message}</p>`;
+                this.errorContainer.style.display = 'block';
+            }
+        } finally {
+            if (this.loadingIndicator) this.loadingIndicator.style.display = 'none';
         }
     }
 
@@ -258,6 +272,75 @@ class Top100Manager {
             console.error('Error populating region filter:', error);
             this.regionFilter.innerHTML = '<option value="">Error loading regions</option>';
         }
+    }
+
+    displayList() {
+        if (!this.top100ListContainer) return;
+
+        const filteredList = this.filterList();
+        const html = filteredList.map((item, index) => {
+            const typeClass = item.type === 'FPG' ? 'fpg-type' : 'uupg-type';
+            return `
+                <div class="upg-card">
+                    <div class="upg-header">
+                        <div class="upg-title-container">
+                            <span class="rank-badge">#${item.rank || index + 1}</span>
+                            <h3 class="upg-title">${item.name}</h3>
+                        </div>
+                        <button class="delete-button" data-id="${item.id}">Delete</button>
+                    </div>
+                    <div class="upg-details">
+                        <div class="upg-column">
+                            <p><strong>Type:</strong> <span class="${typeClass}">${item.type}</span></p>
+                            <p><strong>Country:</strong> ${item.country}</p>
+                            <p><strong>Population:</strong> ${item.population.toLocaleString()}</p>
+                        </div>
+                        <div class="upg-column">
+                            <p><strong>Language:</strong> ${item.language}</p>
+                            <p><strong>Religion:</strong> ${item.religion}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        this.top100ListContainer.innerHTML = html;
+        
+        // Add event listeners for delete buttons
+        const deleteButtons = this.top100ListContainer.querySelectorAll('.delete-button');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                if (confirm('Are you sure you want to remove this people group from the Top 100 list?')) {
+                    this.deleteItem(id);
+                }
+            });
+        });
+    }
+
+    filterList() {
+        return this.top100List.filter(item => !this.currentFilter || item.region === this.currentFilter);
+    }
+
+    sortList() {
+        this.top100List.sort((a, b) => {
+            let valueA = a[this.currentSort.field];
+            let valueB = b[this.currentSort.field];
+
+            // Handle numeric values
+            if (this.currentSort.field === 'population') {
+                valueA = parseInt(valueA) || 0;
+                valueB = parseInt(valueB) || 0;
+            }
+
+            // Handle string values
+            if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+            if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+            if (valueA < valueB) return this.currentSort.order === 'asc' ? -1 : 1;
+            if (valueA > valueB) return this.currentSort.order === 'asc' ? 1 : -1;
+            return 0;
+        });
     }
 }
 
