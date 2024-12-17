@@ -1,3 +1,22 @@
+// Constants for data paths and configuration
+const BASE_PATH = import.meta.env.DEV ? '' : '/frontier-finder';
+const DATA_PATHS = {
+    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
+    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
+};
+
+const REQUIRED_FIELDS = {
+    UUPG: ['PeopleName', 'Country', 'Latitude', 'Longitude', 'Population', 'Language', 'Religion', 'Evangelical Engagement'],
+    EXISTING_UPGS: ['name', 'country', 'latitude', 'longitude']
+};
+
+// Cache for loaded data
+const dataCache = {
+    uupg: null,
+    existingUpgs: null,
+    lastFetch: null
+};
+
 // Load data from CSV files
 let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
@@ -54,77 +73,102 @@ function parseCSVLine(line) {
     return values;
 }
 
+// Enhanced error handling and validation
+function validateCoordinates(lat, lon) {
+    if (!isValidCoordinate(lat) || !isValidCoordinate(lon)) {
+        throw new Error(`Invalid coordinates: ${lat}, ${lon}`);
+    }
+    if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+        throw new Error(`Coordinates out of range: ${lat}, ${lon}`);
+    }
+    return true;
+}
+
+function isValidCoordinate(coord) {
+    return !isNaN(coord) && isFinite(coord);
+}
+
 // Function to load UUPG data from CSV
 export async function loadUUPGData() {
+    // Check cache with 5-minute expiration
+    const now = Date.now();
+    if (dataCache.uupg && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
+        console.log('Returning cached UUPG data');
+        return dataCache.uupg;
+    }
+
     try {
         console.log('Loading UUPG data...');
-        const response = await fetch('updated_uupg.csv');
+        const response = await fetch(DATA_PATHS.UUPG);
+        if (!response.ok) {
+            throw new Error(`Failed to load UUPG data: ${response.status} ${response.statusText}`);
+        }
+
         const csvText = await response.text();
-        console.log('UUPG CSV text length:', csvText.length);
+        if (!csvText.trim()) {
+            throw new Error('UUPG CSV file is empty');
+        }
 
-        // Split the CSV into lines and remove empty lines
         const lines = csvText.split('\n').filter(line => line.trim());
-        console.log('UUPG CSV lines:', lines.length);
-
-        // Parse headers (first line)
-        const headers = lines[0].split(',').map(header => header.trim());
-        console.log('UUPG headers:', headers);
-
-        // Parse data rows
+        const headers = parseCSVLine(lines[0]);
+        
         const uupgs = [];
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(value => value.trim());
-            if (values.length !== headers.length) continue;
-
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = values[index];
-            });
-
-            // Debug log for filtering
-            console.log(`Row ${i} engagement:`, row['Evangelical Engagement']);
-
-            // Only include if Evangelical Engagement is exactly 'Unengaged'
-            if (row['Evangelical Engagement'] === 'Unengaged') {
-                const latitude = parseFloat(row['Latitude']);
-                const longitude = parseFloat(row['Longitude']);
-
-                // Skip if coordinates are invalid
-                if (isNaN(latitude) || isNaN(longitude)) {
-                    console.log(`Skipping UUPG with invalid coordinates: ${row['PeopleName']}`);
-                    continue;
-                }
-
-                uupgs.push({
-                    name: row['PeopleName'] || 'Unknown',
-                    country: row['Country'] || 'Unknown',
-                    population: parseInt(String(row['Population']).replace(/[^\d]/g, '') || '0'),
-                    language: row['Language'] || 'Unknown',
-                    religion: row['Religion'] || 'Unknown',
-                    latitude: latitude,
-                    longitude: longitude,
-                    isUUPG: true
+            try {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
                 });
+
+                if (row['Evangelical Engagement'] === 'Unengaged') {
+                    const latitude = parseFloat(row['Latitude']);
+                    const longitude = parseFloat(row['Longitude']);
+
+                    if (!isNaN(latitude) && !isNaN(longitude)) {
+                        uupgs.push({
+                            name: row['PeopleName'] || 'Unknown',
+                            country: row['Country'] || 'Unknown',
+                            population: parseInt(String(row['Population']).replace(/[^\d]/g, '') || '0'),
+                            language: row['Language'] || 'Unknown',
+                            religion: row['Religion'] || 'Unknown',
+                            latitude,
+                            longitude,
+                            isUUPG: true
+                        });
+                    } else {
+                        console.warn(`Skipping UUPG with invalid coordinates: ${row['PeopleName']}`);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Error processing row ${i + 1}:`, error);
             }
         }
 
         console.log(`Loaded ${uupgs.length} UUPGs from CSV`);
+        dataCache.uupg = uupgs;
+        dataCache.lastFetch = now;
         return uupgs;
     } catch (error) {
         console.error('Error loading UUPG data:', error);
-        return [];
+        throw error;
     }
 }
 
 // Function to load existing UPGs data
 export async function loadExistingUPGs() {
+    if (dataCache.existingUpgs) {
+        console.log('Returning cached existing UPGs data');
+        return dataCache.existingUpgs;
+    }
+
     try {
         console.log('Loading existing UPGs data...');
-        const response = await fetch('/frontier-finder/data/existing_upgs_updated.csv');
+        const response = await fetch(DATA_PATHS.EXISTING_UPGS);
         if (!response.ok) {
-            console.error('Failed to load existing UPGs data:', response.status, response.statusText);
             throw new Error(`Failed to load existing UPGs data: ${response.status} ${response.statusText}`);
         }
+
         const csvText = await response.text();
         console.log('Existing UPGs CSV text length:', csvText.length);
         
@@ -164,6 +208,7 @@ export async function loadExistingUPGs() {
             .filter(obj => obj && obj.country && obj.name); // Filter out invalid entries
             
         console.log(`Loaded ${existingUpgData.length} existing UPGs from CSV`);
+        dataCache.existingUpgs = existingUpgData;
         return existingUpgData;
     } catch (error) {
         console.error('Error loading existing UPGs data:', error);
@@ -231,63 +276,61 @@ export function getUpgsForCountry(country) {
 // Function to fetch FPGs from Joshua Project API
 export async function fetchFPGs(latitude, longitude, radius, units) {
     try {
-        console.log('Environment:', window.env);
-        const apiKey = window.env?.VITE_JOSHUA_PROJECT_API_KEY;
-        console.log('API Key:', apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'not found');
-        
-        if (!apiKey) {
-            throw new Error('Joshua Project API key not found');
+        if (!latitude || !longitude || !radius) {
+            throw new Error('Missing required parameters: latitude, longitude, and radius are required');
         }
 
-        console.log('Fetching FPGs with params:', {
-            latitude,
-            longitude,
-            radius,
-            units: units === 'kilometers' ? 'km' : 'mi'
-        });
+        const apiKey = import.meta.env.VITE_JOSHUA_PROJECT_API_KEY;
+        if (!apiKey) {
+            throw new Error('Joshua Project API key not found in environment variables');
+        }
+
+        // Validate parameters
+        const validatedLat = parseFloat(latitude);
+        const validatedLon = parseFloat(longitude);
+        const validatedRadius = parseFloat(radius);
+
+        if (isNaN(validatedLat) || isNaN(validatedLon) || isNaN(validatedRadius)) {
+            throw new Error('Invalid parameters: latitude, longitude, and radius must be numbers');
+        }
+
+        if (Math.abs(validatedLat) > 90 || Math.abs(validatedLon) > 180) {
+            throw new Error('Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180');
+        }
+
+        if (validatedRadius <= 0) {
+            throw new Error('Invalid radius: must be greater than 0');
+        }
 
         const params = new URLSearchParams({
             api_key: apiKey,
-            latitude: latitude,
-            longitude: longitude,
-            distance: radius,
+            latitude: validatedLat.toString(),
+            longitude: validatedLon.toString(),
+            distance: validatedRadius.toString(),
             distance_units: units === 'kilometers' ? 'km' : 'mi',
             filter: 'frontier_only',
-            limit: 100
+            limit: '100'
         });
 
         const url = `https://api.joshuaproject.net/v1/people_groups.json?${params.toString()}`;
-        console.log('Requesting URL:', url.replace(apiKey, '***API_KEY***'));
+        console.log('Fetching FPGs...', { latitude: validatedLat, longitude: validatedLon, radius: validatedRadius, units });
 
         const response = await fetch(url);
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
-            throw new Error(`Failed to fetch FPGs: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Joshua Project API error (${response.status}): ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('API Response data:', data);
-
         if (!Array.isArray(data)) {
-            console.log('API response is not an array:', data);
-            return [];
+            throw new Error('Invalid API response format: expected an array');
         }
 
-        console.log(`Found ${data.length} FPGs from Joshua Project API`);
-        return data.map(pg => {
-            // Safely handle population parsing
-            let population = 0;
-            try {
-                population = parseInt(String(pg.Population || '0').replace(/[^\d]/g, ''));
-            } catch (e) {
-                console.warn('Error parsing population:', e);
-            }
-
-            // Calculate distance if not provided by API
-            let distance = pg.Distance ? parseFloat(pg.Distance) : calculateDistance(
-                latitude,
-                longitude,
+        // Process and filter FPGs by distance
+        const fpgs = data.map(pg => {
+            const distance = pg.Distance ? parseFloat(pg.Distance) : calculateDistance(
+                validatedLat,
+                validatedLon,
                 parseFloat(pg.Latitude),
                 parseFloat(pg.Longitude),
                 units === 'kilometers' ? 'km' : 'mi'
@@ -296,8 +339,8 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
             return {
                 name: pg.PeopNameInCountry || pg.PeopName || 'Unknown',
                 country: pg.Ctry || 'Unknown',
-                distance: distance,
-                population: population,
+                distance,
+                population: parseInt(String(pg.Population || '0').replace(/[^\d]/g, '')),
                 language: pg.PrimaryLanguageName || 'Unknown',
                 religion: pg.PrimaryReligion || 'Unknown',
                 latitude: parseFloat(pg.Latitude) || 0,
@@ -305,10 +348,14 @@ export async function fetchFPGs(latitude, longitude, radius, units) {
                 jpScale: pg.JPScale || 'Unknown',
                 isFPG: true
             };
-        });
+        }).filter(fpg => fpg.distance <= validatedRadius);
+
+        console.log(`Found ${fpgs.length} FPGs within ${validatedRadius} ${units}`);
+        return fpgs;
+
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        return [];
+        throw error;
     }
 }
 

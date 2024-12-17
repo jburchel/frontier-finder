@@ -1,5 +1,5 @@
-// Import Firebase configuration
-import { db } from './firebase-config.js';
+// Import Firebase configuration and Firestore functions
+import { db, collection, getDocs, addDoc } from './firebase-config.js';
 
 // Top 100 List Management
 class Top100Manager {
@@ -8,6 +8,8 @@ class Top100Manager {
         this.currentSort = { field: 'rank', order: 'asc' };
         this.currentFilter = '';
         this.initialized = false;
+        this.loadingIndicator = document.getElementById('loading');
+        this.errorContainer = document.getElementById('error');
     }
 
     async initialize() {
@@ -42,110 +44,208 @@ class Top100Manager {
     }
 
     setupEventListeners() {
-        if (!this.initialized) return;
-        
-        console.log('Setting up event listeners...');
-        // Set up sort buttons
-        document.querySelectorAll('.sort-button').forEach(button => {
+        // Sort buttons
+        const sortButtons = document.querySelectorAll('.sort-button');
+        sortButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const sortField = button.getAttribute('data-sort');
+                const sortField = button.dataset.sort;
                 this.handleSort(sortField);
+                
+                // Update active button state
+                sortButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
             });
         });
 
-        // Set up region filter
-        this.regionFilter.addEventListener('change', () => {
-            this.currentFilter = this.regionFilter.value;
-            this.renderTop100List();
-        });
-        console.log('Event listeners set up successfully');
+        // Region filter
+        const regionFilter = document.getElementById('regionFilter');
+        if (regionFilter) {
+            regionFilter.addEventListener('change', (e) => {
+                this.currentFilter = e.target.value;
+                this.renderList();
+            });
+        }
     }
 
     handleSort(field) {
-        console.log('Handling sort by:', field);
         if (this.currentSort.field === field) {
             this.currentSort.order = this.currentSort.order === 'asc' ? 'desc' : 'asc';
         } else {
-            this.currentSort = { field, order: 'asc' };
+            this.currentSort.field = field;
+            this.currentSort.order = 'asc';
         }
-        this.renderTop100List();
-    }
-
-    sortList(list) {
-        return [...list].sort((a, b) => {
-            let valueA = a[this.currentSort.field];
-            let valueB = b[this.currentSort.field];
-
-            // Handle numeric values
-            if (this.currentSort.field === 'rank' || this.currentSort.field === 'population') {
-                valueA = Number(valueA);
-                valueB = Number(valueB);
-            }
-
-            // Handle string values
-            if (typeof valueA === 'string') {
-                valueA = valueA.toLowerCase();
-            }
-            if (typeof valueB === 'string') {
-                valueB = valueB.toLowerCase();
-            }
-
-            if (valueA < valueB) return this.currentSort.order === 'asc' ? -1 : 1;
-            if (valueA > valueB) return this.currentSort.order === 'asc' ? 1 : -1;
-            return 0;
-        });
+        this.renderList();
     }
 
     async loadTop100List() {
         try {
             console.log('Loading top 100 list...');
-            const snapshot = await db.collection('top100').get();
-            this.top100List = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            this.renderTop100List();
+            const querySnapshot = await getDocs(collection(db, 'top100'));
+            
+            // Create a temporary map to check for duplicates
+            const uniqueGroups = new Map();
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                // Create a unique key using name and country
+                const key = `${data.name}-${data.country}`.toLowerCase();
+                
+                // Only add if this group hasn't been added yet
+                if (!uniqueGroups.has(key)) {
+                    uniqueGroups.set(key, {
+                        id: doc.id,
+                        ...data,
+                        // Ensure type is uppercase
+                        type: data.type ? data.type.toUpperCase() : 'BOTH'
+                    });
+                } else {
+                    console.log(`Duplicate entry found: ${data.name} in ${data.country}`);
+                }
+            });
+            
+            // Convert map values back to array
+            this.top100List = Array.from(uniqueGroups.values());
+            
+            this.renderList();
             console.log('Top 100 list loaded successfully');
         } catch (error) {
-            console.error('Error loading top 100 list:', error);
-            this.top100ListContainer.innerHTML = `<p class="error">Error loading Top 100 list: ${error.message}</p>`;
+            console.error('Error loading Top 100 list:', error);
+            throw error;
         }
     }
 
-    renderTop100List() {
-        console.log('Rendering top 100 list...');
-        let filteredList = this.top100List;
-        
-        // Apply region filter
-        if (this.currentFilter) {
-            filteredList = filteredList.filter(item => item.region === this.currentFilter);
+    async saveToTop100(peopleGroup) {
+        try {
+            // Check for duplicates before saving
+            const key = `${peopleGroup.name}-${peopleGroup.country}`.toLowerCase();
+            const isDuplicate = this.top100List.some(group => 
+                `${group.name}-${group.country}`.toLowerCase() === key
+            );
+
+            if (isDuplicate) {
+                throw new Error('This people group is already in the Top 100 list');
+            }
+
+            // Ensure type is uppercase
+            peopleGroup.type = peopleGroup.type ? peopleGroup.type.toUpperCase() : 'BOTH';
+
+            const docRef = await addDoc(collection(db, 'top100'), peopleGroup);
+            console.log('Document written with ID:', docRef.id);
+            await this.loadTop100List(); // Reload the list after adding
+        } catch (error) {
+            console.error('Error saving to Top 100:', error);
+            throw error;
         }
+    }
 
-        // Apply sorting
-        filteredList = this.sortList(filteredList);
+    renderList() {
+        const container = document.getElementById('top100List');
+        if (!container) return;
 
-        // Render the list
-        const html = filteredList.map((item, index) => `
-            <div class="upg-card">
-                <div class="upg-rank">#${item.rank}</div>
-                <div class="upg-details">
-                    <h3>${item.name}</h3>
-                    <p><strong>Country:</strong> ${item.country}</p>
-                    <p><strong>Population:</strong> ${item.population.toLocaleString()}</p>
-                    <p><strong>Language:</strong> ${item.language}</p>
-                    <p><strong>Religion:</strong> ${item.religion}</p>
+        // Show loading state
+        this.loadingIndicator.style.display = 'block';
+        container.style.display = 'none';
+
+        try {
+            // Filter list if needed
+            let filteredList = this.currentFilter
+                ? this.top100List.filter(item => item.region === this.currentFilter)
+                : this.top100List;
+
+            // Sort list
+            filteredList.sort((a, b) => {
+                let valueA = a[this.currentSort.field];
+                let valueB = b[this.currentSort.field];
+
+                // Handle numeric values
+                if (this.currentSort.field === 'population') {
+                    valueA = parseInt(valueA) || 0;
+                    valueB = parseInt(valueB) || 0;
+                }
+
+                // Handle string values
+                if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+                if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+                if (valueA < valueB) return this.currentSort.order === 'asc' ? -1 : 1;
+                if (valueA > valueB) return this.currentSort.order === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Create card HTML
+            const createCard = (item, index) => {
+                return `
+                    <div class="people-group-card">
+                        <div class="card-header">
+                            <h3>${item.name}</h3>
+                            <div class="rank-badge">#${index + 1}</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-columns">
+                                <div class="card-column">
+                                    <div class="info-item">
+                                        <label>Type:</label>
+                                        <span>${item.type || 'BOTH'}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Country:</label>
+                                        <span>${item.country}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Population:</label>
+                                        <span>${item.population.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div class="card-column">
+                                    <div class="info-item">
+                                        <label>Language:</label>
+                                        <span>${item.language}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Religion:</label>
+                                        <span>${item.religion}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // Split list into two sections
+            const midPoint = Math.ceil(filteredList.length / 2);
+            const leftSection = filteredList.slice(0, midPoint);
+            const rightSection = filteredList.slice(midPoint);
+
+            // Create HTML for both sections
+            const leftSectionHtml = leftSection.map((item, index) => createCard(item, index)).join('');
+            const rightSectionHtml = rightSection.map((item, index) => createCard(item, index + midPoint)).join('');
+
+            // Combine sections with vertical divider
+            const html = `
+                <div class="section-container">
+                    <div class="section">${leftSectionHtml}</div>
+                    <div class="vertical-divider"></div>
+                    <div class="section">${rightSectionHtml}</div>
                 </div>
-            </div>
-        `).join('');
+            `;
 
-        this.top100ListContainer.innerHTML = html || '<p>No results found</p>';
-        console.log('Top 100 list rendered successfully');
+            container.innerHTML = filteredList.length ? html : '<p class="no-results">No results found</p>';
+        } catch (error) {
+            console.error('Error rendering list:', error);
+            this.errorContainer.style.display = 'block';
+            this.errorContainer.innerHTML = `<p>Error rendering list: ${error.message}</p>`;
+        } finally {
+            // Hide loading state
+            this.loadingIndicator.style.display = 'none';
+            container.style.display = 'block';
+        }
     }
 
     async populateRegionFilter() {
         try {
             console.log('Populating region filter...');
-            const snapshot = await db.collection('regions').get();
+            const snapshot = await getDocs(collection(db, 'regions'));
             const regions = snapshot.docs.map(doc => doc.data().name);
             
             const options = regions.map(region => 

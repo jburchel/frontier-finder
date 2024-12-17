@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <title>Top 100 UPGs - Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -16,15 +17,23 @@
         </header>
 
         <main>
-            <div class="top-100-controls">
+            <div id="loading" class="loading-indicator">
+                Loading Top 100 list...
+            </div>
+
+            <div id="error" class="error-message" style="display: none;">
+                <!-- Error messages will be inserted here -->
+            </div>
+
+            <div class="filter-controls">
                 <div class="filter-section">
                     <label for="regionFilter">Filter by Region:</label>
-                    <select id="regionFilter">
+                    <select id="regionFilter" class="filter-select">
                         <option value="">All Regions</option>
                     </select>
                 </div>
-                
-                <div class="sort-options">
+
+                <div id="sortOptions" class="sort-options">
                     <span>Sort by:</span>
                     <button class="sort-button" data-sort="rank">Rank</button>
                     <button class="sort-button" data-sort="population">Population</button>
@@ -34,9 +43,10 @@
                 </div>
             </div>
 
-            <div class="top-100-list" id="top100List">
-                <!-- List items will be inserted here -->
-                <div class="loading">Loading top 100 UPGs...</div>
+            <div class="results-section">
+                <div id="top100List" class="results-list">
+                    <!-- Top 100 list will be inserted here -->
+                </div>
             </div>
         </main>
     </div>

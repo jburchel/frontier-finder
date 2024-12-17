@@ -52,19 +52,7 @@ async function displayResults() {
         // Display FPGs
         if (results.fpgs && results.fpgs.length > 0) {
             console.log(`Found ${results.fpgs.length} FPGs`);
-            const fpgHtml = results.fpgs.map(fpg => `
-                <div class="result-item">
-                    <h3>${fpg.name}</h3>
-                    <div class="result-details">
-                        <span><strong>Country:</strong> ${fpg.country}</span>
-                        <span><strong>Distance:</strong> ${fpg.distance !== null ? `${fpg.distance.toFixed(1)} ${units}` : 'Unknown'}</span>
-                        <span><strong>Population:</strong> ${fpg.population.toLocaleString()}</span>
-                        <span><strong>Language:</strong> ${fpg.language || 'Unknown'}</span>
-                        <span><strong>Religion:</strong> ${fpg.religion || 'Unknown'}</span>
-                        <span><strong>JP Scale:</strong> ${fpg.jpScale || 'Unknown'}</span>
-                    </div>
-                </div>
-            `).join('');
+            const fpgHtml = results.fpgs.map(fpg => createResultItem(fpg, 'fpg')).join('');
             if (fpgList) fpgList.innerHTML = fpgHtml;
         } else {
             console.log('No FPGs found');
@@ -74,19 +62,7 @@ async function displayResults() {
         // Display UUPGs
         if (results.uupgs && results.uupgs.length > 0) {
             console.log(`Found ${results.uupgs.length} UUPGs`);
-            const uupgHtml = results.uupgs.map(uupg => `
-                <div class="result-item">
-                    <h3>${uupg.name}</h3>
-                    <div class="result-details">
-                        <span><strong>Country:</strong> ${uupg.country}</span>
-                        <span><strong>Distance:</strong> ${uupg.distance !== null ? `${uupg.distance.toFixed(1)} ${units}` : 'Unknown'}</span>
-                        <span><strong>Population:</strong> ${uupg.population.toLocaleString()}</span>
-                        <span><strong>Language:</strong> ${uupg.language || 'Unknown'}</span>
-                        <span><strong>Religion:</strong> ${uupg.religion || 'Unknown'}</span>
-                        <span><strong>JP Scale:</strong> ${uupg.jpScale || 'Unknown'}</span>
-                    </div>
-                </div>
-            `).join('');
+            const uupgHtml = results.uupgs.map(uupg => createResultItem(uupg, 'uupg')).join('');
             if (uupgList) uupgList.innerHTML = uupgHtml;
         } else {
             console.log('No UUPGs found');
@@ -115,6 +91,105 @@ async function displayResults() {
     }
 }
 
+function createResultItem(group, type) {
+    const item = document.createElement('div');
+    item.className = 'result-item';
+    
+    // Create data-info attribute with all sortable information
+    const dataInfo = {
+        distance: group.distance || 0,
+        country: group.country || '',
+        population: group.population || 0,
+        language: group.language || '',
+        religion: group.religion || ''
+    };
+    item.dataset.info = JSON.stringify(dataInfo);
+
+    const html = `
+        <div class="checkbox-wrapper">
+            <input type="checkbox" class="group-select" data-group-id="${group.id || ''}" data-group-type="${type}">
+        </div>
+        <div class="content-wrapper">
+            <h3>${group.name}</h3>
+            <div class="result-details">
+                <span><strong>Country:</strong> ${group.country}</span>
+                <span><strong>Distance:</strong> ${group.distance !== null ? `${group.distance.toFixed(1)} ${units}` : 'Unknown'}</span>
+                <span><strong>Population:</strong> ${group.population.toLocaleString()}</span>
+                <span><strong>Language:</strong> ${group.language || 'Unknown'}</span>
+                <span><strong>Religion:</strong> ${group.religion || 'Unknown'}</span>
+                <span><strong>JP Scale:</strong> ${group.jpScale || 'Unknown'}</span>
+            </div>
+        </div>
+    `;
+    item.innerHTML = html;
+    return item.outerHTML;
+}
+
+// Initialize Firebase
+import { db, collection, addDoc } from './firebase-config.js';
+
+// Handle checkbox selection and Add to Top 100 button
+document.addEventListener('DOMContentLoaded', () => {
+    const addToTop100Button = document.getElementById('addToTop100');
+    const errorElement = document.getElementById('error');
+    
+    // Enable/disable Add to Top 100 button based on selections
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('group-select')) {
+            const checkedBoxes = document.querySelectorAll('.group-select:checked');
+            addToTop100Button.disabled = checkedBoxes.length === 0;
+        }
+    });
+
+    // Handle Add to Top 100 button click
+    addToTop100Button.addEventListener('click', async () => {
+        try {
+            // Disable button and show loading state
+            addToTop100Button.disabled = true;
+            addToTop100Button.textContent = 'Adding to Top 100...';
+            errorElement.style.display = 'none';
+
+            const selectedGroups = [];
+            const checkedBoxes = document.querySelectorAll('.group-select:checked');
+            
+            checkedBoxes.forEach(checkbox => {
+                const groupItem = checkbox.closest('.result-item');
+                const groupData = JSON.parse(groupItem.dataset.info);
+                const groupType = checkbox.dataset.groupType;
+                const groupId = checkbox.dataset.groupId;
+                
+                selectedGroups.push({
+                    ...groupData,
+                    id: groupId,
+                    type: groupType,
+                    name: groupItem.querySelector('h3').textContent,
+                    dateAdded: new Date().toISOString()
+                });
+            });
+
+            // Add selected groups to Firebase
+            const top100Collection = collection(db, 'top100');
+            const promises = selectedGroups.map(group => 
+                addDoc(top100Collection, group)
+            );
+            
+            await Promise.all(promises);
+            console.log('Successfully added groups to Top 100');
+            
+            // Redirect to top100.html
+            window.location.href = 'top100.html';
+        } catch (error) {
+            console.error('Error adding groups to Top 100:', error);
+            errorElement.textContent = 'Error adding groups to Top 100. Please check your connection and try again.';
+            errorElement.style.display = 'block';
+            
+            // Reset button state
+            addToTop100Button.disabled = false;
+            addToTop100Button.textContent = 'Add Selected to Top 100';
+        }
+    });
+});
+
 // Add sort functionality
 function sortResults(sortBy, order = 'asc') {
     const lists = ['fpgList', 'uupgList'];
@@ -125,8 +200,8 @@ function sortResults(sortBy, order = 'asc') {
 
         const items = Array.from(list.getElementsByClassName('result-item'));
         items.sort((a, b) => {
-            const aValue = getValueFromItem(a, sortBy);
-            const bValue = getValueFromItem(b, sortBy);
+            const aValue = JSON.parse(a.dataset.info)[sortBy];
+            const bValue = JSON.parse(b.dataset.info)[sortBy];
             
             if (typeof aValue === 'number' && typeof bValue === 'number') {
                 return order === 'asc' ? aValue - bValue : bValue - aValue;
@@ -139,26 +214,6 @@ function sortResults(sortBy, order = 'asc') {
 
         items.forEach(item => list.appendChild(item));
     });
-}
-
-function getValueFromItem(item, sortBy) {
-    const detailsDiv = item.querySelector('.result-details');
-    if (!detailsDiv) return '';
-
-    const spans = Array.from(detailsDiv.getElementsByTagName('span'));
-    const span = spans.find(s => s.textContent.toLowerCase().includes(sortBy.toLowerCase()));
-    if (!span) return '';
-
-    const value = span.textContent.split(':')[1].trim();
-    
-    switch (sortBy.toLowerCase()) {
-        case 'distance':
-            return parseFloat(value) || Infinity;
-        case 'population':
-            return parseInt(value.replace(/,/g, '')) || 0;
-        default:
-            return value;
-    }
 }
 
 // Add event listeners for sort buttons
