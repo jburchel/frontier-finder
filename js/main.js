@@ -3,7 +3,7 @@ import { searchNearby, initializeUI } from './data.js';
 document.addEventListener('DOMContentLoaded', async function() {
     const searchForm = document.getElementById('searchForm');
     const yearSpan = document.getElementById('year');
-    const resultsSection = document.querySelector('.results-section');
+    const resultsSection = document.getElementById('results-section');
     const searchParams = document.getElementById('searchParams');
     const sortOptions = document.getElementById('sortOptions');
 
@@ -36,38 +36,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
             
-            try {
-                // Show loading state
-                resultsSection.style.display = 'block';
-                searchParams.textContent = `Searching for people groups within ${radius} ${units} of ${upg} in ${country}...`;
-                sortOptions.style.display = 'none';
-                document.getElementById('results').innerHTML = '<div class="loading">Loading...</div>';
-                
-                // Perform search
-                const results = await searchNearby(country, upg, radius, units, searchType);
-                
-                // Display results
-                if (results && results.length > 0) {
-                    displayResults(results);
-                    sortOptions.style.display = 'block';
-                } else {
-                    document.getElementById('results').innerHTML = '<p>No results found.</p>';
-                    sortOptions.style.display = 'none';
-                }
-                
-                // Update search parameters display
-                searchParams.textContent = `Found ${results.length} people groups within ${radius} ${units} of ${upg} in ${country}`;
-                
-            } catch (error) {
-                console.error('Error performing search:', error);
-                document.getElementById('results').innerHTML = '<p class="error">Error performing search. Please try again.</p>';
-                sortOptions.style.display = 'none';
-            }
-        });
-
-        // Handle sort options
-        document.getElementById('sort').addEventListener('change', function(e) {
-            sortResults(e.target.value);
+            // Redirect to results page with search parameters
+            const searchParams = new URLSearchParams({
+                country,
+                upg,
+                radius,
+                units,
+                type: searchType
+            });
+            
+            window.location.href = `results.html?${searchParams.toString()}`;
         });
 
     } catch (error) {
