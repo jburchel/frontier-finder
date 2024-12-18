@@ -400,7 +400,10 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 
         // Build the API URL with parameters
         const params = new URLSearchParams({
-            api_key: apiKey
+            api_key: apiKey,
+            latitude: parseFloat(latitude).toFixed(6),
+            longitude: parseFloat(longitude).toFixed(6),
+            distance: Math.round(radiusInKm)
         });
 
         // Construct the full URL
@@ -430,9 +433,24 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             throw new Error('Invalid API response format');
         }
 
-        // Filter for Frontier People Groups and map to our format
+        // Filter for Frontier People Groups within radius and map to our format
         const fpgs = data
-            .filter(fpg => fpg.Frontier === 'Y' && fpg.Latitude && fpg.Longitude)
+            .filter(fpg => {
+                if (fpg.Frontier !== 'Y' || !fpg.Latitude || !fpg.Longitude) {
+                    return false;
+                }
+                
+                const distance = calculateDistance(
+                    latitude,
+                    longitude,
+                    fpg.Latitude,
+                    fpg.Longitude,
+                    units
+                );
+                
+                // Only include FPGs within the specified radius
+                return distance <= parseFloat(radius);
+            })
             .map(fpg => {
                 const distance = calculateDistance(
                     latitude,
@@ -455,14 +473,11 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     units
                 };
             })
-            // Filter by radius
-            .filter(fpg => fpg.distance <= parseFloat(radius))
-            // Sort by distance
             .sort((a, b) => a.distance - b.distance);
 
-        console.log(`Found ${fpgs.length} FPGs within ${radius} ${units} radius`);
+        console.log(`Found ${fpgs.length} FPGs within ${radius} ${units}`);
         if (fpgs.length > 0) {
-            console.log('Sample FPG:', fpgs[0]);
+            console.log('Sample nearby FPG:', fpgs[0]);
         }
 
         return fpgs;
