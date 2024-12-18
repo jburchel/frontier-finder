@@ -376,12 +376,11 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             api_key: apiKey,
             latitude: parseFloat(latitude).toFixed(6),
             longitude: parseFloat(longitude).toFixed(6),
-            radius: Math.round(radiusInKm),
-            only_frontier: 'Y'  // Only get Frontier People Groups
+            distance: Math.round(radiusInKm)
         });
 
         // Construct the full URL
-        const url = `${config.apiBaseUrl}/v1/people_groups/near.json?${params}`;
+        const url = `${config.apiBaseUrl}/v1/people_groups.json?${params}`;
         console.log('Making request to:', url);
 
         // Make the API request
@@ -407,25 +406,35 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             throw new Error('Invalid API response format');
         }
 
-        // Map API response to our format
-        const fpgs = data.map(fpg => {
-            const mappedFpg = {
-                name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
-                country: fpg.Ctry || 'Unknown',
-                distance: fpg.Distance ? (units === 'miles' ? fpg.Distance * 0.621371 : fpg.Distance) : 0,
-                population: parseInt(fpg.Population) || 0,
-                language: fpg.PrimaryLanguageName || 'Unknown',
-                religion: fpg.PrimaryReligion || 'Unknown',
-                evangelical: parseFloat(fpg.PercentEvangelical) || 0,
-                jpScale: fpg.JPScale || '1',
-                type: 'fpg',
-                units
-            };
-            console.log('Mapped FPG:', mappedFpg);
-            return mappedFpg;
-        });
+        // Filter for Frontier People Groups and map to our format
+        const fpgs = data
+            .filter(fpg => fpg.Frontier === 'Y')
+            .map(fpg => {
+                const distance = calculateDistance(
+                    latitude,
+                    longitude,
+                    fpg.Latitude,
+                    fpg.Longitude,
+                    units
+                );
 
-        // Sort by distance
+                const mappedFpg = {
+                    name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
+                    country: fpg.Ctry || 'Unknown',
+                    distance,
+                    population: parseInt(fpg.Population) || 0,
+                    language: fpg.PrimaryLanguageName || 'Unknown',
+                    religion: fpg.PrimaryReligion || 'Unknown',
+                    evangelical: parseFloat(fpg.PercentEvangelical) || 0,
+                    jpScale: fpg.JPScale || '1',
+                    type: 'fpg',
+                    units
+                };
+                console.log('Mapped FPG:', mappedFpg);
+                return mappedFpg;
+            });
+
+        // Sort by distance and filter by radius
         fpgs.sort((a, b) => a.distance - b.distance);
 
         console.log(`Found ${fpgs.length} FPGs from Joshua Project API`);
