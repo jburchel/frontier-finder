@@ -129,10 +129,22 @@ function parseCSVLine(line) {
 
 // Enhanced error handling and validation
 function validateCoordinates(lat, lon) {
-    if (!isValidCoordinate(lat) || !isValidCoordinate(lon)) {
-        throw new Error(`Invalid coordinates: ${lat}, ${lon}`);
+    // Check if coordinates are empty strings or undefined
+    if (!lat || !lon || lat === '' || lon === '') {
+        return null;
     }
-    return { lat: parseFloat(lat), lon: parseFloat(lon) };
+    
+    // Parse coordinates
+    const parsedLat = parseFloat(lat);
+    const parsedLon = parseFloat(lon);
+    
+    // Validate coordinates are within valid ranges
+    if (!isValidCoordinate(parsedLat) || !isValidCoordinate(parsedLon) ||
+        parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
+        return null;
+    }
+    
+    return { lat: parsedLat, lon: parsedLon };
 }
 
 function isValidCoordinate(coord) {
@@ -180,10 +192,8 @@ async function loadUUPGData() {
                 });
 
                 if (row['Evangelical Engagement'] === 'Unengaged') {
-                    const latitude = parseFloat(row['Latitude']);
-                    const longitude = parseFloat(row['Longitude']);
-
-                    if (!isNaN(latitude) && !isNaN(longitude)) {
+                    const coordinates = validateCoordinates(row['Latitude'], row['Longitude']);
+                    if (coordinates) {
                         uupgs.push({
                             name: row['PeopleName'] || 'Unknown',
                             country: row['Country'] || 'Unknown',
@@ -191,8 +201,8 @@ async function loadUUPGData() {
                             language: row['Language'] || 'Unknown',
                             religion: row['Religion'] || 'Unknown',
                             pronunciation: row['pronunciation'] || '',
-                            latitude,
-                            longitude,
+                            latitude: coordinates.lat,
+                            longitude: coordinates.lon,
                             isUUPG: true,
                             distance: null // Initialize distance as null
                         });
@@ -244,6 +254,7 @@ async function loadExistingUPGs() {
             }
         }
 
+        let skippedCount = 0;
         const upgs = [];
         for (let i = 1; i < lines.length; i++) {
             try {
@@ -253,27 +264,34 @@ async function loadExistingUPGs() {
                     row[header] = values[index] || '';
                 });
 
-                const latitude = parseFloat(row['latitude']);
-                const longitude = parseFloat(row['longitude']);
+                // Skip entries without a name or country
+                if (!row['name'] || !row['country']) {
+                    console.warn(`Skipping UPG at row ${i + 1}: Missing name or country`);
+                    skippedCount++;
+                    continue;
+                }
 
-                if (!isNaN(latitude) && !isNaN(longitude)) {
+                const coordinates = validateCoordinates(row['latitude'], row['longitude']);
+                if (coordinates) {
                     upgs.push({
-                        name: row['name'] || 'Unknown',
-                        country: row['country'] || 'Unknown',
-                        latitude,
-                        longitude,
+                        name: row['name'],
+                        country: row['country'],
+                        latitude: coordinates.lat,
+                        longitude: coordinates.lon,
                         pronunciation: row['pronunciation'] || '',
                         distance: null // Initialize distance as null
                     });
                 } else {
-                    console.warn(`Skipping UPG with invalid coordinates: ${row['name']}`);
+                    console.warn(`Skipping UPG '${row['name']}' from ${row['country']}: Invalid or missing coordinates`);
+                    skippedCount++;
                 }
             } catch (error) {
                 console.warn(`Error processing row ${i + 1}:`, error);
+                skippedCount++;
             }
         }
 
-        console.log(`Loaded ${upgs.length} existing UPGs from CSV`);
+        console.log(`Loaded ${upgs.length} existing UPGs from CSV (skipped ${skippedCount} invalid entries)`);
         dataCache.existingUpgs = upgs;
         dataCache.lastFetch = now;
         return upgs;
