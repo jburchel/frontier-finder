@@ -317,10 +317,12 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             api_key: apiKey,
             latitude,
             longitude,
-            radius: radiusInKm
+            radius: radiusInKm,
+            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,Frontier,JPScale,PercentEvangelical',
+            Frontier: 'Y'  // Only get Frontier People Groups
         });
 
-        const response = await fetch(`https://api.joshuaproject.net/v1/peoples/geo.json?${params}`);
+        const response = await fetch(`https://api.joshuaproject.net/api/v2/people_groups?${params}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
@@ -329,28 +331,21 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         console.log(`Found ${data.length} FPGs from Joshua Project API`);
 
         // Map API response to our format
-        const fpgs = data.map(fpg => ({
-            name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
+        return data.map(fpg => ({
+            name: fpg.PeopNameInCountry || 'Unknown',
             country: fpg.Ctry || 'Unknown',
-            distance: units === 'miles' ? fpg.Distance * 0.621371 : fpg.Distance, // Convert km to miles if needed
+            distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
             population: parseInt(fpg.Population) || 0,
             language: fpg.PrimaryLanguageName || 'Unknown',
             religion: fpg.PrimaryReligion || 'Unknown',
-            pronunciation: fpg.Pronunciation || '',
-            latitude: parseFloat(fpg.Latitude) || 0,
-            longitude: parseFloat(fpg.Longitude) || 0,
-            isFPG: true
+            evangelical: fpg.PercentEvangelical || 0,
+            jpScale: fpg.JPScale || '1',
+            type: 'fpg',
+            units
         }));
-
-        console.log('Mapped FPGs:', fpgs.length);
-        if (fpgs.length > 0) {
-            console.log('Sample FPG:', fpgs[0]);
-        }
-
-        return fpgs;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        return [];
+        throw error;
     }
 }
 

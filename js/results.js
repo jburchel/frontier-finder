@@ -1,4 +1,5 @@
 import { searchNearby } from './data.js';
+import { db, collection, addDoc } from './firebase-config.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     const resultsSection = document.querySelector('.results-section');
@@ -6,6 +7,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const sortOptions = document.getElementById('sortOptions');
     const uupgList = document.getElementById('uupgList');
     const fpgList = document.getElementById('fpgList');
+    const addToTop100Button = document.getElementById('addToTop100');
+    const errorElement = document.getElementById('error');
 
     try {
         // Get search parameters from URL
@@ -54,6 +57,61 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Show sort options if we have results
         sortOptions.style.display = (results.uupgs?.length > 0 || results.fpgs?.length > 0) ? 'block' : 'none';
+
+        // Enable/disable Add to Top 100 button based on selections
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('group-select')) {
+                const checkedBoxes = document.querySelectorAll('.group-select:checked');
+                addToTop100Button.disabled = checkedBoxes.length === 0;
+            }
+        });
+
+        // Handle Add to Top 100 button click
+        addToTop100Button.addEventListener('click', async () => {
+            try {
+                // Disable button and show loading state
+                addToTop100Button.disabled = true;
+                addToTop100Button.textContent = 'Adding to Top 100...';
+                errorElement.style.display = 'none';
+
+                const selectedGroups = [];
+                const checkedBoxes = document.querySelectorAll('.group-select:checked');
+                
+                checkedBoxes.forEach(checkbox => {
+                    const groupItem = checkbox.closest('.result-item');
+                    const groupData = JSON.parse(groupItem.dataset.info);
+                    const groupType = checkbox.dataset.groupType;
+                    
+                    selectedGroups.push({
+                        ...groupData,
+                        type: groupType,
+                        dateAdded: new Date().toISOString()
+                    });
+                });
+
+                // Add selected groups to Firebase
+                console.log('Adding groups to Top 100:', selectedGroups);
+                const top100Collection = collection(db, 'top100');
+                
+                const addResults = await Promise.all(
+                    selectedGroups.map(group => addDoc(top100Collection, group))
+                );
+
+                console.log('Successfully added groups to Top 100');
+                
+                // Redirect to top100.html
+                window.location.href = 'top100.html';
+                
+            } catch (error) {
+                console.error('Error adding groups to Top 100:', error);
+                errorElement.textContent = 'Error adding groups to Top 100. Please try again.';
+                errorElement.style.display = 'block';
+                
+                // Reset button state
+                addToTop100Button.disabled = false;
+                addToTop100Button.textContent = 'Add Selected to Top 100';
+            }
+        });
 
     } catch (error) {
         console.error('Error loading results:', error);
@@ -106,6 +164,7 @@ function createResultCard(group, type) {
                 ` : ''}
                 ${group.language ? `<span><strong>Language:</strong> ${group.language}</span>` : ''}
                 ${group.religion ? `<span><strong>Religion:</strong> ${group.religion}</span>` : ''}
+                ${group.evangelical ? `<span><strong>Evangelical:</strong> ${group.evangelical}%</span>` : ''}
             </div>
         </div>
     `;
