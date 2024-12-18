@@ -1,6 +1,6 @@
 name,country,pronunciation,latitude,longitude,population,evangelical,language,religion,description
 Georgian,Georgia,ja-w-rjo-hn,43.2287,40.86397,900,1,Abkhaz,Christianity,
-Ahar,,a-ha-r*,25.05131172,84.22023723,40000,0,Urdu,Islam,
+Ahar,India,a-ha-r*,28.7983,79.022,1655000,0,Urdu,Hindi,
 Albanian,Albania,a-l-bee-h-neo-hn,39.838469,20.168576,2676000,0.58,Albanian,Islam,
 "Algerian, Arabic-speaking",Algeria,al-JEER-ee-un,34.6704,3.2504,33607000,0.01,Algerian,Islam,
 Arab Bedoin,Jordan,BEH-doo-in AE-rub,30.3174,36.1752,1540000,0.01,Arabic,Islam,
