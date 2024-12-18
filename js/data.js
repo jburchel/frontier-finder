@@ -147,15 +147,42 @@ function populateUPGDropdown(country) {
 }
 
 // Function to calculate distance between two points using Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2, unit = 'mi') {
-    const R = unit === 'km' ? 6371 : 3959; // Earth's radius in km or miles
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
+function calculateDistance(lat1, lon1, lat2, lon2, unit = 'miles') {
+    // Convert latitude and longitude to numbers
+    lat1 = parseFloat(lat1);
+    lon1 = parseFloat(lon1);
+    lat2 = parseFloat(lat2);
+    lon2 = parseFloat(lon2);
+
+    // Convert to radians
+    lat1 = toRad(lat1);
+    lon1 = toRad(lon1);
+    lat2 = toRad(lat2);
+    lon2 = toRad(lon2);
+
+    // Calculate differences
+    const dLat = lat2 - lat1;
+    const dLon = lon2 - lon1;
+
+    // Haversine formula
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.cos(lat1) * Math.cos(lat2) * 
               Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    
+    // Earth's radius in kilometers
+    const R = 6371;
+    
+    // Calculate distance
+    let distance = R * c;
+    
+    // Convert to miles if needed
+    if (unit === 'miles') {
+        distance = distance * 0.621371;
+    }
+    
+    return parseFloat(distance.toFixed(2));
 }
 
 function toRad(degrees) {
@@ -373,10 +400,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 
         // Build the API URL with parameters
         const params = new URLSearchParams({
-            api_key: apiKey,
-            latitude: parseFloat(latitude).toFixed(6),
-            longitude: parseFloat(longitude).toFixed(6),
-            distance: Math.round(radiusInKm)
+            api_key: apiKey
         });
 
         // Construct the full URL
@@ -408,7 +432,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
 
         // Filter for Frontier People Groups and map to our format
         const fpgs = data
-            .filter(fpg => fpg.Frontier === 'Y')
+            .filter(fpg => fpg.Frontier === 'Y' && fpg.Latitude && fpg.Longitude)
             .map(fpg => {
                 const distance = calculateDistance(
                     latitude,
@@ -418,7 +442,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     units
                 );
 
-                const mappedFpg = {
+                return {
                     name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
                     country: fpg.Ctry || 'Unknown',
                     distance,
@@ -430,14 +454,13 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     type: 'fpg',
                     units
                 };
-                console.log('Mapped FPG:', mappedFpg);
-                return mappedFpg;
-            });
+            })
+            // Filter by radius
+            .filter(fpg => fpg.distance <= parseFloat(radius))
+            // Sort by distance
+            .sort((a, b) => a.distance - b.distance);
 
-        // Sort by distance and filter by radius
-        fpgs.sort((a, b) => a.distance - b.distance);
-
-        console.log(`Found ${fpgs.length} FPGs from Joshua Project API`);
+        console.log(`Found ${fpgs.length} FPGs within ${radius} ${units} radius`);
         if (fpgs.length > 0) {
             console.log('Sample FPG:', fpgs[0]);
         }
