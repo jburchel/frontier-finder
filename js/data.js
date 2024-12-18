@@ -316,20 +316,38 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         // Build the API URL with parameters
         const params = new URLSearchParams({
             api_key: apiKey,
-            latitude,
-            longitude,
-            radius: radiusInKm,
+            latitude: parseFloat(latitude).toFixed(6),
+            longitude: parseFloat(longitude).toFixed(6),
+            radius: Math.round(radiusInKm),
             Frontier: 'Y',  // Only get Frontier People Groups
             fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,Latitude,Longitude'
         });
 
+        // Construct the full URL
+        const url = `${config.apiBaseUrl}/api/v2/people_groups?${params}`;
+        console.log('Making request to:', url);
+
         // Make the API request
-        const response = await fetch(`${config.apiBaseUrl}/api/v2/people_groups?${params}`);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        // Log response headers
+        console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
         
         // Check for successful response
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Joshua Project API error:', errorText);
+            console.error('Joshua Project API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries([...response.headers.entries()]),
+                body: errorText
+            });
             throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
 
@@ -343,18 +361,22 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         }
 
         // Map API response to our format
-        const fpgs = data.map(fpg => ({
-            name: fpg.PeopNameInCountry || 'Unknown',
-            country: fpg.Ctry || 'Unknown',
-            distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
-            population: parseInt(fpg.Population) || 0,
-            language: fpg.PrimaryLanguageName || 'Unknown',
-            religion: fpg.PrimaryReligion || 'Unknown',
-            evangelical: parseFloat(fpg.PercentEvangelical) || 0,
-            jpScale: fpg.JPScale || '1',
-            type: 'fpg',
-            units
-        }));
+        const fpgs = data.map(fpg => {
+            const mappedFpg = {
+                name: fpg.PeopNameInCountry || 'Unknown',
+                country: fpg.Ctry || 'Unknown',
+                distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
+                population: parseInt(fpg.Population) || 0,
+                language: fpg.PrimaryLanguageName || 'Unknown',
+                religion: fpg.PrimaryReligion || 'Unknown',
+                evangelical: parseFloat(fpg.PercentEvangelical) || 0,
+                jpScale: fpg.JPScale || '1',
+                type: 'fpg',
+                units
+            };
+            console.log('Mapped FPG:', mappedFpg);
+            return mappedFpg;
+        });
 
         // Sort by distance
         fpgs.sort((a, b) => a.distance - b.distance);
@@ -367,6 +389,11 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         return fpgs;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
+        // Log the error to the UI
+        document.getElementById('fpgList').innerHTML = `
+            <p class="error">Error fetching FPGs: ${error.message}</p>
+            <p class="error-details">Please check the browser console for more details.</p>
+        `;
         throw error;
     }
 }
