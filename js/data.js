@@ -313,36 +313,58 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         // Convert radius to kilometers if needed
         const radiusInKm = units === 'miles' ? radius * 1.60934 : radius;
 
+        // Build the API URL with parameters
         const params = new URLSearchParams({
             api_key: apiKey,
             latitude,
             longitude,
             radius: radiusInKm,
-            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,Frontier,JPScale,PercentEvangelical',
-            Frontier: 'Y'  // Only get Frontier People Groups
+            Frontier: 'Y',  // Only get Frontier People Groups
+            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,Latitude,Longitude'
         });
 
-        const response = await fetch(`https://api.joshuaproject.net/api/v2/people_groups?${params}`);
+        // Make the API request
+        const response = await fetch(`${config.apiBaseUrl}/api/v2/people_groups?${params}`);
+        
+        // Check for successful response
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Joshua Project API error:', errorText);
             throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
 
+        // Parse the response
         const data = await response.json();
-        console.log(`Found ${data.length} FPGs from Joshua Project API`);
+        console.log('Raw API response:', data);
+
+        if (!Array.isArray(data)) {
+            console.error('Unexpected API response format:', data);
+            throw new Error('Invalid API response format');
+        }
 
         // Map API response to our format
-        return data.map(fpg => ({
+        const fpgs = data.map(fpg => ({
             name: fpg.PeopNameInCountry || 'Unknown',
             country: fpg.Ctry || 'Unknown',
             distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
             population: parseInt(fpg.Population) || 0,
             language: fpg.PrimaryLanguageName || 'Unknown',
             religion: fpg.PrimaryReligion || 'Unknown',
-            evangelical: fpg.PercentEvangelical || 0,
+            evangelical: parseFloat(fpg.PercentEvangelical) || 0,
             jpScale: fpg.JPScale || '1',
             type: 'fpg',
             units
         }));
+
+        // Sort by distance
+        fpgs.sort((a, b) => a.distance - b.distance);
+
+        console.log(`Found ${fpgs.length} FPGs from Joshua Project API`);
+        if (fpgs.length > 0) {
+            console.log('Sample FPG:', fpgs[0]);
+        }
+
+        return fpgs;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
         throw error;
