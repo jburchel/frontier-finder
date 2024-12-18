@@ -81,13 +81,50 @@ async function initializeCountryDropdown() {
 
 // Setup event listeners
 function setupEventListeners() {
-    const countrySelect = document.getElementById('country');
-    const upgSelect = document.getElementById('upg');
-    
-    countrySelect.addEventListener('change', () => {
-        const selectedCountry = countrySelect.value;
-        populateUPGDropdown(selectedCountry);
-    });
+    try {
+        const countrySelect = document.getElementById('country');
+        const upgSelect = document.getElementById('upg');
+        const radiusInput = document.getElementById('radius');
+        const unitsSelect = document.getElementById('units');
+        const searchForm = document.getElementById('searchForm');
+
+        // Skip event listeners on results page
+        if (!searchForm) {
+            console.log('Search form not found - this is normal on results page');
+            return;
+        }
+
+        // Country selection change
+        countrySelect.addEventListener('change', async (e) => {
+            const selectedCountry = e.target.value;
+            await populateUPGDropdown(selectedCountry);
+        });
+
+        // Form submission
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const country = countrySelect.value;
+            const upg = upgSelect.value;
+            const radius = radiusInput.value;
+            const units = unitsSelect.value;
+
+            if (!country || !upg || !radius) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Redirect to results page with search parameters
+            const params = new URLSearchParams({
+                country,
+                upg,
+                radius,
+                units
+            });
+            window.location.href = `results.html?${params}`;
+        });
+    } catch (error) {
+        console.error('Error setting up event listeners:', error);
+    }
 }
 
 // Function to populate UPG dropdown based on selected country
@@ -322,7 +359,7 @@ async function loadExistingUPGs() {
     }
 }
 
-// Function to fetch FPGs from Joshua Project API using JSONP
+// Function to fetch FPGs from Joshua Project API
 async function fetchFPGs(latitude, longitude, radius, units) {
     console.log('Fetching FPGs with params:', { latitude, longitude, radius, units });
     try {
@@ -340,57 +377,37 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             latitude: parseFloat(latitude).toFixed(6),
             longitude: parseFloat(longitude).toFixed(6),
             radius: Math.round(radiusInKm),
-            Frontier: 'Y',  // Only get Frontier People Groups
-            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,Latitude,Longitude',
-            callback: 'handleJPResponse'  // JSONP callback
+            Frontier: 'Y'  // Only get Frontier People Groups
         });
 
         // Construct the full URL
-        const url = `${config.apiBaseUrl}/api/v2/people_groups.jsonp?${params}`;
-        console.log('Making JSONP request to:', url);
+        const url = `${config.apiBaseUrl}/v1/peoples/geo.json?${params}`;
+        console.log('Making request to:', url);
 
-        // Create a promise to handle the JSONP response
-        const jsonpPromise = new Promise((resolve, reject) => {
-            // Create global callback function
-            window.handleJPResponse = function(data) {
-                console.log('Received JSONP response:', data);
-                resolve(data);
-                // Clean up
-                delete window.handleJPResponse;
-                document.head.removeChild(script);
-            };
-
-            // Handle script load error
-            const handleError = () => {
-                console.error('Failed to load JSONP script');
-                delete window.handleJPResponse;
-                document.head.removeChild(script);
-                reject(new Error('Failed to load JSONP script'));
-            };
-
-            // Create script element
-            const script = document.createElement('script');
-            script.src = url;
-            script.async = true;
-            script.onerror = handleError;
-            document.head.appendChild(script);
-        });
-
-        // Wait for JSONP response
-        const data = await jsonpPromise;
-        console.log('Raw API response:', data);
-
-        if (!Array.isArray(data)) {
-            console.error('Unexpected API response format:', data);
-            throw new Error('Invalid API response format');
+        // Make the API request
+        const response = await fetch(url);
+        
+        // Check for successful response
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Joshua Project API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            });
+            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
+
+        // Parse the response
+        const data = await response.json();
+        console.log('Raw API response:', data);
 
         // Map API response to our format
         const fpgs = data.map(fpg => {
             const mappedFpg = {
-                name: fpg.PeopNameInCountry || 'Unknown',
+                name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
                 country: fpg.Ctry || 'Unknown',
-                distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
+                distance: units === 'miles' ? fpg.Distance * 0.621371 : fpg.Distance, // Convert km to miles if needed
                 population: parseInt(fpg.Population) || 0,
                 language: fpg.PrimaryLanguageName || 'Unknown',
                 religion: fpg.PrimaryReligion || 'Unknown',
