@@ -37,25 +37,46 @@ async function initializeUI() {
 }
 
 // Function to initialize country dropdown
-function initializeCountryDropdown() {
-    const countrySelect = document.getElementById('country');
-    const countries = getUniqueCountries();
-    
-    // Clear existing options except the first one
-    while (countrySelect.options.length > 1) {
-        countrySelect.remove(1);
-    }
-    
-    // Add countries to dropdown
-    countries.forEach(country => {
-        if (country && country.trim()) {
-            const option = new Option(country, country);
-            countrySelect.add(option);
+async function initializeCountryDropdown() {
+    try {
+        const countryDropdown = document.getElementById('country');
+        if (!countryDropdown) {
+            console.log('Country dropdown not found - this is normal on results page');
+            return;
         }
-    });
 
-    // Log the number of countries added
-    console.log(`Added ${countries.length} countries to dropdown`);
+        // Load data if not already loaded
+        if (existingUpgData.length === 0) {
+            await loadAllData();
+        }
+
+        // Get unique countries
+        const countries = getUniqueCountries();
+        
+        // Sort countries alphabetically
+        countries.sort();
+
+        // Clear existing options
+        countryDropdown.innerHTML = '<option value="">Select a country...</option>';
+
+        // Add country options
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            countryDropdown.appendChild(option);
+        });
+
+        // Initialize UPG dropdown if country is already selected
+        const selectedCountry = countryDropdown.value;
+        if (selectedCountry) {
+            await populateUPGDropdown(selectedCountry);
+        }
+
+        console.log('Country dropdown initialized with', countries.length, 'countries');
+    } catch (error) {
+        console.error('Error initializing country dropdown:', error);
+    }
 }
 
 // Setup event listeners
@@ -301,7 +322,7 @@ async function loadExistingUPGs() {
     }
 }
 
-// Function to fetch FPGs from Joshua Project API
+// Function to fetch FPGs from Joshua Project API using JSONP
 async function fetchFPGs(latitude, longitude, radius, units) {
     console.log('Fetching FPGs with params:', { latitude, longitude, radius, units });
     try {
@@ -320,39 +341,43 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             longitude: parseFloat(longitude).toFixed(6),
             radius: Math.round(radiusInKm),
             Frontier: 'Y',  // Only get Frontier People Groups
-            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,Latitude,Longitude'
+            fields: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,Latitude,Longitude',
+            callback: 'handleJPResponse'  // JSONP callback
         });
 
         // Construct the full URL
-        const url = `${config.apiBaseUrl}/api/v2/people_groups?${params}`;
-        console.log('Making request to:', url);
+        const url = `${config.apiBaseUrl}/api/v2/people_groups.jsonp?${params}`;
+        console.log('Making JSONP request to:', url);
 
-        // Make the API request
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+        // Create a promise to handle the JSONP response
+        const jsonpPromise = new Promise((resolve, reject) => {
+            // Create global callback function
+            window.handleJPResponse = function(data) {
+                console.log('Received JSONP response:', data);
+                resolve(data);
+                // Clean up
+                delete window.handleJPResponse;
+                document.head.removeChild(script);
+            };
+
+            // Handle script load error
+            const handleError = () => {
+                console.error('Failed to load JSONP script');
+                delete window.handleJPResponse;
+                document.head.removeChild(script);
+                reject(new Error('Failed to load JSONP script'));
+            };
+
+            // Create script element
+            const script = document.createElement('script');
+            script.src = url;
+            script.async = true;
+            script.onerror = handleError;
+            document.head.appendChild(script);
         });
-        
-        // Log response headers
-        console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
-        
-        // Check for successful response
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Joshua Project API error:', {
-                status: response.status,
-                statusText: response.statusText,
-                headers: Object.fromEntries([...response.headers.entries()]),
-                body: errorText
-            });
-            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
-        }
 
-        // Parse the response
-        const data = await response.json();
+        // Wait for JSONP response
+        const data = await jsonpPromise;
         console.log('Raw API response:', data);
 
         if (!Array.isArray(data)) {
