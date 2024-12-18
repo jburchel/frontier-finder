@@ -433,10 +433,24 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             throw new Error('Invalid API response format');
         }
 
+        // Log a sample people group to see its structure
+        if (data.length > 0) {
+            console.log('Sample people group:', data[0]);
+        }
+
         // Filter for Frontier People Groups within radius and map to our format
         const fpgs = data
             .filter(fpg => {
-                if (fpg.Frontier !== 'Y' || !fpg.Latitude || !fpg.Longitude) {
+                // Log the frontier status to debug
+                console.log(`People Group ${fpg.PeopNameInCountry || fpg.PeopName}: FrontierStatus=${fpg.FrontierStatus}, JPScale=${fpg.JPScale}`);
+                
+                // Check if it's a Frontier People Group (JPScale 1 or FrontierStatus=Y)
+                if ((!fpg.FrontierStatus || fpg.FrontierStatus !== 'Y') && 
+                    (!fpg.JPScale || fpg.JPScale !== '1')) {
+                    return false;
+                }
+                
+                if (!fpg.Latitude || !fpg.Longitude) {
                     return false;
                 }
                 
