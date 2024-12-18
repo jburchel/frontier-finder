@@ -374,15 +374,14 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         // Build the API URL with parameters
         const params = new URLSearchParams({
             api_key: apiKey,
-            lat: parseFloat(latitude).toFixed(6),
-            lon: parseFloat(longitude).toFixed(6),
-            rad: Math.round(radiusInKm),
-            frontier: 'Y',  // Only get Frontier People Groups
-            select: 'PeopNameInCountry,Ctry,Population,PrimaryLanguageName,PrimaryReligion,PercentEvangelical,JPScale,ROG3'
+            latitude: parseFloat(latitude).toFixed(6),
+            longitude: parseFloat(longitude).toFixed(6),
+            radius: Math.round(radiusInKm),
+            only_frontier: 'Y'  // Only get Frontier People Groups
         });
 
         // Construct the full URL
-        const url = `${config.apiBaseUrl}/v1/people_groups/search.json?${params}`;
+        const url = `${config.apiBaseUrl}/v1/people_groups/near.json?${params}`;
         console.log('Making request to:', url);
 
         // Make the API request
@@ -403,12 +402,17 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         const data = await response.json();
         console.log('Raw API response:', data);
 
+        if (!Array.isArray(data)) {
+            console.error('Unexpected API response format:', data);
+            throw new Error('Invalid API response format');
+        }
+
         // Map API response to our format
         const fpgs = data.map(fpg => {
             const mappedFpg = {
                 name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
                 country: fpg.Ctry || 'Unknown',
-                distance: calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units),
+                distance: fpg.Distance ? (units === 'miles' ? fpg.Distance * 0.621371 : fpg.Distance) : 0,
                 population: parseInt(fpg.Population) || 0,
                 language: fpg.PrimaryLanguageName || 'Unknown',
                 religion: fpg.PrimaryReligion || 'Unknown',
