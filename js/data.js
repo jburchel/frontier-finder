@@ -452,7 +452,9 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                 // Log each group's filtering criteria
                 console.log(`Filtering group: ${fpg.PeopNameInCountry}`, {
                     JPScalePC: fpg.JPScalePC,
-                    hasCoordinates: Boolean(fpg.Latitude && fpg.Longitude)
+                    hasCoordinates: Boolean(fpg.Latitude && fpg.Longitude),
+                    distance: fpg.Latitude && fpg.Longitude ? 
+                        calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units) : 'N/A'
                 });
                 
                 // Check if it's a Frontier People Group (JPScalePC = 1)
@@ -460,7 +462,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                 const hasCoordinates = Boolean(fpg.Latitude && fpg.Longitude);
                 
                 if (!isFrontier) {
-                    console.log('Filtered out: Not a frontier group');
+                    console.log(`Filtered out: Not a frontier group (JPScalePC: ${fpg.JPScalePC})`);
                     return false;
                 }
                 
@@ -477,8 +479,14 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     units
                 );
                 
-                // Only include FPGs within the specified radius
-                return distance <= parseFloat(radius);
+                const isWithinRadius = distance <= parseFloat(radius);
+                if (!isWithinRadius) {
+                    console.log(`Filtered out: Outside radius (${distance.toFixed(2)} ${units})`);
+                    return false;
+                }
+                
+                console.log(`Including FPG: ${fpg.PeopNameInCountry} (${distance.toFixed(2)} ${units})`);
+                return true;
             })
             .map(fpg => {
                 const distance = calculateDistance(
