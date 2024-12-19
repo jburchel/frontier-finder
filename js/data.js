@@ -47,11 +47,14 @@ async function initializeCountryDropdown() {
 
         // Load data if not already loaded
         if (existingUpgData.length === 0) {
-            await loadAllData();
+            console.log('Loading data for country dropdown...');
+            existingUpgData = await loadExistingUPGs();
+            console.log('Loaded existing UPGs:', existingUpgData.length);
         }
 
         // Get unique countries
         const countries = getUniqueCountries();
+        console.log('Unique countries found:', countries);
         
         // Sort countries alphabetically
         countries.sort();
@@ -76,6 +79,7 @@ async function initializeCountryDropdown() {
         console.log('Country dropdown initialized with', countries.length, 'countries');
     } catch (error) {
         console.error('Error initializing country dropdown:', error);
+        throw error;
     }
 }
 
@@ -683,17 +687,22 @@ async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
 async function loadAllData() {
     try {
         console.log('Loading all data...');
-        const [uupgs, upgs] = await Promise.all([
-            loadUUPGData(),
-            loadExistingUPGs()
-        ]);
         
-        // Update the global arrays
-        uupgData = uupgs;
-        existingUpgData = upgs;
+        // Load UUPG data
+        console.log('Loading UUPG data...');
+        uupgData = await loadUUPGData();
+        
+        // Load existing UPGs data
+        console.log('Loading existing UPGs data...');
+        existingUpgData = await loadExistingUPGs();
         
         console.log('All data loaded successfully');
         console.log(`Loaded ${uupgData.length} UUPGs and ${existingUpgData.length} existing UPGs`);
+        
+        return {
+            uupgData,
+            existingUpgData
+        };
     } catch (error) {
         console.error('Error loading data:', error);
         throw error;
