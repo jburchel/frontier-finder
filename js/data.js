@@ -428,26 +428,26 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         }
 
         // Parse the response
-        const data = await response.json();
+        const responseData = await response.json();
         console.log('Raw API response:', {
-            dataType: typeof data,
-            isArray: Array.isArray(data),
-            length: Array.isArray(data) ? data.length : 'N/A',
-            sample: Array.isArray(data) && data.length > 0 ? data[0] : null
+            dataType: typeof responseData,
+            isArray: Array.isArray(responseData.data),
+            length: responseData.data ? responseData.data.length : 'N/A',
+            sample: responseData.data && responseData.data.length > 0 ? responseData.data[0] : null
         });
 
-        if (!Array.isArray(data)) {
-            console.error('Unexpected API response format:', data);
+        if (!responseData.data || !Array.isArray(responseData.data)) {
+            console.error('Unexpected API response format:', responseData);
             throw new Error('Invalid API response format');
         }
 
         // Log a sample people group to see its structure
-        if (data.length > 0) {
-            console.log('Sample people group:', data[0]);
+        if (responseData.data.length > 0) {
+            console.log('Sample people group:', responseData.data[0]);
         }
 
         // Filter for Frontier People Groups within radius and map to our format
-        const fpgs = data
+        const fpgs = responseData.data
             .filter(fpg => {
                 // Log each group's filtering criteria
                 console.log(`Filtering group: ${fpg.PeopNameInCountry}`, {
