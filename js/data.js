@@ -400,6 +400,41 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         // Convert radius to kilometers if needed
         const radiusInKm = units === 'miles' ? radius * 1.60934 : radius;
 
+        // Function to delay execution
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Function to fetch a page with retries
+        async function fetchPage(url, retries = 3) {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    // Add delay between requests to avoid rate limiting
+                    if (attempt > 1) {
+                        console.log(`Retry attempt ${attempt} after delay...`);
+                        await delay(2000); // 2 second delay between retries
+                    }
+
+                    const response = await fetch(url);
+                    
+                    if (response.status === 429) {
+                        console.log('Rate limit hit, waiting before retry...');
+                        await delay(5000); // 5 second delay when rate limited
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    if (attempt === retries) {
+                        throw error;
+                    }
+                    console.log(`Attempt ${attempt} failed, retrying...`);
+                }
+            }
+        }
+
         // Build the API URL with parameters
         const params = new URLSearchParams({
             api_key: apiKey,
@@ -418,106 +453,81 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         let currentPage = 1;
         let totalPages = 1;
 
-        do {
-            // Update page parameter
-            params.set('page', currentPage);
-            const url = `${baseUrl}?${params}`;
-            
-            console.log(`Fetching page ${currentPage}...`);
-            
-            // Make the API request
-            const response = await fetch(url);
-            
-            // Check for successful response
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Joshua Project API error:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText,
-                    url: url.replace(apiKey, '[REDACTED]')
+        try {
+            do {
+                // Update page parameter
+                params.set('page', currentPage);
+                const url = `${baseUrl}?${params}`;
+                
+                console.log(`Fetching page ${currentPage}...`);
+                
+                // Add delay between pages to avoid rate limiting
+                if (currentPage > 1) {
+                    await delay(1000); // 1 second delay between pages
+                }
+
+                // Fetch the page with retries
+                const responseData = await fetchPage(url);
+                
+                if (currentPage === 1) {
+                    totalPages = responseData.meta.pagination.total_pages;
+                    console.log(`Found ${responseData.meta.pagination.total} total people groups across ${totalPages} pages`);
+                }
+
+                if (!responseData.data || !Array.isArray(responseData.data)) {
+                    console.error('Unexpected API response format:', responseData);
+                    throw new Error('Invalid API response format');
+                }
+
+                // Pre-filter the people groups by evangelical percentage before adding to array
+                const filteredGroups = responseData.data.filter(fpg => {
+                    const evangelicalPercent = parseFloat(fpg.PercentEvangelical) || 0;
+                    return evangelicalPercent < 0.1;
                 });
-                throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
-            }
 
-            // Parse the response
-            const responseData = await response.json();
-            
-            if (currentPage === 1) {
-                totalPages = responseData.meta.pagination.total_pages;
-                console.log(`Found ${responseData.meta.pagination.total} total people groups across ${totalPages} pages`);
-            }
+                // Add filtered groups to our array
+                allPeopleGroups = allPeopleGroups.concat(filteredGroups);
+                console.log(`Added ${filteredGroups.length} frontier groups from page ${currentPage}`);
 
-            if (!responseData.data || !Array.isArray(responseData.data)) {
-                console.error('Unexpected API response format:', responseData);
-                throw new Error('Invalid API response format');
-            }
+                currentPage++;
+            } while (currentPage <= totalPages);
 
-            // Add this page's people groups to our array
-            allPeopleGroups = allPeopleGroups.concat(responseData.data);
-            console.log(`Added ${responseData.data.length} people groups from page ${currentPage}`);
+            console.log(`Finished fetching all frontier groups, found ${allPeopleGroups.length} total`);
 
-            currentPage++;
-        } while (currentPage <= totalPages);
+            // Now just filter by distance and map to our format
+            const fpgs = allPeopleGroups
+                .filter(fpg => {
+                    const hasCoordinates = Boolean(fpg.Latitude && fpg.Longitude);
+                    if (!hasCoordinates) {
+                        return false;
+                    }
 
-        console.log(`Finished fetching all ${allPeopleGroups.length} people groups`);
+                    const distance = calculateDistance(
+                        latitude,
+                        longitude,
+                        fpg.Latitude,
+                        fpg.Longitude,
+                        units
+                    );
 
-        // Filter for Frontier People Groups within radius and map to our format
-        const fpgs = allPeopleGroups
-            .filter(fpg => {
-                // Log each group's filtering criteria
-                const evangelicalPercent = parseFloat(fpg.PercentEvangelical) || 0;
-                console.log(`Filtering group: ${fpg.PeopNameInCountry}`, {
-                    PercentEvangelical: evangelicalPercent,
-                    hasCoordinates: Boolean(fpg.Latitude && fpg.Longitude),
-                    distance: fpg.Latitude && fpg.Longitude ? 
-                        calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units) : 'N/A'
-                });
+                    const isWithinRadius = distance <= parseFloat(radius);
+                    if (isWithinRadius) {
+                        console.log(`Including FPG: ${fpg.PeopNameInCountry} (${distance.toFixed(2)} ${units}, ${parseFloat(fpg.PercentEvangelical)}% evangelical)`);
+                    }
+                    return isWithinRadius;
+                }){{ ... }}
                 
-                // Check if it's a Frontier People Group (PercentEvangelical < 0.1%)
-                const isFrontier = evangelicalPercent < 0.1;
-                const hasCoordinates = Boolean(fpg.Latitude && fpg.Longitude);
-                
-                if (!isFrontier) {
-                    console.log(`Filtered out: Not a frontier group (Evangelical: ${evangelicalPercent}%)`);
-                    return false;
-                }
-                
-                if (!hasCoordinates) {
-                    console.log('Filtered out: Missing coordinates');
-                    return false;
-                }
-                
-                const distance = calculateDistance(
-                    latitude,
-                    longitude,
-                    fpg.Latitude,
-                    fpg.Longitude,
-                    units
-                );
-                
-                const isWithinRadius = distance <= parseFloat(radius);
-                if (!isWithinRadius) {
-                    console.log(`Filtered out: Outside radius (${distance.toFixed(2)} ${units})`);
-                    return false;
-                }
-                
-                console.log(`Including FPG: ${fpg.PeopNameInCountry} (${distance.toFixed(2)} ${units}, ${evangelicalPercent}% evangelical)`);
-                return true;
-            })
-            .map(fpg => {
-                const distance = calculateDistance(
-                    latitude,
-                    longitude,
-                    fpg.Latitude,
-                    fpg.Longitude,
-                    units
-                );
-
-                return {
+                // Map FPGs to common format
+                .map(fpg => ({
                     name: fpg.PeopNameInCountry || fpg.PeopName || 'Unknown',
                     country: fpg.Ctry || 'Unknown',
-                    distance,
+                    distance: calculateDistance(
+                        latitude,
+                        longitude,
+                        fpg.Latitude,
+                        fpg.Longitude,
+                        units
+                    ),
                     population: parseInt(fpg.Population) || 0,
                     language: fpg.PrimaryLanguageName || 'Unknown',
                     religion: fpg.PrimaryReligion || 'Unknown',
@@ -525,23 +535,26 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     jpScale: fpg.JPScalePC || '1',
                     type: 'fpg',
                     units
-                };
-            })
-            .sort((a, b) => a.distance - b.distance);
+                }))
+                .sort((a, b) => a.distance - b.distance);
 
-        console.log(`Found ${fpgs.length} FPGs within ${radius} ${units}`);
-        if (fpgs.length > 0) {
-            console.log('Sample nearby FPG:', fpgs[0]);
+            console.log(`Found ${fpgs.length} FPGs within ${radius} ${units}`);
+            if (fpgs.length > 0) {
+                console.log('Sample nearby FPG:', fpgs[0]);
+            }
+
+            return fpgs;
+        } catch (error) {
+            console.error('Error fetching FPGs:', error);
+            // Log the error to the UI
+            document.getElementById('fpgList').innerHTML = `
+                <p class="error">Error fetching FPGs: ${error.message}</p>
+                <p class="error-details">Please check the browser console for more details.</p>
+            `;
+            throw error;
         }
-
-        return fpgs;
     } catch (error) {
         console.error('Error fetching FPGs:', error);
-        // Log the error to the UI
-        document.getElementById('fpgList').innerHTML = `
-            <p class="error">Error fetching FPGs: ${error.message}</p>
-            <p class="error-details">Please check the browser console for more details.</p>
-        `;
         throw error;
     }
 }
