@@ -405,49 +405,65 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             api_key: apiKey,
             latitude: parseFloat(latitude).toFixed(6),
             longitude: parseFloat(longitude).toFixed(6),
-            distance: Math.round(radiusInKm)
+            distance: Math.round(radiusInKm),
+            per_page: 100,
+            page: 1
         });
 
-        // Construct the full URL
-        const url = `${config.apiBaseUrl}/api/v2/people_groups?${params}`;
-        console.log('Making API request to:', url.replace(apiKey, '[REDACTED]')); // Don't log the actual API key
-
-        // Make the API request
-        const response = await fetch(url);
+        // Construct the base URL
+        const baseUrl = `${config.apiBaseUrl}/api/v2/people_groups`;
         
-        // Check for successful response
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Joshua Project API error:', {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText,
-                url: url // Add URL to error logging
-            });
-            throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
-        }
+        // Array to store all people groups
+        let allPeopleGroups = [];
+        let currentPage = 1;
+        let totalPages = 1;
 
-        // Parse the response
-        const responseData = await response.json();
-        console.log('Raw API response:', {
-            dataType: typeof responseData,
-            isArray: Array.isArray(responseData.data),
-            length: responseData.data ? responseData.data.length : 'N/A',
-            sample: responseData.data && responseData.data.length > 0 ? responseData.data[0] : null
-        });
+        do {
+            // Update page parameter
+            params.set('page', currentPage);
+            const url = `${baseUrl}?${params}`;
+            
+            console.log(`Fetching page ${currentPage}...`);
+            
+            // Make the API request
+            const response = await fetch(url);
+            
+            // Check for successful response
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Joshua Project API error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText,
+                    url: url.replace(apiKey, '[REDACTED]')
+                });
+                throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
+            }
 
-        if (!responseData.data || !Array.isArray(responseData.data)) {
-            console.error('Unexpected API response format:', responseData);
-            throw new Error('Invalid API response format');
-        }
+            // Parse the response
+            const responseData = await response.json();
+            
+            if (currentPage === 1) {
+                totalPages = responseData.meta.pagination.total_pages;
+                console.log(`Found ${responseData.meta.pagination.total} total people groups across ${totalPages} pages`);
+            }
 
-        // Log a sample people group to see its structure
-        if (responseData.data.length > 0) {
-            console.log('Sample people group:', responseData.data[0]);
-        }
+            if (!responseData.data || !Array.isArray(responseData.data)) {
+                console.error('Unexpected API response format:', responseData);
+                throw new Error('Invalid API response format');
+            }
+
+            // Add this page's people groups to our array
+            allPeopleGroups = allPeopleGroups.concat(responseData.data);
+            console.log(`Added ${responseData.data.length} people groups from page ${currentPage}`);
+
+            currentPage++;
+        } while (currentPage <= totalPages);
+
+        console.log(`Finished fetching all ${allPeopleGroups.length} people groups`);
 
         // Filter for Frontier People Groups within radius and map to our format
-        const fpgs = responseData.data
+        const fpgs = allPeopleGroups
             .filter(fpg => {
                 // Log each group's filtering criteria
                 const evangelicalPercent = parseFloat(fpg.PercentEvangelical) || 0;
@@ -634,7 +650,8 @@ async function searchUUPGs(latitude, longitude, radius, units = 'miles') {
             religion: uupg.religion,
             latitude: uupg.latitude,
             longitude: uupg.longitude,
-            isUUPG: true
+            isUUPG: true,
+            units
         }));
 
         console.log('Mapped UUPGs:', mappedUUPGs.length);
