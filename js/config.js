@@ -1,7 +1,7 @@
 // Joshua Project API configuration
 export const config = {
     joshuaProjectApiKey: '080e14ad747e', // Joshua Project API key
-    apiBaseUrl: 'https://api.joshuaproject.net', // Base URL for Joshua Project API
+    apiBaseUrl: 'https://joshuaproject.net', // Base URL for Joshua Project API
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
