@@ -392,7 +392,9 @@ async function fetchFPGs(latitude, longitude, radius, units) {
     try {
         const apiKey = config.joshuaProjectApiKey;
         if (!apiKey) {
-            throw new Error('Joshua Project API key not configured');
+            const error = new Error('Joshua Project API key not configured');
+            error.code = 'API_KEY_MISSING';
+            throw error;
         }
 
         // Convert radius to kilometers if needed
@@ -407,8 +409,8 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         });
 
         // Construct the full URL
-        const url = `${config.apiBaseUrl}/v1/people_groups.json?${params}`;
-        console.log('Making request to:', url);
+        const url = `${config.apiBaseUrl}/api/v2/people_groups?${params}`;
+        console.log('Making API request to:', url.replace(apiKey, '[REDACTED]')); // Don't log the actual API key
 
         // Make the API request
         const response = await fetch(url);
@@ -419,14 +421,20 @@ async function fetchFPGs(latitude, longitude, radius, units) {
             console.error('Joshua Project API error:', {
                 status: response.status,
                 statusText: response.statusText,
-                body: errorText
+                body: errorText,
+                url: url // Add URL to error logging
             });
             throw new Error(`Failed to fetch FPGs: ${response.status} ${response.statusText}`);
         }
 
         // Parse the response
         const data = await response.json();
-        console.log('Raw API response:', data);
+        console.log('Raw API response:', {
+            dataType: typeof data,
+            isArray: Array.isArray(data),
+            length: Array.isArray(data) ? data.length : 'N/A',
+            sample: Array.isArray(data) && data.length > 0 ? data[0] : null
+        });
 
         if (!Array.isArray(data)) {
             console.error('Unexpected API response format:', data);
@@ -441,16 +449,23 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         // Filter for Frontier People Groups within radius and map to our format
         const fpgs = data
             .filter(fpg => {
-                // Log the frontier status to debug
-                console.log(`People Group ${fpg.PeopNameInCountry || fpg.PeopName}: FrontierStatus=${fpg.FrontierStatus}, JPScale=${fpg.JPScale}`);
+                // Log each group's filtering criteria
+                console.log(`Filtering group: ${fpg.PeopNameInCountry}`, {
+                    JPScalePC: fpg.JPScalePC,
+                    hasCoordinates: Boolean(fpg.Latitude && fpg.Longitude)
+                });
                 
-                // Check if it's a Frontier People Group (JPScale 1 or FrontierStatus=Y)
-                if ((!fpg.FrontierStatus || fpg.FrontierStatus !== 'Y') && 
-                    (!fpg.JPScale || fpg.JPScale !== '1')) {
+                // Check if it's a Frontier People Group (JPScalePC = 1)
+                const isFrontier = fpg.JPScalePC === '1';
+                const hasCoordinates = Boolean(fpg.Latitude && fpg.Longitude);
+                
+                if (!isFrontier) {
+                    console.log('Filtered out: Not a frontier group');
                     return false;
                 }
                 
-                if (!fpg.Latitude || !fpg.Longitude) {
+                if (!hasCoordinates) {
+                    console.log('Filtered out: Missing coordinates');
                     return false;
                 }
                 
@@ -482,7 +497,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     language: fpg.PrimaryLanguageName || 'Unknown',
                     religion: fpg.PrimaryReligion || 'Unknown',
                     evangelical: parseFloat(fpg.PercentEvangelical) || 0,
-                    jpScale: fpg.JPScale || '1',
+                    jpScale: fpg.JPScalePC || '1',
                     type: 'fpg',
                     units
                 };
