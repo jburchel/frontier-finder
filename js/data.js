@@ -450,19 +450,20 @@ async function fetchFPGs(latitude, longitude, radius, units) {
         const fpgs = responseData.data
             .filter(fpg => {
                 // Log each group's filtering criteria
+                const evangelicalPercent = parseFloat(fpg.PercentEvangelical) || 0;
                 console.log(`Filtering group: ${fpg.PeopNameInCountry}`, {
-                    JPScalePC: fpg.JPScalePC,
+                    PercentEvangelical: evangelicalPercent,
                     hasCoordinates: Boolean(fpg.Latitude && fpg.Longitude),
                     distance: fpg.Latitude && fpg.Longitude ? 
                         calculateDistance(latitude, longitude, fpg.Latitude, fpg.Longitude, units) : 'N/A'
                 });
                 
-                // Check if it's a Frontier People Group (JPScalePC = 1)
-                const isFrontier = fpg.JPScalePC === '1';
+                // Check if it's a Frontier People Group (PercentEvangelical < 0.1%)
+                const isFrontier = evangelicalPercent < 0.1;
                 const hasCoordinates = Boolean(fpg.Latitude && fpg.Longitude);
                 
                 if (!isFrontier) {
-                    console.log(`Filtered out: Not a frontier group (JPScalePC: ${fpg.JPScalePC})`);
+                    console.log(`Filtered out: Not a frontier group (Evangelical: ${evangelicalPercent}%)`);
                     return false;
                 }
                 
@@ -485,7 +486,7 @@ async function fetchFPGs(latitude, longitude, radius, units) {
                     return false;
                 }
                 
-                console.log(`Including FPG: ${fpg.PeopNameInCountry} (${distance.toFixed(2)} ${units})`);
+                console.log(`Including FPG: ${fpg.PeopNameInCountry} (${distance.toFixed(2)} ${units}, ${evangelicalPercent}% evangelical)`);
                 return true;
             })
             .map(fpg => {
