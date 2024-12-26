@@ -40,6 +40,8 @@ async function initializeUI() {
 async function initializeCountryDropdown() {
     try {
         const countryDropdown = document.getElementById('country');
+        console.log('Found country dropdown:', countryDropdown);
+
         if (!countryDropdown) {
             console.log('Country dropdown not found - this is normal on results page');
             return;
@@ -49,7 +51,7 @@ async function initializeCountryDropdown() {
         if (existingUpgData.length === 0) {
             console.log('Loading data for country dropdown...');
             existingUpgData = await loadExistingUPGs();
-            console.log('Loaded existing UPGs:', existingUpgData.length);
+            console.log('Loaded existing UPGs data:', existingUpgData);
         }
 
         // Get unique countries
