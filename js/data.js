@@ -40,6 +40,8 @@ async function initializeUI() {
 async function initializeCountryDropdown() {
     try {
         const countryDropdown = document.getElementById('country');
+        console.log('Found country dropdown:', countryDropdown);
+
         if (!countryDropdown) {
             console.log('Country dropdown not found - this is normal on results page');
             return;
@@ -49,7 +51,7 @@ async function initializeCountryDropdown() {
         if (existingUpgData.length === 0) {
             console.log('Loading data for country dropdown...');
             existingUpgData = await loadExistingUPGs();
-            console.log('Loaded existing UPGs:', existingUpgData.length);
+            console.log('Loaded existing UPGs data:', existingUpgData);
         }
 
         // Get unique countries
@@ -323,12 +325,13 @@ async function loadExistingUPGs() {
     }
 
     try {
+        console.log('Fetching from:', DATA_PATHS.EXISTING_UPGS);
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
-        if (!response.ok) {
-            throw new Error(`Failed to load existing UPGs: ${response.status} ${response.statusText}`);
-        }
-
+        console.log('Response status:', response.status);
+        
         const csvText = await response.text();
+        console.log('CSV data received:', csvText.substring(0, 200));
+
         if (!csvText.trim()) {
             throw new Error('Existing UPGs CSV file is empty');
         }
