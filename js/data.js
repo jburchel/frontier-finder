@@ -325,12 +325,15 @@ async function loadExistingUPGs() {
     }
 
     try {
+        console.log('Fetching UPGs from:', DATA_PATHS.EXISTING_UPGS);
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
         if (!response.ok) {
             throw new Error(`Failed to load existing UPGs: ${response.status} ${response.statusText}`);
         }
 
         const csvText = await response.text();
+        console.log('CSV data received:', csvText.substring(0, 200)); // Debug log
+
         if (!csvText.trim()) {
             throw new Error('Existing UPGs CSV file is empty');
         }
@@ -347,6 +350,7 @@ async function loadExistingUPGs() {
 
         let skippedCount = 0;
         const upgs = [];
+
         for (let i = 1; i < lines.length; i++) {
             try {
                 const values = parseCSVLine(lines[i]);
@@ -370,10 +374,10 @@ async function loadExistingUPGs() {
                         latitude: coordinates.lat,
                         longitude: coordinates.lon,
                         pronunciation: row['pronunciation'] || '',
-                        distance: null // Initialize distance as null
+                        distance: null
                     });
                 } else {
-                    console.warn(`Skipping UPG '${row['name']}' from ${row['country']}: Invalid or missing coordinates`);
+                    console.warn(`Skipping UPG '${row['name']}' from ${row['country']}: Invalid coordinates`);
                     skippedCount++;
                 }
             } catch (error) {
@@ -382,7 +386,7 @@ async function loadExistingUPGs() {
             }
         }
 
-        console.log(`Loaded ${upgs.length} existing UPGs from CSV (skipped ${skippedCount} invalid entries)`);
+        console.log(`Loaded ${upgs.length} existing UPGs (skipped ${skippedCount} invalid entries)`);
         dataCache.existingUpgs = upgs;
         dataCache.lastFetch = now;
         return upgs;
