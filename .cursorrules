@@ -1,0 +1,415 @@
+# Cursor Rules for Frontier Finder Project
+
+## Project Context
+This is a web application to find Frontier People Groups (FPGs) and Unreached People Groups (UUPGs) within a specified proximity of a selected UPG.
+
+## Project Structure 
+
+## Key Terms and Definitions
+
+- **FPG (Frontier People Group)**: Less than 0.1% Christian and no evidence of a self-sustaining gospel movement
+- **UUPG (Unengaged Unreached People Group)**: No active church planting methodology underway
+- **UPG (Unreached People Group)**: Less than 2% Evangelical Christian
+- **JPScale**: Joshua Project Progress Scale (1.1 to 3.2)
+
+## Code Style Guidelines
+
+1. Use ES6+ features
+2. Maintain modular structure
+3. Comment complex algorithms
+4. Include error handling
+5. Use async/await for asynchronous operations
+
+## Error Messages
+Standard error messages to use in the application:
+- "Missing required search parameters"
+- "API key is missing"
+- "Network error occurred"
+- "Invalid coordinates"
+- "No results found"
+
+## Testing Requirements
+- Validate coordinates
+- Check radius calculations
+- Verify API responses
+- Test data transformations
+- Validate Firebase operations
+
+## Performance Guidelines
+- Cache API responses
+- Optimize database queries
+- Lazy load components
+- Minimize DOM operations
+- Use debouncing for search
+
+## Security Rules
+1. Never expose API keys in client-side code
+2. Validate all user inputs
+3. Implement rate limiting
+4. Use HTTPS for all requests
+5. Follow Firebase security best practices
+
+## Accessibility Requirements
+1. Include ARIA labels
+2. Maintain keyboard navigation
+3. Provide alt text for images
+4. Ensure color contrast
+5. Support screen readers
+
+## Browser Support
+- Chrome (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- Edge (latest version)
+
+## Deployment Process
+1. Run tests
+2. Build production version
+3. Deploy to GitHub Pages
+4. Verify Firebase connections
+5. Test live deployment 
+
+## Joshua Project API Documentation
+
+### Base URL
+- https://api.joshuaproject.net/v2/
+
+### Authentication
+- API Key Required
+- Include as query parameter: `api_key=YOUR_API_KEY`
+- API keys from v1 can be used with v2
+
+### Pagination
+- Default: 100 records per page (25 with connected data)
+- Limit: 1,000 records per page (3,000 if fields specified, 50 with connected data)
+- Custom page size: Use `limit=number_of_records`
+- Page selection: Use `page=page_number`
+- Response includes pagination metadata:
+  ```json
+  {
+    "meta": {
+      "pagination": {
+        "total_count": number,
+        "total_pages": number,
+        "current_page": number,
+        "limit": number
+      }
+    }
+  }
+  ```
+
+### Field Selection
+- Default: All fields returned
+- Custom fields: Use `fields=field1|field2|field3`
+- Connected data: Use `connected_data=jplanguages|jpaltnames|jpcountries|jpvideos`
+- Field selection applies to both main and connected data
+
+### Key Endpoints
+
+1. People Groups
+```
+GET /PeopleGroups
+Query Parameters:
+- ROG3: string (Region/Continent code)
+- ROL3: string (Country code)
+- PrimaryReligion: string
+- lat: float (Latitude)
+- lon: float (Longitude)
+- rad: float (Radius in km)
+- JPScale: string (Progress scale)
+- IsUUPG: boolean
+- IsFPG: boolean
+- min_population: number
+- max_population: number
+
+Response:
+{
+    "data": [{
+        "PeopleID": number,
+        "PeopleName": string,
+        "Latitude": number,
+        "Longitude": number,
+        "Population": number,
+        "PrimaryReligion": string,
+        "PercentEvangelical": number,
+        "JPScale": string,
+        "ROL3": string,
+        "IsUUPG": boolean,
+        "IsFPG": boolean
+    }],
+    "metadata": {
+        "total": number,
+        "showing": number
+    }
+}
+```
+
+### Response Codes
+| HTTP Status Code | Reason                 |
+| ---------------- | ---------------------- |
+| 200              | Success                |
+| 401              | Too Many Login Attempts|
+| 403              | Access Forbidden       |
+| 404              | No Data Found          |
+| 406              | Data Validation Error  |
+| 500              | Internal Server Error  |
+
+### Best Practices
+1. Cache responses when possible
+2. Use field selection to minimize response size
+3. Monitor rate limit headers
+4. Handle pagination for large datasets
+5. Use connected_data to minimize API calls
+
+2. Countries
+```
+GET /Countries
+Query Parameters:
+- ROG3: string (Region code)
+- CountryName: string
+
+Response:
+{
+    "data": [{
+        "ROL3": string,
+        "CountryName": string,
+        "Population": number,
+        "PeopleGroups": number,
+        "UPGs": number,
+        "FPGs": number
+    }],
+    "metadata": {
+        "total": number,
+        "showing": number
+    }
+}
+```
+
+3. Languages
+```
+GET /Languages
+Query Parameters:
+- ROL3: string (Country code)
+- LangName: string
+
+Response:
+{
+    "data": [{
+        "LangID": number,
+        "LangName": string,
+        "Population": number,
+        "PeopleGroups": number
+    }],
+    "metadata": {
+        "total": number,
+        "showing": number
+    }
+}
+```
+
+### Rate Limiting
+- 250 requests per day for free tier
+- Response headers include rate limit information:
+  - X-RateLimit-Limit
+  - X-RateLimit-Remaining
+  - X-RateLimit-Reset
+
+### Error Responses
+```
+{
+    "error": {
+        "code": string,
+        "message": string
+    }
+}
+
+Common Error Codes:
+- 401: Invalid API key
+- 403: Rate limit exceeded
+- 404: Resource not found
+- 422: Invalid parameters
+
+## Brand Book
+4
+Brand
+
+Glorify God
+Provide Gospel access
+Lack of Gospel access
+People groups
+Unreached People Groups (UPGs)
+Unengaged Unreached People Groups (UUPGs)
+Plant multiplying churches
+House churches
+Ministry Multiplication Cycle (MMC)
+
+“We provide gospel access to unreached people groups.”
+“Spiritual needs are everywhere, but access to the gospel is not.”
+“Multiplying church planters to plant multiplying churches.”
+“We partner with Jesus as He builds His Church.”
+“42% Of the world’s population is unreached with the gospel.”
+“Making Christ’s last command our frst priority.”
+“Crossover Global passionately seeks to glorify God by providing
+Gospel access through the planting of multiplying churches among the
+unreached peoples of the world.”
+
+The Crossover Global team is formed by people who come from different cultures and social contexts. Therefore, a special attention
+is required in order to communicate on behalf of our brand with consistency and cohesion. Below are some examples of keywords
+and phrases frequently used by Crossover Global. It is strongly recommended to keep this list in mind when communicating the
+vision and mission of Crossover Global.
+KEYWORDS DNA
+
+COMMON PHRASES
+
+5 Logo
+
+PRIMARY
+
+MEANINGS
+
+HORIZONTAL
+
+The logo is composed of a symbol and two words.
+The symbol consists of a circle with an arrow through the middle. The group represents the world and Jesus’s commandment as
+described in Matthew 28:19 “Therefore go and make disciples of all nations...” (NIV)
+The word “Crossover” has three meanings. First, as a an organization we want to cross over geographic, linguistic, cultural and
+religious barriers with the gospel which is the message of salvation in Jesus Christ. Second, we seek to elevate and exalt the cross
+of Christ over the nations, over the peoples, so that (third) people may be reconciled with the Lord, when they cross over from the
+darkness into Christ’s wonderful light (1 Peter 2:9).
+The word “Global” refers both to whom and how the organization serves: we are a global team serving peoples around the globe.
+
+6 Logo
+
+This logo was created for the specifc use on
+communication pieces from Senior Leadership and
+Executive Directors. This logo is not intended for use
+outside of those parameters.
+EXECUTIVE LOGO
+
+LOGO TYPOGRAPHY
+
+SYMBOL
+
+Cronos Pro
+Variations 8
+Exclusive use for titles and
+featured information.
+
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+
+0123456789
+!?@#$% ̈&*() Aa
+
+Brand Specifications
+Protection Area
+
+Minimum Size
+In printing materials, the amount of empty
+space around the logo must be at least the
+letter “G” size.
+In digital materials, the empty space around
+the logo must be at least 0.15 in (15px).
+
+For printing, the primary logo must never be reduced
+to less than 0.89 in x 1.06 in, and the horizontal logo
+must never be reduced to less than 2.11 in x 0.58 in.
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+0.89 in
+
+2.11 in
+
+1.06 in
+
+0.58 in
+
+7
+
+8 Logo Restrictions
+
+Do not change the color
+
+Do not refect logo
+
+Do not change the color order
+
+Do not rotate logo
+
+Do not distort the logo
+
+Do not apply
+border to the logo
+
+These restrictions apply to the symbol and all logos.
+
+Colors
+
+Backgrounds
+
+PANTONE: 534
+RGB: 24 57 99
+HEX / HTML: 183963
+CMYK: 99 83 35 24
+
+PANTONE: 7739
+RGB: 57 169 73
+HEX / HTML: 39A949
+CMYK: 77 7 100 0
+
+PANTONE: 840 C
+RGB: 127 127 127
+HEX / HTML: 7F7F7F
+CMYK: 49 39 38 20
+
+PANTONE: P 75-1 U
+RGB: 255 255 255
+HEX / HTML: FFFFFF
+CMYK: 0 0 0 0
+
+Pantone : Color type
+RGB: Digital
+Hex/HTML: Web
+CMYK: Print
+
+9
+
+Photography and Video
+
+It is recommended to use images that refect the peoples and cultures in which Crossover Global serves. Below are some examples.
+
+10
+``` 

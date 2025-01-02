@@ -1,9 +1,8 @@
-#!/bin/bash
-
-echo "Adding files to git..."
+@echo off
+echo Adding files to git...
 git add .
 
-echo "Creating commit..."
+echo Creating commit...
 git commit -m "feat: add storage permission to manifest.json
 
 - Enable browser storage access for extension
@@ -13,7 +12,8 @@ git commit -m "feat: add storage permission to manifest.json
 Technical changes:
 - Added 'storage' to manifest.json permissions array"
 
-echo "Pushing to remote..."
+echo Pushing to remote...
 git push origin gh-pages
 
-echo "Done!" 
+echo Done!
+pause 
