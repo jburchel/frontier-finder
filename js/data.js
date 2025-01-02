@@ -369,12 +369,11 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             url.searchParams.append('lat', lat);
             url.searchParams.append('lon', lon);
             url.searchParams.append('rad', radius);
-            url.searchParams.append('IsFPG', 'true');
-            url.searchParams.append('distance', 'true');
-            url.searchParams.append('sort', 'distance');
-            url.searchParams.append('fields', 'PeopleID3|PeopleName|Latitude|Longitude|Population|PrimaryReligion|JPScale');
+            url.searchParams.append('is_frontier', '1');
+            url.searchParams.append('select', 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,JPScale');
             url.searchParams.append('limit', '100');
             url.searchParams.append('page', page);
+            url.searchParams.append('format', 'json');
             return url;
         };
 
@@ -383,15 +382,27 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             const url = createUrl(currentPage);
             console.log(`Fetching page ${currentPage} of ${totalPages} from Joshua Project:`, url.toString());
         
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('API Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    body: errorText
+                });
                 throw new Error(`Joshua Project API error: ${response.status} - ${errorText}`);
             }
-        
+
             const data = await response.json();
             console.log(`Received page ${currentPage} data:`, data);
-        
+
             if (!data || !data.data) {
                 console.warn('No data returned from Joshua Project API');
                 break;
@@ -410,7 +421,7 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             // Process and add results from this page
             const pageResults = data.data.map(fpg => ({
                 ...fpg,
-                distance: fpg.Distance || calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
+                distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
                 units,
                 type: 'FPG'
             }));
@@ -419,7 +430,7 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             currentPage++;
 
             // Add a small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 500));
             if (data.data.length < 100) {
                 console.log('Received less than limit, stopping pagination');
                 break;
