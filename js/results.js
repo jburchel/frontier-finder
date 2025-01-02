@@ -143,17 +143,19 @@ function displayFPGResults(fpgs) {
 
 function createResultCard(group, type) {
     const card = document.createElement('div');
-    card.className = `result-item ${type}`;
-    card.dataset.info = JSON.stringify(group);
-
+    card.className = `result-item ${type} ministry-card`;
+    
     const content = `
-        <div class="checkbox-wrapper">
-            <input type="checkbox" class="group-select" data-group-type="${type}">
-        </div>
         <div class="content-wrapper">
-            <h3>${group.name || group.PeopleName}</h3>
+            <h3 class="cronos-pro">${group.name}</h3>
+            <div class="gospel-access-stats">
+                <span class="stat-label">Evangelical Presence:</span>
+                <span class="stat-value">${group.evangelical}%</span>
+            </div>
             <div class="result-details">
-                <span class="type-badge ${type}">${type.toUpperCase()}</span>
+                <span class="ministry-focus">
+                    ${group.type === 'fpg' ? 'Frontier People Group' : 'Unengaged Unreached People Group'}
+                </span>
                 <span><strong>Distance:</strong> ${group.distance.toFixed(2)} ${group.units}</span>
                 ${group.population ? `<span><strong>Population:</strong> ${Number(group.population).toLocaleString()}</span>` : ''}
                 ${group.pronunciation ? `
@@ -166,11 +168,17 @@ function createResultCard(group, type) {
                 ${group.religion ? `<span><strong>Religion:</strong> ${group.religion}</span>` : ''}
                 ${group.evangelical ? `<span><strong>Evangelical:</strong> ${group.evangelical}%</span>` : ''}
             </div>
+            <div class="ministry-potential">
+                <span>Population without Gospel access: ${calculateGospelAccess(group.population, group.evangelical)}</span>
+            </div>
         </div>
     `;
-
-    card.innerHTML = content;
     return card;
+}
+
+function calculateGospelAccess(population, evangelicalPercentage) {
+    const withoutAccess = population * (1 - (evangelicalPercentage / 100));
+    return withoutAccess.toLocaleString();
 }
 
 // Handle sort options
@@ -205,4 +213,22 @@ function sortResults(sortBy, order = 'asc') {
 
         items.forEach(item => list.appendChild(item));
     });
+}
+
+function handleError(error, component) {
+    const errorMessages = {
+        'RATE_LIMIT_EXCEEDED': 'Daily API limit reached. Please try again tomorrow.',
+        'INVALID_COORDINATES': 'Invalid location coordinates provided.',
+        'NETWORK_ERROR': 'Unable to connect to the server. Please check your internet connection.',
+        'DEFAULT': 'An unexpected error occurred. Please try again.'
+    };
+
+    const message = errorMessages[error.code] || errorMessages.DEFAULT;
+    console.error(`${component} error:`, error);
+    
+    return {
+        message,
+        code: error.code,
+        component
+    };
 }

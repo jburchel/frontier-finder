@@ -749,3 +749,58 @@ export {
 
 // Initialize when the DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeUI);
+
+async function fetchPeopleGroups(params) {
+    const baseUrl = 'https://api.joshuaproject.net/v2/PeopleGroups';
+    const queryString = new URLSearchParams({
+        api_key: config.joshuaProjectApiKey,
+        ...params
+    });
+    
+    try {
+        const response = await fetch(`${baseUrl}?${queryString}`);
+        if (!response.ok) throw new Error('API request failed');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching people groups:', error);
+        throw error;
+    }
+}
+
+function checkRateLimit(headers) {
+    const remaining = headers.get('X-RateLimit-Remaining');
+    const reset = headers.get('X-RateLimit-Reset');
+    
+    if (remaining < 10) {
+        console.warn(`API rate limit warning: ${remaining} requests remaining`);
+    }
+    
+    return {
+        remaining: parseInt(remaining),
+        reset: new Date(reset * 1000)
+    };
+}
+
+class APICache {
+    constructor(ttl = 300000) { // 5 minutes default TTL
+        this.cache = new Map();
+        this.ttl = ttl;
+    }
+
+    set(key, data) {
+        this.cache.set(key, {
+            data,
+            timestamp: Date.now()
+        });
+    }
+
+    get(key) {
+        const entry = this.cache.get(key);
+        if (!entry) return null;
+        if (Date.now() - entry.timestamp > this.ttl) {
+            this.cache.delete(key);
+            return null;
+        }
+        return entry.data;
+    }
+}
