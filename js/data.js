@@ -21,7 +21,7 @@ let uupgData = []; // For search data
 
 // Joshua Project API configuration
 const JP_API = {
-    BASE_URL: 'https://api.joshuaproject.net/v1',
+    BASE_URL: config.apiBaseUrl,
     KEY: config.JP_API_KEY
 };
 
@@ -359,18 +359,24 @@ function setupEventListeners() {
 async function searchJoshuaProject(lat, lon, radius, units) {
     try {
         const url = new URL(`${JP_API.BASE_URL}/people_groups`);
-        url.searchParams.append('api_key', JP_API.KEY);
+        url.searchParams.append('api_token', JP_API.KEY);
         url.searchParams.append('lat', lat);
         url.searchParams.append('lon', lon);
         url.searchParams.append('rad', radius);
         url.searchParams.append('IsFPG', 'true');
+        url.searchParams.append('fields', 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion');
+        
+        console.log('Fetching from Joshua Project:', url.toString());
         
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`Joshua Project API error: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Joshua Project API error: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('Joshua Project response:', data);
+        
         return data.data.map(fpg => ({
             ...fpg,
             distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
@@ -379,6 +385,7 @@ async function searchJoshuaProject(lat, lon, radius, units) {
         }));
     } catch (error) {
         console.error('Error fetching from Joshua Project:', error);
+        console.error('Error details:', error.message);
         return [];
     }
 }
