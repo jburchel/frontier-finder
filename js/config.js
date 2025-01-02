@@ -5,7 +5,8 @@ export const config = {
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-    }
+    },
+    JP_API_KEY: 'your-api-key-here'
 };
 
 // Validate API key

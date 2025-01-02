@@ -19,6 +19,19 @@ const dataCache = {
 let existingUpgData = []; // For dropdown data
 let uupgData = []; // For search data
 
+// Joshua Project API configuration
+const JP_API = {
+    BASE_URL: 'https://api.joshuaproject.net/v1',
+    KEY: config.JP_API_KEY
+};
+
+// Constants for search types
+const SEARCH_TYPES = {
+    FPG: 'fpg',
+    UUPG: 'uupg',
+    BOTH: 'both'
+};
+
 // Function to parse CSV line
 function parseCSVLine(line) {
     const values = [];
@@ -225,7 +238,7 @@ async function loadUUPGData() {
 }
 
 // Function to search nearby UPGs
-async function searchNearby(country, selectedUpg, radius, units = 'kilometers') {
+async function searchNearby(country, selectedUpg, radius, units = 'kilometers', type = 'both') {
     try {
         // Load data if not already loaded
         if (existingUpgData.length === 0) {
@@ -241,27 +254,43 @@ async function searchNearby(country, selectedUpg, radius, units = 'kilometers') 
             throw new Error('Selected UPG not found');
         }
 
-        // Calculate distances for all UUPGs
-        const results = uupgData.map(uupg => {
-            const distance = calculateDistance(
+        let results = [];
+        
+        // Search for UUPGs if requested
+        if (type === SEARCH_TYPES.UUPG || type === SEARCH_TYPES.BOTH) {
+            const uupgResults = uupgData.map(uupg => {
+                const distance = calculateDistance(
+                    sourceUpg.latitude,
+                    sourceUpg.longitude,
+                    parseFloat(uupg.Latitude) || 0,
+                    parseFloat(uupg.Longitude) || 0,
+                    units
+                );
+                return {
+                    ...uupg,
+                    distance,
+                    units,
+                    type: 'UUPG'
+                };
+            }).filter(result => result.distance <= radius);
+            
+            results = [...results, ...uupgResults];
+        }
+        
+        // Search for FPGs if requested
+        if (type === SEARCH_TYPES.FPG || type === SEARCH_TYPES.BOTH) {
+            const fpgResults = await searchJoshuaProject(
                 sourceUpg.latitude,
                 sourceUpg.longitude,
-                parseFloat(uupg.Latitude) || 0,
-                parseFloat(uupg.Longitude) || 0,
+                radius,
                 units
             );
-
-            return {
-                ...uupg,
-                distance,
-                units
-            };
-        });
+            
+            results = [...results, ...fpgResults];
+        }
 
         // Filter by radius and sort by distance
-        return results
-            .filter(result => result.distance <= radius)
-            .sort((a, b) => a.distance - b.distance);
+        return results.sort((a, b) => a.distance - b.distance);
     } catch (error) {
         console.error('Error in searchNearby:', error);
         throw error;
@@ -323,6 +352,34 @@ function setupEventListeners() {
                 console.error('Error updating UPG dropdown:', error);
             }
         });
+    }
+}
+
+// Function to search Joshua Project API for FPGs
+async function searchJoshuaProject(lat, lon, radius, units) {
+    try {
+        const url = new URL(`${JP_API.BASE_URL}/people_groups`);
+        url.searchParams.append('api_key', JP_API.KEY);
+        url.searchParams.append('lat', lat);
+        url.searchParams.append('lon', lon);
+        url.searchParams.append('rad', radius);
+        url.searchParams.append('IsFPG', 'true');
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Joshua Project API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.data.map(fpg => ({
+            ...fpg,
+            distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
+            units,
+            type: 'FPG'
+        }));
+    } catch (error) {
+        console.error('Error fetching from Joshua Project:', error);
+        return [];
     }
 }
 
