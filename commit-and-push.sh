@@ -11,6 +11,9 @@ mkdir -p dist/css
 echo "Copying CSS files..."
 cp -r css/* dist/css/
 
+# Ensure proper file permissions
+chmod -R 644 dist/css/*
+
 echo "Adding files to git..."
 git add .
 
@@ -18,9 +21,9 @@ echo "Creating commit..."
 git commit -m "Fix styling and logo size
 
 - Adjust logo size to 200px width
-- Fix CSS file paths
+- Fix CSS syntax and file paths
 - Update styling for brand consistency
-- Ensure CSS is included in build"
+- Ensure CSS is properly included in build"
 
 echo "Pushing to remote..."
 git push origin gh-pages
