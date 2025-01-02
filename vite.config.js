@@ -14,7 +14,10 @@ export default defineConfig({
   // Development server configuration
   server: {
     port: 3000,
-    open: true
+    open: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    }
   },
 
   // Build configuration
@@ -23,6 +26,7 @@ export default defineConfig({
     assetsDir: 'assets',
     cssCodeSplit: false,
     copyPublicDir: true,
+    assetsInclude: ['**/*.csv'],
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),

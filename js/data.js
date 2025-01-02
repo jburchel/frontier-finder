@@ -4,8 +4,8 @@ import { config } from './config.js';
 // Constants for data paths and configuration
 const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
-    UUPG: 'data/updated_uupg.csv',
-    EXISTING_UPGS: 'data/existing_upgs_updated.csv'
+    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
+    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
 };
 
 const REQUIRED_FIELDS = {
@@ -27,6 +27,9 @@ let uupgData = []; // For search data
 // Initialize the UI
 async function initializeUI() {
     try {
+        console.log('Checking file availability...');
+        await checkFileAvailability();
+        
         await loadAllData();
         initializeCountryDropdown();
         setupEventListeners();
@@ -312,6 +315,11 @@ async function loadUUPGData() {
 async function loadExistingUPGs() {
     try {
         console.log('Starting to load existing UPGs...');
+        console.log('Current BASE_PATH:', BASE_PATH);
+        console.log('Full URL:', window.location.href);
+        
+        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
+        console.log('Attempting to fetch from:', fullPath);
         
         // Check cache
         const now = Date.now();
@@ -319,10 +327,6 @@ async function loadExistingUPGs() {
             console.log('Returning cached UPGs data');
             return dataCache.existingUpgs;
         }
-
-        // Log the full path being used
-        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
-        console.log('Fetching from:', fullPath);
 
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
         if (!response.ok) {
@@ -786,5 +790,23 @@ class APICache {
             return null;
         }
         return entry.data;
+    }
+}
+
+// Add this function at the top level
+async function checkFileAvailability() {
+    const files = [DATA_PATHS.UUPG, DATA_PATHS.EXISTING_UPGS];
+    
+    for (const file of files) {
+        try {
+            const response = await fetch(file);
+            console.log(`File ${file}: ${response.ok ? 'Available' : 'Not Found'} (${response.status})`);
+            if (response.ok) {
+                const text = await response.text();
+                console.log(`First 100 chars: ${text.substring(0, 100)}`);
+            }
+        } catch (error) {
+            console.error(`Error checking ${file}:`, error);
+        }
     }
 }

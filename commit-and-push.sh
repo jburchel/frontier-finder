@@ -11,11 +11,15 @@ mkdir -p dist/data
 # Copy files
 echo "Copying files..."
 cp -r css/* dist/css/
-cp -r data/* dist/data/
+cp -r public/data/* dist/data/
 
 # Ensure proper file permissions
 chmod -R 644 dist/css/*
 chmod -R 644 dist/data/*
+
+# Add debug step
+echo "Verifying data files..."
+ls -la dist/data/
 
 echo "Adding files to git..."
 git add .
