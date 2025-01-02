@@ -370,6 +370,8 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             url.searchParams.append('lon', lon);
             url.searchParams.append('rad', radius);
             url.searchParams.append('IsFPG', 'true');
+            url.searchParams.append('distance', 'true');
+            url.searchParams.append('sort', 'distance');
             url.searchParams.append('fields', 'PeopleID3|PeopleName|Latitude|Longitude|Population|PrimaryReligion|JPScale');
             url.searchParams.append('limit', '100');
             url.searchParams.append('page', page);
@@ -399,12 +401,16 @@ async function searchJoshuaProject(lat, lon, radius, units) {
             if (currentPage === 1) {
                 totalPages = data.meta.pagination.total_pages;
                 console.log(`Total pages to fetch: ${totalPages}`);
+                if (totalPages === 0 || data.data.length === 0) {
+                    console.log('No FPGs found within specified radius');
+                    return [];
+                }
             }
 
             // Process and add results from this page
             const pageResults = data.data.map(fpg => ({
                 ...fpg,
-                distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
+                distance: fpg.Distance || calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
                 units,
                 type: 'FPG'
             }));
@@ -414,6 +420,10 @@ async function searchJoshuaProject(lat, lon, radius, units) {
 
             // Add a small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 100));
+            if (data.data.length < 100) {
+                console.log('Received less than limit, stopping pagination');
+                break;
+            }
         }
         
         console.log(`Total FPGs found: ${allResults.length}`);
