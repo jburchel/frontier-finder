@@ -115,6 +115,107 @@ async function initializeCountryDropdown() {
     }
 }
 
+// Function to load existing UPGs data
+async function loadExistingUPGs() {
+    try {
+        // Check cache with 5-minute expiration
+        const now = Date.now();
+        if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
+            return dataCache.existingUpgs;
+        }
+
+        const response = await fetch(DATA_PATHS.EXISTING_UPGS);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        }
+
+        const csvText = await response.text();
+        if (!csvText.trim()) {
+            throw new Error('CSV file is empty');
+        }
+
+        const lines = csvText.split('\n').filter(line => line.trim());
+        const headers = parseCSVLine(lines[0]);
+
+        const upgs = [];
+        for (let i = 1; i < lines.length; i++) {
+            try {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+
+                if (!row.name || !row.country) {
+                    console.warn(`Skipping row ${i + 1}: Missing name or country`);
+                    continue;
+                }
+
+                upgs.push({
+                    name: row.name,
+                    country: row.country,
+                    latitude: parseFloat(row.latitude) || 0,
+                    longitude: parseFloat(row.longitude) || 0,
+                    pronunciation: row.pronunciation || ''
+                });
+            } catch (error) {
+                console.warn(`Error processing row ${i + 1}:`, error);
+            }
+        }
+
+        dataCache.existingUpgs = upgs;
+        dataCache.lastFetch = now;
+        return upgs;
+    } catch (error) {
+        console.error('Error loading existing UPGs:', error);
+        throw error;
+    }
+}
+
+// Function to load UUPG data
+async function loadUUPGData() {
+    try {
+        // Check cache
+        if (dataCache.uupg) {
+            return dataCache.uupg;
+        }
+
+        const response = await fetch(DATA_PATHS.UUPG);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        }
+
+        const csvText = await response.text();
+        if (!csvText.trim()) {
+            throw new Error('UUPG CSV file is empty');
+        }
+
+        const lines = csvText.split('\n').filter(line => line.trim());
+        const headers = parseCSVLine(lines[0]);
+
+        const uupgs = [];
+        for (let i = 1; i < lines.length; i++) {
+            try {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+
+                uupgs.push(row);
+            } catch (error) {
+                console.warn(`Error processing UUPG row ${i + 1}:`, error);
+            }
+        }
+
+        dataCache.uupg = uupgs;
+        return uupgs;
+    } catch (error) {
+        console.error('Error loading UUPG data:', error);
+        throw error;
+    }
+}
+
 // Export necessary functions
 export {
     initializeUI,
