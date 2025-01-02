@@ -21,7 +21,7 @@ let uupgData = []; // For search data
 
 // Joshua Project API configuration
 const JP_API = {
-    BASE_URL: config.apiBaseUrl,
+    BASE_URL: 'https://joshuaproject.net/api/v2',
     KEY: config.JP_API_KEY
 };
 
@@ -359,12 +359,13 @@ function setupEventListeners() {
 async function searchJoshuaProject(lat, lon, radius, units) {
     try {
         const url = new URL(`${JP_API.BASE_URL}/people_groups`);
-        url.searchParams.append('api_token', JP_API.KEY);
+        url.searchParams.append('api_key', JP_API.KEY);
         url.searchParams.append('lat', lat);
         url.searchParams.append('lon', lon);
         url.searchParams.append('rad', radius);
         url.searchParams.append('IsFPG', 'true');
-        url.searchParams.append('fields', 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion');
+        url.searchParams.append('fields', 'PeopleID3|PeopleName|Latitude|Longitude|Population|PrimaryReligion|JPScale');
+        url.searchParams.append('limit', '100');
         
         console.log('Fetching from Joshua Project:', url.toString());
         
@@ -376,6 +377,11 @@ async function searchJoshuaProject(lat, lon, radius, units) {
         
         const data = await response.json();
         console.log('Joshua Project response:', data);
+        
+        if (!data || !data.data) {
+            console.warn('No data returned from Joshua Project API');
+            return [];
+        }
         
         return data.data.map(fpg => ({
             ...fpg,
