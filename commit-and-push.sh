@@ -1,17 +1,26 @@
 #!/bin/bash
 
+# Build the project
+echo "Building project..."
+npm run build
+
+# Ensure CSS directory exists
+mkdir -p dist/css
+
+# Copy CSS files
+echo "Copying CSS files..."
+cp -r css/* dist/css/
+
 echo "Adding files to git..."
 git add .
 
 echo "Creating commit..."
-git commit -m "feat: add storage permission to manifest.json
+git commit -m "Fix styling and logo size
 
-- Enable browser storage access for extension
-- Fix content script storage permission errors
-- Improve extension functionality for data persistence
-
-Technical changes:
-- Added 'storage' to manifest.json permissions array"
+- Adjust logo size to 200px width
+- Fix CSS file paths
+- Update styling for brand consistency
+- Ensure CSS is included in build"
 
 echo "Pushing to remote..."
 git push origin gh-pages
