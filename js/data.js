@@ -85,6 +85,8 @@ async function initializeUI() {
 async function initializeCountryDropdown() {
     try {
         const countryDropdown = document.getElementById('country');
+        console.log('Initializing country dropdown...');
+
         if (!countryDropdown) {
             console.error('Country dropdown element not found');
             return;
@@ -92,13 +94,16 @@ async function initializeCountryDropdown() {
 
         // Load data if not already loaded
         if (existingUpgData.length === 0) {
+            console.log('Loading UPG data...');
             existingUpgData = await loadExistingUPGs();
+            console.log(`Loaded ${existingUpgData.length} UPGs`);
         }
 
         // Get unique countries
         const countries = [...new Set(existingUpgData.map(upg => upg.country))]
             .filter(Boolean)
             .sort();
+        console.log(`Found ${countries.length} unique countries`);
 
         // Clear existing options
         countryDropdown.innerHTML = '<option value="">Select a country</option>';
@@ -110,8 +115,11 @@ async function initializeCountryDropdown() {
             option.textContent = country;
             countryDropdown.appendChild(option);
         });
+
+        console.log('Country dropdown populated successfully');
     } catch (error) {
         console.error('Error initializing country dropdown:', error);
+        console.error('Error details:', error.stack);
     }
 }
 
@@ -278,6 +286,44 @@ function calculateDistance(lat1, lon1, lat2, lon2, units = 'kilometers') {
 // Helper function to convert degrees to radians
 function toRad(degrees) {
     return degrees * Math.PI / 180;
+}
+
+// Function to setup event listeners
+function setupEventListeners() {
+    const countryDropdown = document.getElementById('country');
+    const upgDropdown = document.getElementById('upg');
+
+    if (countryDropdown) {
+        countryDropdown.addEventListener('change', async function() {
+            const selectedCountry = this.value;
+            
+            // Clear and disable UPG dropdown
+            upgDropdown.innerHTML = '<option value="">Select a UPG</option>';
+            upgDropdown.disabled = true;
+
+            if (!selectedCountry) return;
+
+            try {
+                // Get UPGs for selected country
+                const upgsInCountry = existingUpgData
+                    .filter(upg => upg.country === selectedCountry)
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                // Populate UPG dropdown
+                upgsInCountry.forEach(upg => {
+                    const option = document.createElement('option');
+                    option.value = upg.name;
+                    option.textContent = upg.name;
+                    upgDropdown.appendChild(option);
+                });
+
+                // Enable UPG dropdown if we have options
+                upgDropdown.disabled = upgsInCountry.length === 0;
+            } catch (error) {
+                console.error('Error updating UPG dropdown:', error);
+            }
+        });
+    }
 }
 
 // Export necessary functions
