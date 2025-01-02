@@ -1,30 +1,36 @@
 #!/bin/bash
 
-echo "Checking current branch..."
-current_branch=$(git branch --show-current)
+# Ensure we're starting from main branch
+echo "Checking out main branch..."
+git checkout main
 
-if [ "$current_branch" != "gh-pages" ]; then
-    echo "Switching to gh-pages branch..."
-    git checkout gh-pages || { echo "Failed to switch to gh-pages branch"; exit 1; }
-fi
-
+# Add all files
 echo "Adding files to git..."
 git add .
 
+# Create commit
 echo "Creating commit..."
-git commit -m "fix: resolve country dropdown functionality
+git commit -m "Update site content and styling
 
-- Fix syntax error in data.js
-- Add debug logging for data loading
-- Improve error handling in loadExistingUPGs
-- Clean up code comments and formatting
+- Update brand styling to match Crossover Global guidelines
+- Improve accessibility features
+- Enhance UX for search results
+- Fix data loading issues"
 
-Technical changes:
-- Fixed syntax error around line 524 in data.js
-- Added debug logging for CSV data loading
-- Improved error messages for data validation"
+# Create and switch to gh-pages branch
+echo "Creating/updating gh-pages branch..."
+git checkout gh-pages 2>/dev/null || git checkout -b gh-pages
 
-echo "Pushing to remote..."
+# Merge changes from main
+echo "Merging changes from main..."
+git merge main -X theirs
+
+# Push to gh-pages
+echo "Pushing to gh-pages branch..."
 git push origin gh-pages
+
+# Switch back to main branch
+echo "Switching back to main branch..."
+git checkout main
 
 echo "Done!" 
