@@ -22,6 +22,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     cssCodeSplit: false,
+    copyPublicDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -30,7 +31,7 @@ export default defineConfig({
     }
   },
 
-  // Copy data files to dist/data during build
+  // Ensure data directory is included
   publicDir: 'public',
 
   // Define global constants

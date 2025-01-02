@@ -4,8 +4,8 @@ import { config } from './config.js';
 // Constants for data paths and configuration
 const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
-    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
-    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
+    UUPG: 'data/updated_uupg.csv',
+    EXISTING_UPGS: 'data/existing_upgs_updated.csv'
 };
 
 const REQUIRED_FIELDS = {
@@ -40,26 +40,25 @@ async function initializeUI() {
 async function initializeCountryDropdown() {
     try {
         const countryDropdown = document.getElementById('country');
-        console.log('Found country dropdown:', countryDropdown);
+        console.log('Initializing country dropdown...');
 
         if (!countryDropdown) {
-            console.log('Country dropdown not found - this is normal on results page');
+            console.error('Country dropdown element not found');
             return;
         }
 
         // Load data if not already loaded
+        console.log('Loading UPG data...');
         if (existingUpgData.length === 0) {
-            console.log('Loading data for country dropdown...');
             existingUpgData = await loadExistingUPGs();
-            console.log('Loaded existing UPGs data:', existingUpgData);
+            console.log('Loaded UPG data:', existingUpgData);
         }
 
         // Get unique countries
-        const countries = getUniqueCountries();
-        console.log('Unique countries found:', countries);
-        
-        // Sort countries alphabetically
-        countries.sort();
+        const countries = [...new Set(existingUpgData.map(upg => upg.country))]
+            .filter(Boolean)
+            .sort();
+        console.log('Found countries:', countries);
 
         // Clear existing options
         countryDropdown.innerHTML = '<option value="">Select a country...</option>';
@@ -72,16 +71,9 @@ async function initializeCountryDropdown() {
             countryDropdown.appendChild(option);
         });
 
-        // Initialize UPG dropdown if country is already selected
-        const selectedCountry = countryDropdown.value;
-        if (selectedCountry) {
-            await populateUPGDropdown(selectedCountry);
-        }
-
-        console.log('Country dropdown initialized with', countries.length, 'countries');
+        console.log('Country dropdown populated with', countries.length, 'countries');
     } catch (error) {
         console.error('Error initializing country dropdown:', error);
-        throw error;
     }
 }
 
@@ -318,75 +310,66 @@ async function loadUUPGData() {
 
 // Function to load existing UPGs data
 async function loadExistingUPGs() {
-    // Check cache with 5-minute expiration
-    const now = Date.now();
-    if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
-        return dataCache.existingUpgs;
-    }
-
     try {
-        console.log('Fetching from:', DATA_PATHS.EXISTING_UPGS);
+        console.log('Starting to load existing UPGs...');
+        
+        // Check cache
+        const now = Date.now();
+        if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
+            console.log('Returning cached UPGs data');
+            return dataCache.existingUpgs;
+        }
+
+        // Log the full path being used
+        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
+        console.log('Fetching from:', fullPath);
+
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
-        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const csvText = await response.text();
-        console.log('CSV data received:', csvText.substring(0, 200));
+        console.log('CSV data first 100 chars:', csvText.substring(0, 100));
 
         if (!csvText.trim()) {
-            throw new Error('Existing UPGs CSV file is empty');
+            throw new Error('CSV file is empty');
         }
 
         const lines = csvText.split('\n').filter(line => line.trim());
+        console.log(`Found ${lines.length} lines in CSV`);
+
         const headers = parseCSVLine(lines[0]);
+        console.log('CSV headers:', headers);
 
-        // Validate required fields
-        for (const field of REQUIRED_FIELDS.EXISTING_UPGS) {
-            if (!headers.includes(field)) {
-                throw new Error(`Required field '${field}' not found in existing UPGs CSV`);
-            }
-        }
-
-        let skippedCount = 0;
-        const upgs = [];
-
-        for (let i = 1; i < lines.length; i++) {
+        // Process data
+        const upgs = lines.slice(1).map((line, index) => {
             try {
-                const values = parseCSVLine(lines[i]);
+                const values = parseCSVLine(line);
                 const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
+                headers.forEach((header, i) => {
+                    row[header] = values[i] || '';
                 });
 
-                // Skip entries without a name or country
-                if (!row['name'] || !row['country']) {
-                    console.warn(`Skipping UPG at row ${i + 1}: Missing name or country`);
-                    skippedCount++;
-                    continue;
-                }
-
-                const coordinates = validateCoordinates(row['latitude'], row['longitude']);
-                if (coordinates) {
-                    upgs.push({
-                        name: row['name'],
-                        country: row['country'],
-                        latitude: coordinates.lat,
-                        longitude: coordinates.lon,
-                        pronunciation: row['pronunciation'] || '',
-                        distance: null
-                    });
-                } else {
-                    console.warn(`Skipping UPG '${row['name']}' from ${row['country']}: Invalid coordinates`);
-                    skippedCount++;
-                }
+                return {
+                    name: row['name'],
+                    country: row['country'],
+                    latitude: parseFloat(row['latitude']),
+                    longitude: parseFloat(row['longitude']),
+                    pronunciation: row['pronunciation'] || ''
+                };
             } catch (error) {
-                console.warn(`Error processing row ${i + 1}:`, error);
-                skippedCount++;
+                console.warn(`Error processing line ${index + 2}:`, error);
+                return null;
             }
-        }
+        }).filter(upg => upg !== null);
 
-        console.log(`Loaded ${upgs.length} existing UPGs (skipped ${skippedCount} invalid entries)`);
+        console.log(`Successfully processed ${upgs.length} UPGs`);
+        
+        // Update cache
         dataCache.existingUpgs = upgs;
         dataCache.lastFetch = now;
+
         return upgs;
     } catch (error) {
         console.error('Error loading existing UPGs:', error);

@@ -4,15 +4,18 @@
 echo "Building project..."
 npm run build
 
-# Ensure CSS directory exists
+# Ensure directories exist
 mkdir -p dist/css
+mkdir -p dist/data
 
-# Copy CSS files
-echo "Copying CSS files..."
+# Copy files
+echo "Copying files..."
 cp -r css/* dist/css/
+cp -r data/* dist/data/
 
 # Ensure proper file permissions
 chmod -R 644 dist/css/*
+chmod -R 644 dist/data/*
 
 echo "Adding files to git..."
 git add .
