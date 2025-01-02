@@ -4,8 +4,8 @@ import { config } from './config.js';
 // Constants for data paths and configuration
 const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
-    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
-    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
+    UUPG: './data/updated_uupg.csv',
+    EXISTING_UPGS: './data/existing_upgs_updated.csv'
 };
 
 const REQUIRED_FIELDS = {
@@ -315,65 +315,70 @@ async function loadUUPGData() {
 async function loadExistingUPGs() {
     try {
         console.log('Starting to load existing UPGs...');
-        console.log('Current BASE_PATH:', BASE_PATH);
-        console.log('Full URL:', window.location.href);
         
-        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
-        console.log('Attempting to fetch from:', fullPath);
-        
-        // Check cache
+        // Check cache with 5-minute expiration
         const now = Date.now();
         if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
             console.log('Returning cached UPGs data');
             return dataCache.existingUpgs;
         }
 
+        console.log('Fetching from:', DATA_PATHS.EXISTING_UPGS);
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
         }
         
         const csvText = await response.text();
-        console.log('CSV data first 100 chars:', csvText.substring(0, 100));
+        console.log('CSV data received, length:', csvText.length);
 
         if (!csvText.trim()) {
             throw new Error('CSV file is empty');
         }
 
         const lines = csvText.split('\n').filter(line => line.trim());
-        console.log(`Found ${lines.length} lines in CSV`);
-
         const headers = parseCSVLine(lines[0]);
-        console.log('CSV headers:', headers);
 
-        // Process data
-        const upgs = lines.slice(1).map((line, index) => {
+        // Validate required fields
+        const missingFields = REQUIRED_FIELDS.EXISTING_UPGS.filter(field => !headers.includes(field));
+        if (missingFields.length > 0) {
+            throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        const upgs = [];
+        let skippedCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
             try {
-                const values = parseCSVLine(line);
+                const values = parseCSVLine(lines[i]);
                 const row = {};
-                headers.forEach((header, i) => {
-                    row[header] = values[i] || '';
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
                 });
 
-                return {
-                    name: row['name'],
-                    country: row['country'],
-                    latitude: parseFloat(row['latitude']),
-                    longitude: parseFloat(row['longitude']),
-                    pronunciation: row['pronunciation'] || ''
-                };
-            } catch (error) {
-                console.warn(`Error processing line ${index + 2}:`, error);
-                return null;
-            }
-        }).filter(upg => upg !== null);
+                if (!row.name || !row.country) {
+                    console.warn(`Skipping row ${i + 1}: Missing name or country`);
+                    skippedCount++;
+                    continue;
+                }
 
-        console.log(`Successfully processed ${upgs.length} UPGs`);
-        
-        // Update cache
+                upgs.push({
+                    name: row.name,
+                    country: row.country,
+                    latitude: parseFloat(row.latitude) || 0,
+                    longitude: parseFloat(row.longitude) || 0,
+                    pronunciation: row.pronunciation || ''
+                });
+            } catch (error) {
+                console.warn(`Error processing row ${i + 1}:`, error);
+                skippedCount++;
+            }
+        }
+
+        console.log(`Processed ${upgs.length} UPGs (skipped ${skippedCount})`);
         dataCache.existingUpgs = upgs;
         dataCache.lastFetch = now;
-
         return upgs;
     } catch (error) {
         console.error('Error loading existing UPGs:', error);

@@ -1,38 +1,45 @@
 #!/bin/bash
 
-# Build the project
-echo "Building project..."
-npm run build
+# Exit on any error
+set -e
 
-# Ensure directories exist
-mkdir -p dist/css
-mkdir -p dist/data
+# Check if we're in a git repository
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+fi
 
-# Copy files
-echo "Copying files..."
-cp -r css/* dist/css/
-cp -r public/data/* dist/data/
+# Show current status
+echo "Current git status:"
+git status
 
-# Ensure proper file permissions
-chmod -R 644 dist/css/*
-chmod -R 644 dist/data/*
-
-# Add debug step
-echo "Verifying data files..."
-ls -la dist/data/
-
+# Add all changes
 echo "Adding files to git..."
 git add .
 
+# Create commit
 echo "Creating commit..."
-git commit -m "Fix styling and logo size
+git commit -m "Update site content and styling
 
-- Adjust logo size to 200px width
-- Fix CSS syntax and file paths
-- Update styling for brand consistency
-- Ensure CSS is properly included in build"
+- Update brand styling
+- Fix file paths
+- Improve data loading
+- Update deployment process"
 
-echo "Pushing to remote..."
-git push origin gh-pages
+# Create gh-pages branch if it doesn't exist
+if ! git show-ref --verify --quiet refs/heads/gh-pages; then
+    echo "Creating gh-pages branch..."
+    git checkout -b gh-pages
+else
+    echo "Switching to gh-pages branch..."
+    git checkout gh-pages || {
+        echo "Error: Could not switch to gh-pages branch"
+        exit 1
+    }
+fi
+
+# Push to gh-pages
+echo "Pushing to gh-pages branch..."
+git push -u origin gh-pages
 
 echo "Done!" 
