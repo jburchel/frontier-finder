@@ -1,4 +1,4 @@
-import { searchNearby, initializeUI } from './data.js';
+import { initializeUI, searchNearby } from './data.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     const searchForm = document.getElementById('searchForm');

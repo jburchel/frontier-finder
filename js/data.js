@@ -216,6 +216,70 @@ async function loadUUPGData() {
     }
 }
 
+// Function to search nearby UPGs
+async function searchNearby(country, selectedUpg, radius, units = 'kilometers') {
+    try {
+        // Load data if not already loaded
+        if (existingUpgData.length === 0) {
+            await loadAllData();
+        }
+
+        // Find the selected UPG's coordinates
+        const sourceUpg = existingUpgData.find(upg => 
+            upg.country === country && upg.name === selectedUpg
+        );
+
+        if (!sourceUpg) {
+            throw new Error('Selected UPG not found');
+        }
+
+        // Calculate distances for all UUPGs
+        const results = uupgData.map(uupg => {
+            const distance = calculateDistance(
+                sourceUpg.latitude,
+                sourceUpg.longitude,
+                parseFloat(uupg.Latitude) || 0,
+                parseFloat(uupg.Longitude) || 0,
+                units
+            );
+
+            return {
+                ...uupg,
+                distance,
+                units
+            };
+        });
+
+        // Filter by radius and sort by distance
+        return results
+            .filter(result => result.distance <= radius)
+            .sort((a, b) => a.distance - b.distance);
+    } catch (error) {
+        console.error('Error in searchNearby:', error);
+        throw error;
+    }
+}
+
+// Helper function to calculate distance between coordinates
+function calculateDistance(lat1, lon1, lat2, lon2, units = 'kilometers') {
+    const R = units === 'miles' ? 3959 : 6371; // Earth's radius in miles or km
+    
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// Helper function to convert degrees to radians
+function toRad(degrees) {
+    return degrees * Math.PI / 180;
+}
+
 // Export necessary functions
 export {
     initializeUI,
@@ -223,5 +287,6 @@ export {
     loadExistingUPGs,
     loadUUPGData,
     validateCoordinates,
-    parseCSVLine
+    parseCSVLine,
+    searchNearby
 };
