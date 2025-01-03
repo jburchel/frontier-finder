@@ -4,8 +4,8 @@ import { config } from './config.js';
 // Constants for data paths and configuration
 const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
 const DATA_PATHS = {
-    UUPG: './data/updated_uupg.csv',
-    EXISTING_UPGS: './data/existing_upgs_updated.csv'
+    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
+    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
 };
 
 // Cache for loaded data
@@ -135,14 +135,31 @@ async function initializeCountryDropdown() {
 // Function to load existing UPGs data
 async function loadExistingUPGs() {
     try {
-        const response = await fetch(DATA_PATHS.EXISTING_UPGS);
+        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
+        console.log('Full path for existing UPGs:', fullPath);
+        
+        console.log('Attempting to fetch existing UPGs from:', fullPath);
+        const response = await fetch(fullPath);
+        
         if (!response.ok) {
+            console.error(`Failed to fetch ${fullPath}`);
+            console.error(`Status: ${response.status}`);
+            console.error(`Status Text: ${response.statusText}`);
             throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
         }
 
         const csvText = await response.text();
+        console.log('CSV Text received (first 100 chars):', csvText.substring(0, 100));
+        
+        if (!csvText.trim()) {
+            throw new Error('CSV file is empty');
+        }
+
         const lines = csvText.split('\n').filter(line => line.trim());
+        console.log('Number of lines found:', lines.length);
+        
         const headers = parseCSVLine(lines[0]);
+        console.log('CSV Headers:', headers);
 
         existingUpgData = lines.slice(1).map(line => {
             const values = parseCSVLine(line);
@@ -153,12 +170,13 @@ async function loadExistingUPGs() {
             return row;
         });
 
-        // Populate country dropdown after loading data
-        populateCountryDropdown();
-        
+        console.log('Parsed UPG data (first entry):', existingUpgData[0]);
+        console.log('Total UPGs loaded:', existingUpgData.length);
+
         return existingUpgData;
     } catch (error) {
         console.error('Error loading existing UPG data:', error);
+        console.error('Error details:', error.stack);
         throw error;
     }
 }
@@ -510,10 +528,22 @@ export {
 // Initialize data when the page loads
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log('DOM Content Loaded - Starting initialization');
+        
+        // Load data first
         await loadAllData();
+        console.log('Data loaded successfully');
+        
+        // Then populate dropdowns
+        await initializeCountryDropdown();
+        console.log('Country dropdown initialized');
+        
+        // Finally set up event listeners
         setupEventListeners();
+        console.log('Event listeners set up');
+        
     } catch (error) {
-        console.error('Error initializing data:', error);
+        console.error('Error during initialization:', error);
         // Show error message to user
         const searchForm = document.querySelector('form');
         if (searchForm) {
