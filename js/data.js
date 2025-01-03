@@ -358,88 +358,61 @@ function setupEventListeners() {
 // Function to search Joshua Project API for FPGs
 async function searchJoshuaProject(lat, lon, radius, units) {
     try {
+        const baseURL = 'https://api.joshuaproject.net/v2/PeopleGroups';
+        const limit = 1000; // Or another appropriate value up to the API limit
+
         let allResults = [];
-        let currentPage = 1;
-        let totalPages = 1; // Will be updated after first request
+        let page = 1;
+        let hasMore = true;
 
-        // Function to create URL with page parameter
-        const createUrl = (page) => {
-            const url = new URL(`${JP_API.BASE_URL}/people_groups`);
-            url.searchParams.append('api_key', JP_API.KEY);
-            url.searchParams.append('lat', lat);
-            url.searchParams.append('lon', lon);
-            url.searchParams.append('rad', radius);
-            url.searchParams.append('is_frontier', '1');
-            url.searchParams.append('select', 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,JPScale');
-            url.searchParams.append('limit', '100');
-            url.searchParams.append('page', page);
-            url.searchParams.append('format', 'json');
-            return url;
-        };
-
-        // Keep fetching until we have all pages
-        while (currentPage <= totalPages) {
-            const url = createUrl(currentPage);
-            console.log(`Fetching page ${currentPage} of ${totalPages} from Joshua Project:`, url.toString());
-        
-            const response = await fetch(url, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
+        while (hasMore) {
+            const params = new URLSearchParams({
+                api_key: JP_API.KEY,
+                lat: lat,
+                lon: lon,
+                rad: radius,
+                limit: limit,
+                page: page,
+                IsFPG: true, // Assuming you are looking for FPGs
+                IsUUPG: true, // Assuming you are looking for UUPGs
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries()),
-                    body: errorText
-                });
-                throw new Error(`Joshua Project API error: ${response.status} - ${errorText}`);
-            }
+            const url = `${baseURL}?${params.toString()}`;
 
-            const data = await response.json();
-            console.log(`Received page ${currentPage} data:`, data);
-
-            if (!data || !data.data) {
-                console.warn('No data returned from Joshua Project API');
-                break;
-            }
-
-            // Update total pages on first request
-            if (currentPage === 1) {
-                totalPages = data.meta.pagination.total_pages;
-                console.log(`Total pages to fetch: ${totalPages}`);
-                if (totalPages === 0 || data.data.length === 0) {
-                    console.log('No FPGs found within specified radius');
-                    return [];
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    // ... your existing error handling ...
+                    throw new Error(`Network error: ${response.status}`);
                 }
-            }
+                const data = await response.json();
+                if (data && data.data) {
+                    const pageResults = data.data.map(fpg => ({
+                        ...fpg,
+                        distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
+                        units,
+                        type: 'FPG'
+                    }));
+                    allResults = allResults.concat(pageResults);
+                }
 
-            // Process and add results from this page
-            const pageResults = data.data.map(fpg => ({
-                ...fpg,
-                distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
-                units,
-                type: 'FPG'
-            }));
-
-            allResults = [...allResults, ...pageResults];
-            currentPage++;
-
-            // Add a small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
-            if (data.data.length < 100) {
-                console.log('Received less than limit, stopping pagination');
-                break;
+                // Check if there are more pages
+                if (data.meta && data.meta.pagination) {
+                    const pagination = data.meta.pagination;
+                    if (pagination.current_page < pagination.total_pages) {
+                        page++;
+                    } else {
+                        hasMore = false;
+                    }
+                } else {
+                    hasMore = false; // Assume no more pages if pagination info is missing
+                }
+            } catch (error) {
+                console.error('Error fetching people groups:', error);
+                throw error;
             }
         }
-        
-        console.log(`Total FPGs found: ${allResults.length}`);
         return allResults;
-
     } catch (error) {
         console.error('Error fetching from Joshua Project:', error);
         console.error('Error details:', error.message);
