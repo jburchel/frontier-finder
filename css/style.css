@@ -97,6 +97,7 @@ h1 {
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;
     margin-bottom: 1.5rem;
+    align-items: center;
 }
 
 .form-group {
@@ -124,14 +125,25 @@ select {
     font-size: 1rem;
     background-color: white;
     flex: 1;
-    min-width: 200px;
+    min-width: 250px;
 }
 
-/* Radius input styles */
+/* Placeholder text color */
+select option[value=""] {
+    color: var(--text-color);
+}
+
+/* Radius group styles */
+.radius-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
 .radius-input-group {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
     margin-bottom: 0;
 }
 
@@ -222,4 +234,10 @@ button:hover {
     .radio-group {
         flex-wrap: wrap;
     }
+}
+
+/* Search type alignment */
+.search-type-label {
+    margin-left: auto;
+    min-width: 150px;
 }
