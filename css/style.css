@@ -105,6 +105,7 @@ h1 {
     align-items: center;
     gap: 1.5rem;
     margin-bottom: 1rem;
+    justify-content: flex-start;
 }
 
 /* Label styles */
@@ -125,7 +126,8 @@ select {
     font-size: 1rem;
     background-color: white;
     flex: 1;
-    min-width: 250px;
+    min-width: 200px;
+    max-width: 300px;
 }
 
 /* Placeholder text color */
@@ -160,7 +162,7 @@ select option[value=""] {
 .radio-group, .radius-radio-group {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-top: 0;
 }
 
@@ -238,6 +240,6 @@ button:hover {
 
 /* Search type alignment */
 .search-type-label {
-    margin-left: auto;
     min-width: 150px;
+    margin-left: 0;
 }
