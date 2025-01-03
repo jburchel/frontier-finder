@@ -43,11 +43,10 @@ Standard error messages to use in the application:
 - Use debouncing for search
 
 ## Security Rules
-1. Never expose API keys in client-side code
-2. Validate all user inputs
-3. Implement rate limiting
-4. Use HTTPS for all requests
-5. Follow Firebase security best practices
+1. Validate all user inputs
+2. Implement rate limiting
+3. Use HTTPS for all requests
+4. Follow Firebase security best practices
 
 ## Accessibility Requirements
 1. Include ARIA labels
