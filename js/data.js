@@ -2,7 +2,17 @@
 import { config } from './config.js';
 
 // Constants for data paths and configuration
-const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
+const isGitHubPages = window.location.hostname.includes('github.io');
+const BASE_PATH = isGitHubPages ? '/frontier-finder' : '';
+
+// Debug logging
+console.log('Environment:', {
+    hostname: window.location.hostname,
+    isGitHubPages,
+    BASE_PATH,
+    fullPath: window.location.href
+});
+
 const DATA_PATHS = {
     UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
     EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
@@ -316,81 +326,32 @@ async function loadUUPGData() {
     }
 }
 
-// Function to load existing UPGs data
+// Function to load existing UPGs data with better error handling
 async function loadExistingUPGs() {
-    // Check cache with 5-minute expiration
-    const now = Date.now();
-    if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
-        return dataCache.existingUpgs;
+    const paths = [
+        DATA_PATHS.EXISTING_UPGS,
+        `${window.location.origin}${DATA_PATHS.EXISTING_UPGS}`,
+        '/frontier-finder/data/existing_upgs_updated.csv',
+        '/data/existing_upgs_updated.csv'
+    ];
+
+    console.log('Attempting to load data from paths:', paths);
+
+    for (const path of paths) {
+        try {
+            console.log('Trying path:', path);
+            const response = await fetch(path);
+            if (response.ok) {
+                const data = await processCSVResponse(response);
+                console.log('Successfully loaded data from:', path);
+                return data;
+            }
+        } catch (e) {
+            console.log('Failed to fetch from path:', path, e);
+        }
     }
 
-    try {
-        console.log('Fetching from:', DATA_PATHS.EXISTING_UPGS);
-        const response = await fetch(DATA_PATHS.EXISTING_UPGS);
-        console.log('Response status:', response.status);
-        
-        const csvText = await response.text();
-        console.log('CSV data received:', csvText.substring(0, 200));
-
-        if (!csvText.trim()) {
-            throw new Error('Existing UPGs CSV file is empty');
-        }
-
-        const lines = csvText.split('\n').filter(line => line.trim());
-        const headers = parseCSVLine(lines[0]);
-
-        // Validate required fields
-        for (const field of REQUIRED_FIELDS.EXISTING_UPGS) {
-            if (!headers.includes(field)) {
-                throw new Error(`Required field '${field}' not found in existing UPGs CSV`);
-            }
-        }
-
-        let skippedCount = 0;
-        const upgs = [];
-        for (let i = 1; i < lines.length; i++) {
-            try {
-                const values = parseCSVLine(lines[i]);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-
-                // Skip entries without a name or country
-                if (!row['name'] || !row['country']) {
-                    console.warn(`Skipping UPG at row ${i + 1}: Missing name or country`);
-                    skippedCount++;
-                    continue;
-                }
-
-                const coordinates = validateCoordinates(row['latitude'], row['longitude']);
-                if (coordinates) {
-                    upgs.push({
-                        name: row['name'],
-                        country: row['country'],
-                        latitude: coordinates.lat,
-                        longitude: coordinates.lon,
-                        pronunciation: row['pronunciation'] || '',
-                        distance: null // Initialize distance as null
-                    });
-                } else {
-                    console.warn(`Skipping UPG '${row['name']}' from ${row['country']}: Invalid or missing coordinates`);
-                    skippedCount++;
-                }
-            } catch (error) {
-                console.warn(`Error processing row ${i + 1}:`, error);
-                skippedCount++;
-            }
-        }
-
-        console.log(`Loaded ${upgs.length} existing UPGs from CSV (skipped ${skippedCount} invalid entries)`);
-        dataCache.existingUpgs = upgs;
-        dataCache.lastFetch = now;
-        return upgs;
-    } catch (error) {
-        console.error('Error loading existing UPGs:', error);
-        throw error;
-    }
+    throw new Error('Failed to load data from all attempted paths');
 }
 
 // Function to fetch FPGs from Joshua Project API
