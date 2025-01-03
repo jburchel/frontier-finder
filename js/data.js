@@ -355,92 +355,37 @@ function setupEventListeners() {
     }
 }
 
-// Function to search Joshua Project API for FPGs
-async function searchJoshuaProject(lat, lon, radius, units) {
+// Function to search via your server endpoint
+async function searchJoshuaProject(lat, lon, radius) {
+    const apiUrl = '/api/people_groups'; // Your server endpoint
+    const queryParams = `lat=${lat}&lon=${lon}&rad=${radius}`;
+
     try {
-        const baseURL = 'https://api.joshuaproject.net/v2';
-        const limit = 3000; // Maximum with specified fields
-        
-        // Specify only the fields we need
-        const fields = [
-            'PeopleID',
-            'PeopleName',
-            'Latitude',
-            'Longitude',
-            'Population',
-            'PrimaryReligion',
-            'JPScale',
-            'PrimaryLanguageName',
-            'PrimaryLanguageCode'
-        ].join('|');
-
-        let allResults = [];
-        let page = 1;
-        let hasMore = true;
-
-        while (hasMore) {
-            const params = new URLSearchParams({
-                api_key: JP_API.KEY,
-                lat: lat,
-                lon: lon,
-                rad: radius,
-                limit: limit,
-                page: page,
-                select: fields,
-                format: 'json'
-            });
-
-            const url = `${baseURL}/people_groups?${params.toString()}`;
-            console.log('Attempting to fetch from URL:', url); // For debugging
-
-            try {
-                const response = await fetch(url);
-                
-                // Log the full response for debugging
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error Response:', errorText);
-                    throw new Error(`Network error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('API Response:', data); // For debugging
-
-                if (data && data.data) {
-                    const pageResults = data.data.map(fpg => ({
-                        ...fpg,
-                        distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, units),
-                        units,
-                        type: 'FPG'
-                    }));
-                    allResults = allResults.concat(pageResults);
-                }
-
-                // Check pagination according to documentation format
-                if (data.meta && data.meta.pagination) {
-                    const pagination = data.meta.pagination;
-                    console.log(`Fetched page ${pagination.current_page} of ${pagination.total_pages}`);
-                    if (pagination.current_page < pagination.total_pages) {
-                        page++;
-                    } else {
-                        hasMore = false;
-                    }
-                } else {
-                    hasMore = false;
-                }
-            } catch (error) {
-                console.error('Error fetching people groups:', error);
-                throw error;
-            }
+        const response = await fetch(`${apiUrl}?${queryParams}`);
+        if (!response.ok) {
+            console.error(`Response status: ${response.status}`);
+            const errorText = await response.text();
+            console.error(`API Error Response: ${errorText}`);
+            throw new Error(`Network error: ${response.status}`);
         }
-        return allResults;
-    } catch (error) {
-        console.error('Error fetching from Joshua Project:', error);
-        console.error('Error details:', error.message);
+
+        const data = await response.json();
+        console.log('API Response:', data); // For debugging
+
+        if (data && data.data) {
+            const results = data.data.map(fpg => ({
+                ...fpg,
+                distance: calculateDistance(lat, lon, fpg.Latitude, fpg.Longitude, 'kilometers'),
+                units: 'kilometers',
+                type: 'FPG'
+            }));
+            return results;
+        }
+
         return [];
+    } catch (error) {
+        console.error('Error fetching people groups:', error);
+        throw error;
     }
 }
 

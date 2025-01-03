@@ -1,25 +1,26 @@
 // Joshua Project API configuration
 export const config = {
-    JP_API_KEY: '080e14ad747e', // Joshua Project API key
-    apiBaseUrl: 'https://joshuaproject.net/api/v2', // Base URL for Joshua Project API
+    // Removed the API key from client-side code to enhance security
+    apiBaseUrl: 'https://joshuaproject.net/api/v2',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
     },
 };
 
-// Validate API key
+// Validate API key (if needed)
 export function validateApiKey() {
-    if (!config.joshuaProjectApiKey) {
-        console.error('Joshua Project API key is missing. Please add your API key in js/config.js');
+    if (!config.JP_API_KEY) {
+        console.error('Joshua Project API key is missing. Please add your API key securely.');
         document.getElementById('fpgList').innerHTML = 
-            '<p class="error">⚠️ Joshua Project API key is missing. Please add your API key in js/config.js to enable FPG search.</p>';
+            '<p class="error">⚠️ Joshua Project API key is missing. Please add your API key securely to enable FPG search.</p>';
         return false;
     }
     return true;
 }
 
-// For backward compatibility with existing code
+// For backward compatibility
 window.jpConfig = config;
 window.validateApiKey = validateApiKey;
+
 export default config;
