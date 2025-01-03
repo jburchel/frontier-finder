@@ -33,6 +33,14 @@ jobs:
           echo "Build directory structure:"
           ls -R build/
 
+      - name: Debug build contents
+        run: |
+          echo "Contents of build/data directory:"
+          ls -la build/data || echo "data directory not found!"
+          
+          echo "Full build directory structure:"
+          find build -type f
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:

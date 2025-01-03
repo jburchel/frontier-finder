@@ -335,23 +335,66 @@ async function loadExistingUPGs() {
         '/data/existing_upgs_updated.csv'
     ];
 
+    console.log('Current location:', window.location.href);
     console.log('Attempting to load data from paths:', paths);
 
     for (const path of paths) {
         try {
-            console.log('Trying path:', path);
+            console.log(`Attempting fetch from: ${path}`);
             const response = await fetch(path);
+            
+            // Log the full response details
+            console.log(`Response for ${path}:`, {
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries([...response.headers.entries()])
+            });
+
             if (response.ok) {
-                const data = await processCSVResponse(response);
-                console.log('Successfully loaded data from:', path);
-                return data;
+                const text = await response.text();
+                console.log(`First 100 chars of data from ${path}:`, text.substring(0, 100));
+                
+                if (!text.trim()) {
+                    console.error(`Empty response from ${path}`);
+                    continue;
+                }
+
+                return processCSVResponse(text);
             }
         } catch (e) {
-            console.log('Failed to fetch from path:', path, e);
+            console.error(`Error fetching from ${path}:`, e);
         }
     }
 
     throw new Error('Failed to load data from all attempted paths');
+}
+
+function processCSVResponse(csvText) {
+    console.log('Processing CSV response...');
+    const lines = csvText.split('\n').filter(line => line.trim());
+    console.log(`Found ${lines.length} lines in CSV`);
+    
+    if (lines.length === 0) {
+        throw new Error('CSV file is empty');
+    }
+
+    const headers = parseCSVLine(lines[0]);
+    console.log('CSV Headers:', headers);
+
+    const data = lines.slice(1).map(line => {
+        const values = parseCSVLine(line);
+        const row = {};
+        headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+        });
+        return row;
+    });
+
+    console.log(`Processed ${data.length} rows of data`);
+    console.log('Sample row:', data[0]);
+    
+    return data;
 }
 
 // Function to fetch FPGs from Joshua Project API
@@ -709,7 +752,24 @@ export {
 };
 
 // Initialize when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeUI);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('DOM loaded, initializing UI...');
+        await initializeUI();
+        console.log('UI initialization complete');
+    } catch (error) {
+        console.error('Failed to initialize UI:', error);
+        // Show error to user
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertAdjacentHTML('afterbegin', `
+                <div class="error-message" style="color: red; padding: 20px; margin: 20px; border: 1px solid red;">
+                    Error loading application data: ${error.message}
+                </div>
+            `);
+        }
+    }
+});
 
 async function fetchPeopleGroups(params) {
     const baseUrl = 'https://api.joshuaproject.net/v2/PeopleGroups';
