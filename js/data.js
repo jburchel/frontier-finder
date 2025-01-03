@@ -386,7 +386,8 @@ async function searchJoshuaProject(lat, lon, radius, units) {
                 rad: radius,
                 limit: limit,
                 page: page,
-                fields: fields // Add fields parameter to reduce data size
+                select: fields,
+                format: 'json'
             });
 
             const url = `${baseURL}/people_groups?${params.toString()}`;
