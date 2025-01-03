@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - gh-pages
+      - main
 
 jobs:
   deploy:
@@ -11,11 +11,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy
+      - name: List files
+        run: ls -la
+
+      - name: Setup deployment
+        run: |
+          mkdir -p build
+          cp -r index.html build/
+          cp -r js build/
+          cp -r data build/
+          cp -r css build/ || true
+          cp -r images build/ || true
+          ls -la build/
+
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .
+          folder: build
           branch: gh-pages
+          clean: true
