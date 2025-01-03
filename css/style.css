@@ -1,18 +1,8 @@
 :root {
-    // Crossover Global Brand Colors
-    --primary-color: #183963;  // PANTONE: 534
-    --accent-color: #39A949;   // PANTONE: 7739
-    --neutral-gray: #7F7F7F;   // PANTONE: 840 C
-    --background: #FFFFFF;     // PANTONE: P 75-1 U
-    --secondary-color: #002857;  /* Darker blue for hover states */
-    --button-color: #39a949;  /* Green for button */
-    --button-hover-color: #2c7a37;  /* Darker green for button hover */
-    --text-color: #333;
-    --background-color: #f5f5f5;
-    --border-radius: 8px;
-    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --danger-color: #dc3545;
-    --danger-hover-color: #c82333;
+    --primary-color: #183963;
+    --accent-color: #39A949;
+    --neutral-gray: #7F7F7F;
+    --background: #FFFFFF;
 }
 
 * {
@@ -21,15 +11,17 @@
     box-sizing: border-box;
 }
 
-[Previous content remains exactly the same until the end of the file]
-
-@font-face {
-    font-family: 'Cronos Pro';
-    src: url('../fonts/CronosPro.woff2') format('woff2');
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
 }
 
-h1, h2, .featured-text {
-    font-family: 'Cronos Pro', sans-serif;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .logo {
@@ -39,22 +31,4 @@ h1, h2, .featured-text {
     display: block;
 }
 
-@media screen and (max-width: 768px) {
-    .logo {
-        min-width: 2.11in;
-        min-height: 0.58in;
-    }
-}
-
-.people-group-image {
-    filter: brightness(0.95) contrast(1.1);
-    border-radius: 4px;
-    object-fit: cover;
-    aspect-ratio: 16/9;
-}
-
-.cultural-context {
-    position: relative;
-    overflow: hidden;
-    margin: 1rem 0;
-}
+/* ... rest of your styles ... */
