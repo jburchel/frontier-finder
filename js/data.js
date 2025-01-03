@@ -165,13 +165,30 @@ async function loadExistingUPGs() {
 
 // Function to populate country dropdown
 function populateCountryDropdown() {
-    const countryDropdown = document.getElementById('country');
-    if (!countryDropdown) return;
+    // Debug: Log the selector we're using
+    console.log('Looking for dropdown with selector: "Select a country"');
+    
+    // Try both potential selectors
+    const countryDropdown = document.querySelector('select[name="country"]') || document.getElementById('country');
+    
+    // Debug: Log what we found
+    console.log('Found dropdown element:', countryDropdown);
+    
+    if (!countryDropdown) {
+        console.error('Country dropdown not found in the DOM');
+        return;
+    }
 
+    // Debug: Log the data we're working with
+    console.log('Existing UPG Data:', existingUpgData);
+    
     // Get unique countries and sort them
     const countries = [...new Set(existingUpgData.map(upg => upg.country))]
         .filter(Boolean)
         .sort();
+    
+    // Debug: Log the countries we found
+    console.log('Unique countries found:', countries);
 
     // Clear existing options
     countryDropdown.innerHTML = '<option value="">Select a country</option>';
@@ -183,6 +200,9 @@ function populateCountryDropdown() {
         option.textContent = country;
         countryDropdown.appendChild(option);
     });
+    
+    // Debug: Log the final state
+    console.log('Dropdown populated with options:', countryDropdown.options.length);
 }
 
 // Function to load UUPG data
@@ -311,13 +331,27 @@ function toRad(degrees) {
 
 // Function to setup event listeners
 function setupEventListeners() {
-    const countryDropdown = document.getElementById('country');
-    const upgDropdown = document.getElementById('upg');
+    // Debug: Log that we're setting up listeners
+    console.log('Setting up event listeners...');
+    
+    // Try both potential selectors
+    const countryDropdown = document.querySelector('select[name="country"]') || document.getElementById('country');
+    const upgDropdown = document.querySelector('select[name="upg"]') || document.getElementById('upg');
+    
+    // Debug: Log what we found
+    console.log('Found country dropdown:', countryDropdown);
+    console.log('Found UPG dropdown:', upgDropdown);
 
     if (countryDropdown) {
         countryDropdown.addEventListener('change', async function() {
+            console.log('Country dropdown changed to:', this.value);
             const selectedCountry = this.value;
             
+            if (!upgDropdown) {
+                console.error('UPG dropdown not found');
+                return;
+            }
+
             // Clear and disable UPG dropdown
             upgDropdown.innerHTML = '<option value="">Select a UPG</option>';
             upgDropdown.disabled = true;
@@ -329,6 +363,8 @@ function setupEventListeners() {
                 const upgsInCountry = existingUpgData
                     .filter(upg => upg.country === selectedCountry)
                     .sort((a, b) => a.name.localeCompare(b.name));
+                
+                console.log('UPGs found for country:', upgsInCountry.length);
 
                 // Populate UPG dropdown
                 upgsInCountry.forEach(upg => {
@@ -344,6 +380,8 @@ function setupEventListeners() {
                 console.error('Error updating UPG dropdown:', error);
             }
         });
+    } else {
+        console.error('Country dropdown not found for event listener');
     }
 }
 
