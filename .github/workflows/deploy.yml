@@ -19,3 +19,8 @@ jobs:
         with:
           folder: .
           branch: gh-pages
+
+      - name: Copy data files
+        run: |
+          mkdir -p dist/data
+          cp data/* dist/data/

@@ -2,11 +2,17 @@
 import { config } from './config.js';
 
 // Constants for data paths and configuration
-const BASE_PATH = window.location.hostname === 'localhost' ? '' : '/frontier-finder';
+const BASE_PATH = window.location.hostname.includes('github.io') ? '/frontier-finder' : '';
 const DATA_PATHS = {
     UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
     EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
 };
+
+// Add debug logging
+console.log('Current hostname:', window.location.hostname);
+console.log('BASE_PATH:', BASE_PATH);
+console.log('UUPG path:', DATA_PATHS.UUPG);
+console.log('Existing UPGs path:', DATA_PATHS.EXISTING_UPGS);
 
 // Cache for loaded data
 const dataCache = {
