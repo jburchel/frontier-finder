@@ -1,28 +1,4 @@
-// Import Firebase modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { db } from './firebase-init.js';
 
-// Firebase configuration for production
-export const firebaseConfig = {
-    apiKey: "AIzaSyBtzaibXTCspENsEVaN8XF5DkuizsjxVX4",
-    authDomain: "crossover-people-finder.firebaseapp.com",
-    projectId: "crossover-people-finder",
-    storageBucket: "crossover-people-finder.appspot.com",
-    messagingSenderId: "35563852058",
-    appId: "1:35563852058:web:a4b89c5f0fedd06432dca3"
-};
-
-// Initialize Firebase lazily
-let app;
-let db;
-
-export function initializeFirebase() {
-    if (!app) {
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-    }
-    return { db, collection, addDoc, getDocs, deleteDoc, doc, updateDoc };
-}
-
-// Export Firebase functions
-export { collection, addDoc, getDocs, deleteDoc, doc, updateDoc };
+export { db, collection, addDoc, getDocs, deleteDoc, doc, updateDoc };

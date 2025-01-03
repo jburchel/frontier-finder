@@ -145,34 +145,36 @@ function createResultCard(group, type) {
     const card = document.createElement('div');
     card.className = `result-item ${type} ministry-card`;
     
+    // Store the group data as a JSON string in the dataset
+    card.dataset.info = JSON.stringify(group);
+    
     const content = `
         <div class="content-wrapper">
-            <h3 class="cronos-pro">${group.name}</h3>
+            <div class="selection-wrapper">
+                <input type="checkbox" class="group-select" data-group-type="${type}">
+            </div>
+            <h3 class="cronos-pro">${group.PeopleName || group.name}</h3>
             <div class="gospel-access-stats">
                 <span class="stat-label">Evangelical Presence:</span>
-                <span class="stat-value">${group.evangelical}%</span>
+                <span class="stat-value">${group.PercentEvangelical || group.evangelical}%</span>
             </div>
             <div class="result-details">
                 <span class="ministry-focus">
-                    ${group.type === 'fpg' ? 'Frontier People Group' : 'Unengaged Unreached People Group'}
+                    ${type === 'fpg' ? 'Frontier People Group' : 'Unengaged Unreached People Group'}
                 </span>
                 <span><strong>Distance:</strong> ${group.distance.toFixed(2)} ${group.units}</span>
-                ${group.population ? `<span><strong>Population:</strong> ${Number(group.population).toLocaleString()}</span>` : ''}
-                ${group.pronunciation ? `
-                    <span>
-                        <strong>Pronunciation:</strong> ${group.pronunciation}
-                        <button onclick="speakText('${group.pronunciation}')" aria-label="Listen to pronunciation">🔊</button>
-                    </span>
-                ` : ''}
-                ${group.language ? `<span><strong>Language:</strong> ${group.language}</span>` : ''}
-                ${group.religion ? `<span><strong>Religion:</strong> ${group.religion}</span>` : ''}
-                ${group.evangelical ? `<span><strong>Evangelical:</strong> ${group.evangelical}%</span>` : ''}
+                ${group.Population ? `<span><strong>Population:</strong> ${Number(group.Population).toLocaleString()}</span>` : ''}
+                ${group.PrimaryLanguageName ? `<span><strong>Language:</strong> ${group.PrimaryLanguageName}</span>` : ''}
+                ${group.PrimaryReligion ? `<span><strong>Religion:</strong> ${group.PrimaryReligion}</span>` : ''}
+                ${group.PercentEvangelical ? `<span><strong>Evangelical:</strong> ${group.PercentEvangelical}%</span>` : ''}
             </div>
             <div class="ministry-potential">
-                <span>Population without Gospel access: ${calculateGospelAccess(group.population, group.evangelical)}</span>
+                <span>Population without Gospel access: ${calculateGospelAccess(group.Population || group.population, group.PercentEvangelical || group.evangelical)}</span>
             </div>
         </div>
     `;
+    
+    card.innerHTML = content;
     return card;
 }
 

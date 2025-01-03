@@ -238,7 +238,7 @@ async function loadUUPGData() {
 }
 
 // Function to search nearby UPGs
-async function searchNearby(country, selectedUpg, radius, units = 'kilometers', type = 'both') {
+export async function searchNearby(country, selectedUpg, radius, units = 'kilometers', type = 'both') {
     try {
         // Load data if not already loaded
         if (existingUpgData.length === 0) {
@@ -361,24 +361,30 @@ async function searchJoshuaProject(lat, lon, radius) {
     // Using the exact format from Joshua Project documentation
     const baseURL = 'https://joshuaproject.net/api/v2/people_groups.json';
     
-    // Start with minimal parameters and ensure they are numbers
-    const queryParams = new URLSearchParams({
+    // Format parameters
+    const params = {
         api_key: apiKey,
         lat: Number(lat).toFixed(4),
         lon: Number(lon).toFixed(4),
-        rad: Number(radius).toFixed(0)
-    });
+        rad: Number(radius).toFixed(0),
+        limit: 3000
+    };
 
-    const url = `${baseURL}?${queryParams.toString()}`;
+    // Construct URL with parameters
+    const queryString = Object.keys(params)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .join('&');
+    const url = `${baseURL}?${queryString}`;
+
     console.log('Attempting to fetch from URL:', url);
 
     try {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
         });
 
         if (!response.ok) {
