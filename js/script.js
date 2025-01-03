@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Get UPGs for selected country using the function from data.js
-        const upgsInCountry = getUpgsForCountry(selectedCountry);
+        const upgsInCountry = getUPGsByCountry(selectedCountry);
         console.log('UPGs found for country:', upgsInCountry);
         
         if (!upgsInCountry || upgsInCountry.length === 0) {
