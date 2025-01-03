@@ -447,6 +447,58 @@ async function searchJoshuaProject(lat, lon, radius, units) {
     }
 }
 
+async function searchPeopleGroups(latitude, longitude, radius, apiKey) {
+    const baseURL = 'https://api.joshuaproject.net/v2/PeopleGroups';
+    const limit = 1000; // Or another appropriate value up to the API limit
+
+    let allResults = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+        const params = new URLSearchParams({
+            api_key: apiKey,
+            lat: latitude,
+            lon: longitude,
+            rad: radius,
+            limit: limit, // Add the limit parameter
+            page: page,
+            IsFPG: true, // Assuming you are looking for FPGs
+            IsUUPG: true, // Assuming you are looking for UUPGs
+        });
+
+        const url = `${baseURL}?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                // ... your existing error handling ...
+                throw new Error(`Network error: ${response.status}`);
+            }
+            const data = await response.json();
+            if (data && data.data) {
+                allResults = allResults.concat(data.data);
+            }
+
+            // Check if there are more pages
+            if (data.meta && data.meta.pagination) {
+                const pagination = data.meta.pagination;
+                if (pagination.current_page < pagination.total_pages) {
+                    page++;
+                } else {
+                    hasMore = false;
+                }
+            } else {
+                hasMore = false; // Assume no more pages if pagination info is missing
+            }
+        } catch (error) {
+            console.error('Error fetching people groups:', error);
+            throw error;
+        }
+    }
+    return allResults;
+}
+
 // Export necessary functions
 export {
     initializeUI,
