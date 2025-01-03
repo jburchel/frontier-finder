@@ -373,8 +373,6 @@ async function searchJoshuaProject(lat, lon, radius, units) {
                 rad: radius,
                 limit: limit,
                 page: page,
-                IsFPG: true, // Assuming you are looking for FPGs
-                IsUUPG: true, // Assuming you are looking for UUPGs
             });
 
             const url = `${baseURL}?${params.toString()}`;
