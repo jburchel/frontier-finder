@@ -10,29 +10,41 @@ console.log('Environment setup:', {
     hostname: window.location.hostname,
     isGitHubPages,
     BASE_PATH,
-    currentPath: window.location.pathname
+    currentPath: window.location.pathname,
+    fullUrl: window.location.href
 });
 
+// Function to get correct asset path
+function getAssetPath(path) {
+    return `${BASE_PATH}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 const DATA_PATHS = {
-    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
-    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
+    UUPG: getAssetPath('data/updated_uupg.csv'),
+    EXISTING_UPGS: getAssetPath('data/existing_upgs_updated.csv')
 };
 
 // Add this debug function
 async function verifyDataFiles() {
     console.log('Verifying data files...');
+    console.log('Data paths:', DATA_PATHS);
+    
     for (const [key, path] of Object.entries(DATA_PATHS)) {
         try {
-            const response = await fetch(path);
-            console.log(`${key} (${path}):`, {
+            console.log(`Fetching ${key} from ${path}`);
+            const response = await fetch(path, {
+                headers: {
+                    'Accept': 'text/csv',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            console.log(`${key} response:`, {
                 status: response.status,
                 ok: response.ok,
-                contentType: response.headers.get('content-type')
+                contentType: response.headers.get('content-type'),
+                url: response.url
             });
-            if (response.ok) {
-                const text = await response.text();
-                console.log(`First line of ${key}:`, text.split('\n')[0]);
-            }
         } catch (e) {
             console.error(`Error accessing ${key}:`, e);
         }
