@@ -2,17 +2,20 @@
 import { config } from './config.js';
 
 // Constants for data paths and configuration
-const BASE_PATH = window.location.hostname.includes('github.io') ? '/frontier-finder' : '';
+const isGitHubPages = window.location.hostname.includes('github.io');
+const BASE_PATH = isGitHubPages ? '/frontier-finder' : '';
 const DATA_PATHS = {
     UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
     EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
 };
 
-// Add debug logging
-console.log('Current hostname:', window.location.hostname);
-console.log('BASE_PATH:', BASE_PATH);
-console.log('UUPG path:', DATA_PATHS.UUPG);
-console.log('Existing UPGs path:', DATA_PATHS.EXISTING_UPGS);
+// Debug logging
+console.log('Environment:', {
+    hostname: window.location.hostname,
+    isGitHubPages,
+    BASE_PATH,
+    fullPath: window.location.href
+});
 
 // Cache for loaded data
 const dataCache = {
@@ -141,50 +144,65 @@ async function initializeCountryDropdown() {
 // Function to load existing UPGs data
 async function loadExistingUPGs() {
     try {
-        const fullPath = new URL(DATA_PATHS.EXISTING_UPGS, window.location.href).href;
-        console.log('Full path for existing UPGs:', fullPath);
-        
-        console.log('Attempting to fetch existing UPGs from:', fullPath);
-        const response = await fetch(fullPath);
-        
-        if (!response.ok) {
-            console.error(`Failed to fetch ${fullPath}`);
-            console.error(`Status: ${response.status}`);
-            console.error(`Status Text: ${response.statusText}`);
-            throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        const paths = [
+            DATA_PATHS.EXISTING_UPGS,                         // Try relative path
+            `${window.location.origin}${DATA_PATHS.EXISTING_UPGS}`, // Try absolute path
+            `/frontier-finder/data/existing_upgs_updated.csv`,      // Try GitHub Pages path
+            `/data/existing_upgs_updated.csv`                       // Try root path
+        ];
+
+        console.log('Attempting to load data from paths:', paths);
+
+        let response;
+        let usedPath;
+
+        for (const path of paths) {
+            try {
+                console.log('Trying path:', path);
+                response = await fetch(path);
+                if (response.ok) {
+                    usedPath = path;
+                    break;
+                }
+            } catch (e) {
+                console.log('Failed to fetch from path:', path, e);
+            }
         }
 
-        const csvText = await response.text();
-        console.log('CSV Text received (first 100 chars):', csvText.substring(0, 100));
-        
-        if (!csvText.trim()) {
-            throw new Error('CSV file is empty');
+        if (!response?.ok) {
+            throw new Error('Failed to fetch data from all attempted paths');
         }
 
-        const lines = csvText.split('\n').filter(line => line.trim());
-        console.log('Number of lines found:', lines.length);
-        
-        const headers = parseCSVLine(lines[0]);
-        console.log('CSV Headers:', headers);
-
-        existingUpgData = lines.slice(1).map(line => {
-            const values = parseCSVLine(line);
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = values[index] || '';
-            });
-            return row;
-        });
-
-        console.log('Parsed UPG data (first entry):', existingUpgData[0]);
-        console.log('Total UPGs loaded:', existingUpgData.length);
-
-        return existingUpgData;
+        console.log('Successfully loaded data from:', usedPath);
+        return await processCSVResponse(response);
     } catch (error) {
         console.error('Error loading existing UPG data:', error);
-        console.error('Error details:', error.stack);
         throw error;
     }
+}
+
+async function processCSVResponse(response) {
+    const csvText = await response.text();
+    console.log('CSV Text received (first 100 chars):', csvText.substring(0, 100));
+    
+    if (!csvText.trim()) {
+        throw new Error('CSV file is empty');
+    }
+
+    const lines = csvText.split('\n').filter(line => line.trim());
+    console.log('Number of lines found:', lines.length);
+    
+    const headers = parseCSVLine(lines[0]);
+    console.log('CSV Headers:', headers);
+
+    return lines.slice(1).map(line => {
+        const values = parseCSVLine(line);
+        const row = {};
+        headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+        });
+        return row;
+    });
 }
 
 // Function to populate country dropdown

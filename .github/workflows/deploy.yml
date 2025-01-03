@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - gh-pages
+      - main
 
 jobs:
   deploy:
@@ -11,16 +11,32 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy
+      - name: List repository contents
+        run: ls -la
+
+      - name: Setup deployment directory
+        run: |
+          echo "Setting up deployment directory..."
+          mkdir -p build
+          cp -r index.html build/
+          cp -r js build/
+          cp -r data build/
+          cp -r css build/ || true
+          cp -r images build/ || true
+          echo "Contents of build directory:"
+          ls -la build/
+
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .
           branch: gh-pages
+          folder: build
+          clean: true
 
-      - name: Copy data files
+      - name: Verify deployment
         run: |
-          mkdir -p dist/data
-          cp data/* dist/data/
+          echo "Deployment complete. Verifying..."
+          curl -s -I "https://iburchel.github.io/frontier-finder/data/existing_upgs_updated.csv" || true
