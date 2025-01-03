@@ -95,12 +95,22 @@ h1 {
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 2rem;
+    margin-bottom: 2rem;
 }
 
 .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.radius-input-group {
     margin-bottom: 1rem;
+}
+
+.radius-input-group input {
+    width: 100%;
 }
 
 label {
@@ -108,14 +118,6 @@ label {
     margin-bottom: 0.5rem;
     color: var(--primary-color);
     font-weight: bold;
-}
-
-select, input[type="number"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--neutral-gray);
-    border-radius: var(--border-radius);
-    font-size: 1rem;
 }
 
 /* Radio button groups */
@@ -129,10 +131,22 @@ select, input[type="number"] {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--text-color);
 }
 
-input[type="radio"] {
+.radio-option input[type="radio"] {
     accent-color: var(--accent-color);
+    margin: 0;
+}
+
+/* Dropdowns */
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: white;
 }
 
 /* Button styles */
@@ -162,14 +176,22 @@ button:hover {
     gap: 2rem;
 }
 
+/* Search button */
+#searchButton {
+    display: block;
+    width: auto;
+    margin: 2rem auto 0;
+    min-width: 200px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
-    .form-grid, .form-row, .results-columns {
+    .form-row {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
-    
+
     .radio-group {
-        flex-direction: column;
-        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 }
