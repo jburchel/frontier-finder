@@ -358,8 +358,21 @@ function setupEventListeners() {
 // Function to search Joshua Project API for FPGs
 async function searchJoshuaProject(lat, lon, radius, units) {
     try {
-        const baseURL = 'https://api.joshuaproject.net/v2/PeopleGroups';
-        const limit = 1000; // Or another appropriate value up to the API limit
+        const baseURL = 'https://api.joshuaproject.net/v2';
+        const limit = 3000; // Maximum with specified fields
+        
+        // Specify only the fields we need
+        const fields = [
+            'PeopleID',
+            'PeopleName',
+            'Latitude',
+            'Longitude',
+            'Population',
+            'PrimaryReligion',
+            'JPScale',
+            'PrimaryLanguageName',
+            'PrimaryLanguageCode'
+        ].join('|');
 
         let allResults = [];
         let page = 1;
@@ -373,17 +386,28 @@ async function searchJoshuaProject(lat, lon, radius, units) {
                 rad: radius,
                 limit: limit,
                 page: page,
+                fields: fields // Add fields parameter to reduce data size
             });
 
-            const url = `${baseURL}?${params.toString()}`;
+            const url = `${baseURL}/people_groups?${params.toString()}`;
+            console.log('Attempting to fetch from URL:', url); // For debugging
 
             try {
                 const response = await fetch(url);
+                
+                // Log the full response for debugging
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
                 if (!response.ok) {
-                    // ... your existing error handling ...
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
                     throw new Error(`Network error: ${response.status}`);
                 }
+
                 const data = await response.json();
+                console.log('API Response:', data); // For debugging
+
                 if (data && data.data) {
                     const pageResults = data.data.map(fpg => ({
                         ...fpg,
@@ -394,16 +418,17 @@ async function searchJoshuaProject(lat, lon, radius, units) {
                     allResults = allResults.concat(pageResults);
                 }
 
-                // Check if there are more pages
+                // Check pagination according to documentation format
                 if (data.meta && data.meta.pagination) {
                     const pagination = data.meta.pagination;
+                    console.log(`Fetched page ${pagination.current_page} of ${pagination.total_pages}`);
                     if (pagination.current_page < pagination.total_pages) {
                         page++;
                     } else {
                         hasMore = false;
                     }
                 } else {
-                    hasMore = false; // Assume no more pages if pagination info is missing
+                    hasMore = false;
                 }
             } catch (error) {
                 console.error('Error fetching people groups:', error);
