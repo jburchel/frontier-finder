@@ -96,55 +96,58 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-/* Update radius input group styles */
-.radius-input-group {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
 }
 
+/* Label styles */
+label {
+    color: var(--primary-color);
+    font-weight: bold;
+    min-width: 120px;
+    margin-bottom: 0;
+}
+
+/* Dropdown styles */
+select {
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: white;
+    flex: 1;
+}
+
+/* Radius input styles */
+.radius-input-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
 .radius-input-group input[type="number"] {
-    width: 100px; /* Limit width for 4 digits */
-    padding: 0.75rem;
+    width: 80px;
+    height: 36px;
+    padding: 0 0.75rem;
     border: 1px solid var(--neutral-gray);
     border-radius: var(--border-radius);
     font-size: 1rem;
 }
 
-/* Move radius radio group inline */
-.radius-radio-group {
+/* Radio groups */
+.radio-group, .radius-radio-group {
     display: flex;
-    gap: 1.5rem;
     align-items: center;
-}
-
-/* Adjust spacing for the search type radio group */
-.search-type-group {
-    margin-top: 0.5rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
-    font-weight: bold;
-}
-
-/* Radio button groups */
-.radio-group {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
+    gap: 1rem;
+    margin-top: 0;
 }
 
 .radio-option {
@@ -152,6 +155,7 @@ label {
     align-items: center;
     gap: 0.5rem;
     color: var(--text-color);
+    margin: 0;
 }
 
 .radio-option input[type="radio"] {
@@ -200,8 +204,10 @@ button:hover {
 #searchButton {
     display: block;
     width: auto;
-    margin: 2rem auto 0;
+    margin: 1rem auto 0;
     min-width: 200px;
+    height: 36px;
+    padding: 0 2rem;
 }
 
 /* Responsive design */
