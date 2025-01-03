@@ -14,18 +14,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -la
-
       - name: Setup deployment
         run: |
           mkdir -p build
+          # Copy all necessary files and directories
           cp -r index.html build/
           cp -r js build/
+          cp -r css build/
+          cp -r images build/
           cp -r data build/
-          cp -r css build/ || true
-          cp -r images build/ || true
-          ls -la build/
+          
+          # Create directories if they don't exist
+          mkdir -p build/css
+          mkdir -p build/images
+          mkdir -p build/data
+          
+          # Debug: List contents
+          echo "Build directory structure:"
+          ls -R build/
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -33,3 +39,10 @@ jobs:
           folder: build
           branch: gh-pages
           clean: true
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment..."
+          echo "Checking for data files..."
+          curl -I "https://iburchel.github.io/frontier-finder/data/existing_upgs_updated.csv" || true
+          curl -I "https://iburchel.github.io/frontier-finder/data/updated_uupg.csv" || true

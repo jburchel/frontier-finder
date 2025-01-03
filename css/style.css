@@ -33,9 +33,10 @@ h1, h2, .featured-text {
 }
 
 .logo {
-    padding: 15px;
-    min-width: 0.89in;
-    min-height: 1.06in;
+    max-width: 200px;
+    height: auto;
+    margin: 20px auto;
+    display: block;
 }
 
 @media screen and (max-width: 768px) {
