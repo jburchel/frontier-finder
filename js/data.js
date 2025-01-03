@@ -861,3 +861,33 @@ class APICache {
         return entry.data;
     }
 }
+
+// Add this function to help debug asset loading
+async function verifyAssets() {
+    const assets = [
+        'css/style.css',
+        'images/crossover-global-logo.png',
+        'data/updated_uupg.csv',
+        'data/existing_upgs_updated.csv'
+    ];
+
+    console.log('Verifying assets...');
+    for (const asset of assets) {
+        try {
+            const response = await fetch(asset);
+            console.log(`${asset}:`, {
+                status: response.status,
+                ok: response.ok,
+                contentType: response.headers.get('content-type')
+            });
+        } catch (e) {
+            console.error(`Error loading ${asset}:`, e);
+        }
+    }
+}
+
+// Call this after DOM loads
+document.addEventListener('DOMContentLoaded', async () => {
+    await verifyAssets();
+    // ... rest of your initialization code
+});
