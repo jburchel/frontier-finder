@@ -359,7 +359,7 @@ function setupEventListeners() {
 async function searchJoshuaProject(lat, lon, radius) {
     const apiKey = config.JP_API_KEY;
     const baseURL = 'https://api.joshuaproject.net/v2/people_groups';
-    const fields = 'PeopleID|PeopleName|Latitude|Longitude|Population|PrimaryReligion|JPScale|PrimaryLanguageName|PrimaryLanguageCode';
+    const fields = 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,JPScale,PrimaryLanguageName,PrimaryLanguageCode';
 
     const queryParams = new URLSearchParams({
         api_key: apiKey,
