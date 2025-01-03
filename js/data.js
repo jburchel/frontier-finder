@@ -14,9 +14,36 @@ console.log('Environment:', {
 });
 
 const DATA_PATHS = {
-    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
-    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
+    UUPG: isGitHubPages ? `${BASE_PATH}/data/updated_uupg.csv` : './data/updated_uupg.csv',
+    EXISTING_UPGS: isGitHubPages ? `${BASE_PATH}/data/existing_upgs_updated.csv` : './data/existing_upgs_updated.csv'
 };
+
+// Add this function to help debug path issues
+async function testDataPaths() {
+    console.log('Testing data paths...');
+    for (const [key, path] of Object.entries(DATA_PATHS)) {
+        try {
+            const response = await fetch(path);
+            console.log(`${key} path (${path}):`, {
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText
+            });
+            if (response.ok) {
+                const text = await response.text();
+                console.log(`First line of ${key}:`, text.split('\n')[0]);
+            }
+        } catch (e) {
+            console.error(`Error testing ${key} path:`, e);
+        }
+    }
+}
+
+// Call this after DOM loads
+document.addEventListener('DOMContentLoaded', async () => {
+    await testDataPaths();
+    // ... rest of your initialization code
+});
 
 const REQUIRED_FIELDS = {
     UUPG: ['PeopleName', 'Country', 'Latitude', 'Longitude', 'Population', 'Language', 'Religion', 'Evangelical Engagement', 'pronunciation'],
