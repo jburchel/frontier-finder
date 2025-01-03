@@ -67,15 +67,11 @@ function validateCoordinates(lat, lon) {
 // Function to load all data
 async function loadAllData() {
     try {
-        const [uupgs, existingUpgs] = await Promise.all([
-            loadUUPGData(),
-            loadExistingUPGs()
+        await Promise.all([
+            loadExistingUPGs(),
+            loadUUPGData()
         ]);
-        
-        uupgData = uupgs;
-        existingUpgData = existingUpgs;
-        
-        return { uupgs, existingUpgs };
+        console.log('All data loaded successfully');
     } catch (error) {
         console.error('Error loading data:', error);
         throw error;
@@ -139,58 +135,54 @@ async function initializeCountryDropdown() {
 // Function to load existing UPGs data
 async function loadExistingUPGs() {
     try {
-        // Check cache with 5-minute expiration
-        const now = Date.now();
-        if (dataCache.existingUpgs && dataCache.lastFetch && (now - dataCache.lastFetch < 300000)) {
-            return dataCache.existingUpgs;
-        }
-
         const response = await fetch(DATA_PATHS.EXISTING_UPGS);
         if (!response.ok) {
             throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
         }
 
         const csvText = await response.text();
-        if (!csvText.trim()) {
-            throw new Error('CSV file is empty');
-        }
-
         const lines = csvText.split('\n').filter(line => line.trim());
         const headers = parseCSVLine(lines[0]);
 
-        const upgs = [];
-        for (let i = 1; i < lines.length; i++) {
-            try {
-                const values = parseCSVLine(lines[i]);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
+        existingUpgData = lines.slice(1).map(line => {
+            const values = parseCSVLine(line);
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+            });
+            return row;
+        });
 
-                if (!row.name || !row.country) {
-                    console.warn(`Skipping row ${i + 1}: Missing name or country`);
-                    continue;
-                }
-
-                upgs.push({
-                    name: row.name,
-                    country: row.country,
-                    latitude: parseFloat(row.latitude) || 0,
-                    longitude: parseFloat(row.longitude) || 0,
-                    pronunciation: row.pronunciation || ''
-                });
-            } catch (error) {
-                console.warn(`Error processing row ${i + 1}:`, error);
-            }
-        }
-
-        dataCache.existingUpgs = upgs;
-        dataCache.lastFetch = now;
-        return upgs;
+        // Populate country dropdown after loading data
+        populateCountryDropdown();
+        
+        return existingUpgData;
     } catch (error) {
-        console.error('Error loading existing UPGs:', error);
+        console.error('Error loading existing UPG data:', error);
         throw error;
     }
+}
+
+// Function to populate country dropdown
+function populateCountryDropdown() {
+    const countryDropdown = document.getElementById('country');
+    if (!countryDropdown) return;
+
+    // Get unique countries and sort them
+    const countries = [...new Set(existingUpgData.map(upg => upg.country))]
+        .filter(Boolean)
+        .sort();
+
+    // Clear existing options
+    countryDropdown.innerHTML = '<option value="">Select a country</option>';
+
+    // Add country options
+    countries.forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        countryDropdown.appendChild(option);
+    });
 }
 
 // Function to load UUPG data
@@ -476,3 +468,18 @@ export {
     parseCSVLine,
     searchNearby
 };
+
+// Initialize data when the page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadAllData();
+        setupEventListeners();
+    } catch (error) {
+        console.error('Error initializing data:', error);
+        // Show error message to user
+        const searchForm = document.querySelector('form');
+        if (searchForm) {
+            searchForm.innerHTML = `<p class="error">Error loading data: ${error.message}</p>`;
+        }
+    }
+});
