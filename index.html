@@ -53,18 +53,26 @@
                         <!-- Left Column: Radius and Units -->
                         <div class="form-group">
                             <div class="radius-input-group">
-                                <label for="radius">Search Radius</label>
-                                <input type="number" id="radius" name="radius" min="1" required value="100">
-                            </div>
-                            <div class="radio-group">
-                                <label class="radio-option">
-                                    <input type="radio" name="units" value="kilometers" checked>
-                                    Kilometers
-                                </label>
-                                <label class="radio-option">
-                                    <input type="radio" name="units" value="miles">
-                                    Miles
-                                </label>
+                                <div>
+                                    <label for="radius">Search Radius</label>
+                                    <input type="number" 
+                                           id="radius" 
+                                           name="radius" 
+                                           min="1" 
+                                           max="9999"
+                                           required 
+                                           value="100">
+                                </div>
+                                <div class="radius-radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="units" value="kilometers" checked>
+                                        Kilometers
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="units" value="miles">
+                                        Miles
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
