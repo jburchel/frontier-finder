@@ -6,44 +6,41 @@ const isGitHubPages = window.location.hostname.includes('github.io');
 const BASE_PATH = isGitHubPages ? '/frontier-finder' : '';
 
 // Debug logging
-console.log('Environment:', {
+console.log('Environment setup:', {
     hostname: window.location.hostname,
     isGitHubPages,
     BASE_PATH,
-    fullPath: window.location.href
+    currentPath: window.location.pathname
 });
 
 const DATA_PATHS = {
-    UUPG: isGitHubPages ? `${BASE_PATH}/data/updated_uupg.csv` : './data/updated_uupg.csv',
-    EXISTING_UPGS: isGitHubPages ? `${BASE_PATH}/data/existing_upgs_updated.csv` : './data/existing_upgs_updated.csv'
+    UUPG: `${BASE_PATH}/data/updated_uupg.csv`,
+    EXISTING_UPGS: `${BASE_PATH}/data/existing_upgs_updated.csv`
 };
 
-// Add this function to help debug path issues
-async function testDataPaths() {
-    console.log('Testing data paths...');
+// Add this debug function
+async function verifyDataFiles() {
+    console.log('Verifying data files...');
     for (const [key, path] of Object.entries(DATA_PATHS)) {
         try {
             const response = await fetch(path);
-            console.log(`${key} path (${path}):`, {
-                ok: response.ok,
+            console.log(`${key} (${path}):`, {
                 status: response.status,
-                statusText: response.statusText
+                ok: response.ok,
+                contentType: response.headers.get('content-type')
             });
             if (response.ok) {
                 const text = await response.text();
                 console.log(`First line of ${key}:`, text.split('\n')[0]);
             }
         } catch (e) {
-            console.error(`Error testing ${key} path:`, e);
+            console.error(`Error accessing ${key}:`, e);
         }
     }
 }
 
-// Call this after DOM loads
-document.addEventListener('DOMContentLoaded', async () => {
-    await testDataPaths();
-    // ... rest of your initialization code
-});
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', verifyDataFiles);
 
 const REQUIRED_FIELDS = {
     UUPG: ['PeopleName', 'Country', 'Latitude', 'Longitude', 'Population', 'Language', 'Religion', 'Evangelical Engagement', 'pronunciation'],
