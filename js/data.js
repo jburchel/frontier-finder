@@ -355,13 +355,27 @@ function setupEventListeners() {
     }
 }
 
-// Function to search via your server endpoint
+// Function to search Joshua Project API for FPGs
 async function searchJoshuaProject(lat, lon, radius) {
-    const apiUrl = '/api/people_groups'; // Your server endpoint
-    const queryParams = `lat=${lat}&lon=${lon}&rad=${radius}`;
+    const apiKey = config.JP_API_KEY;
+    const baseURL = 'https://api.joshuaproject.net/v2/people_groups';
+    const fields = 'PeopleID|PeopleName|Latitude|Longitude|Population|PrimaryReligion|JPScale|PrimaryLanguageName|PrimaryLanguageCode';
+
+    const queryParams = new URLSearchParams({
+        api_key: apiKey,
+        lat: lat,
+        lon: lon,
+        rad: radius,
+        limit: 3000,
+        page: 1,
+        fields: fields
+    });
+
+    const url = `${baseURL}?${queryParams.toString()}`;
+    console.log('Attempting to fetch from URL:', url);
 
     try {
-        const response = await fetch(`${apiUrl}?${queryParams}`);
+        const response = await fetch(url);
         if (!response.ok) {
             console.error(`Response status: ${response.status}`);
             const errorText = await response.text();
