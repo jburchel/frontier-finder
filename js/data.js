@@ -361,19 +361,26 @@ async function searchJoshuaProject(lat, lon, radius) {
     // Using the exact format from Joshua Project documentation
     const baseURL = 'https://joshuaproject.net/api/v2/people_groups.json';
     
-    // Start with minimal parameters
+    // Start with minimal parameters and ensure they are numbers
     const queryParams = new URLSearchParams({
         api_key: apiKey,
-        lat: lat,
-        lon: lon,
-        rad: radius
+        lat: Number(lat).toFixed(4),
+        lon: Number(lon).toFixed(4),
+        rad: Number(radius).toFixed(0)
     });
 
     const url = `${baseURL}?${queryParams.toString()}`;
     console.log('Attempting to fetch from URL:', url);
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
         if (!response.ok) {
             console.error(`Response status: ${response.status}`);
             const errorText = await response.text();

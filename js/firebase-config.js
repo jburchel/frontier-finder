@@ -12,9 +12,17 @@ export const firebaseConfig = {
     appId: "1:35563852058:web:a4b89c5f0fedd06432dca3"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase lazily
+let app;
+let db;
 
-// Export Firebase instances and functions
-export { db, collection, addDoc, getDocs, deleteDoc, doc, updateDoc };
+export function initializeFirebase() {
+    if (!app) {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+    }
+    return { db, collection, addDoc, getDocs, deleteDoc, doc, updateDoc };
+}
+
+// Export Firebase functions
+export { collection, addDoc, getDocs, deleteDoc, doc, updateDoc };
