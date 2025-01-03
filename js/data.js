@@ -358,17 +358,15 @@ function setupEventListeners() {
 // Function to search Joshua Project API for FPGs
 async function searchJoshuaProject(lat, lon, radius) {
     const apiKey = config.JP_API_KEY;
-    const baseURL = 'https://api.joshuaproject.net/v2/people_groups';
-    const fields = 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,JPScale,PrimaryLanguageName,PrimaryLanguageCode';
-
+    // Using the exact format from Joshua Project documentation
+    const baseURL = 'https://joshuaproject.net/api/v2/people_groups.json';
+    
+    // Start with minimal parameters
     const queryParams = new URLSearchParams({
         api_key: apiKey,
         lat: lat,
         lon: lon,
-        rad: radius,
-        limit: 3000,
-        page: 1,
-        fields: fields
+        rad: radius
     });
 
     const url = `${baseURL}?${queryParams.toString()}`;
