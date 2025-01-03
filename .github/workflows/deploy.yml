@@ -24,7 +24,7 @@ jobs:
           # Create directory structure
           mkdir -p build/{js,css,images,data}
 
-          # Copy files with absolute paths
+          # Copy files with absolute paths and set permissions
           cp index.html build/
           cp -r js/* build/js/
           cp -r css/* build/css/
@@ -32,12 +32,16 @@ jobs:
           
           # Explicitly copy data files
           echo "Copying data files..."
-          cp data/updated_uupg.csv build/data/
-          cp data/existing_upgs_updated.csv build/data/
+          cp data/*.csv build/data/
+
+          # Set permissions
+          chmod -R 644 build/data/*.csv
+          chmod -R 644 build/css/*.css
+          find build -type d -exec chmod 755 {} \;
 
           # Verify data files
           echo "Verifying data files..."
-          ls -l build/data/
+          ls -la build/data/
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
