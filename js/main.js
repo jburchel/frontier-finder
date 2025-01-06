@@ -45,17 +45,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const results = await searchNearby(country, upg, radius, units, type);
                     console.log('Search results:', results);
                     
+                    // Verify results before storing
+                    if (!results || !results.results) {
+                        throw new Error('Invalid results format received');
+                    }
+
                     // Store results in sessionStorage
                     sessionStorage.setItem('searchResults', JSON.stringify(results));
+                    console.log('Stored results in sessionStorage'); // Debug log
                     
                     // Redirect to results page
                     const params = new URLSearchParams({
                         country, upg, radius, units, type
                     });
-                    // Get the base path for GitHub Pages
                     const basePath = window.location.pathname.includes('/frontier-finder') 
                         ? '/frontier-finder' 
                         : '';
+                    console.log('Redirecting to:', `${basePath}/results.html?${params.toString()}`);
                     window.location.href = `${basePath}/results.html?${params.toString()}`;
                     
                 } catch (error) {
