@@ -7,13 +7,20 @@ export const config = {
     }
 };
 
-// Simplified validation
-export function validateApiKey() {
-    if (!config.joshuaProjectApiKey) {
-        console.error('Joshua Project API key is missing');
+// Test the API key
+export async function testApiKey() {
+    const testUrl = `${config.apiBaseUrl}/people_groups.php?api_key=${config.joshuaProjectApiKey}&limit=1`;
+    try {
+        const response = await fetch(testUrl);
+        if (!response.ok) {
+            throw new Error(`API responded with status: ${response.status}`);
+        }
+        const data = await response.json();
+        return true;
+    } catch (error) {
+        console.error('API key validation failed:', error);
         return false;
     }
-    return true;
 }
 
 window.jpConfig = config;

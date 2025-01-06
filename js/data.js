@@ -183,31 +183,20 @@ async function fetchPeopleGroups(params) {
         ...params
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups.php?${queryParams}`;
     console.log('Full API URL:', url);
 
-    return new Promise((resolve, reject) => {
-        const callbackName = `jpCallback_${Date.now()}`;
-        
-        // Add callback to window
-        window[callbackName] = (data) => {
-            console.log('Received data:', data);
-            delete window[callbackName];
-            document.head.removeChild(script);
-            resolve(data);
-        };
-
-        const script = document.createElement('script');
-        script.src = `${url}&callback=${callbackName}`;
-        
-        script.onerror = () => {
-            delete window[callbackName];
-            document.head.removeChild(script);
-            reject(new Error('Failed to load data from Joshua Project API'));
-        };
-
-        document.head.appendChild(script);
-    });
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`API responded with status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw new Error('Failed to load data from Joshua Project API');
+    }
 }
 
 function checkRateLimit(headers) {
