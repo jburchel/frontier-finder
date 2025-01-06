@@ -144,27 +144,48 @@
         <script>
             async function testAPI() {
                 try {
-                    const callbackName = 'jpCallback_' + Date.now();
+                    // Create a unique callback name
+                    const callbackName = 'jp_' + Date.now();
+                    
+                    // Create promise to handle JSONP response
                     const jsonpPromise = new Promise((resolve, reject) => {
+                        // Add callback to window
                         window[callbackName] = (data) => {
+                            console.log('Callback received data:', data);
                             resolve(data);
+                            cleanup();
+                        };
+                        
+                        // Create cleanup function
+                        const cleanup = () => {
                             delete window[callbackName];
-                            document.head.removeChild(script);
+                            if (script.parentNode) {
+                                document.head.removeChild(script);
+                            }
                         };
                         
                         const script = document.createElement('script');
-                        // Note the .json extension and format=jsonp parameter
-                        script.src = `https://api.joshuaproject.net/v2/people_groups.json?api_key=080e14ad747e&limit=1&format=jsonp&callback=${callbackName}`;
+                        
+                        // Set timeout
+                        const timeout = setTimeout(() => {
+                            console.error('API request timed out');
+                            cleanup();
+                            reject(new Error('API request timed out'));
+                        }, 10000);
+                        
+                        // Use their recommended format
+                        script.src = `https://api.joshuaproject.net/v2/people_groups/PeopleID3/1.json?api_key=080e14ad747e&callback=${callbackName}`;
                         
                         script.onload = () => {
                             console.log('Script loaded successfully');
+                            clearTimeout(timeout);
                         };
                         
                         script.onerror = (error) => {
                             console.error('Script load error:', error);
+                            clearTimeout(timeout);
+                            cleanup();
                             reject(new Error('Failed to load JSONP script'));
-                            delete window[callbackName];
-                            document.head.removeChild(script);
                         };
                         
                         console.log('Adding script with src:', script.src);

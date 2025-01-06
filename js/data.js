@@ -180,7 +180,6 @@ async function fetchPeopleGroups(params) {
     // Build the URL with parameters
     const queryParams = new URLSearchParams({
         api_key: config.joshuaProjectApiKey,
-        format: 'jsonp',
         ...params
     }).toString();
     
@@ -188,25 +187,43 @@ async function fetchPeopleGroups(params) {
     console.log('Full API URL:', url);
 
     return new Promise((resolve, reject) => {
-        const callbackName = 'jpCallback_' + Date.now();
+        // Create a unique callback name
+        const callbackName = 'jp_' + Date.now();
+        
+        // Create cleanup function
+        const cleanup = () => {
+            delete window[callbackName];
+            if (script.parentNode) {
+                document.head.removeChild(script);
+            }
+        };
         
         // Add callback to window
         window[callbackName] = (data) => {
+            console.log('Callback received data:', data);
             resolve(data);
-            delete window[callbackName];
-            document.head.removeChild(script);
+            cleanup();
         };
         
         const script = document.createElement('script');
+        
+        // Set timeout
+        const timeout = setTimeout(() => {
+            console.error('API request timed out');
+            cleanup();
+            reject(new Error('API request timed out'));
+        }, 10000);
+        
         script.onload = () => {
             console.log('Script loaded successfully');
+            clearTimeout(timeout);
         };
         
         script.onerror = (error) => {
             console.error('Script load error:', error);
+            clearTimeout(timeout);
+            cleanup();
             reject(new Error('Failed to load data from Joshua Project API'));
-            delete window[callbackName];
-            document.head.removeChild(script);
         };
         
         script.src = `${url}&callback=${callbackName}`;
