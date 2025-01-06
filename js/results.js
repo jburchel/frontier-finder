@@ -1,4 +1,6 @@
 import { searchService } from './search.js';
+import { firebaseService } from './firebase.js';
+import { collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 class ResultsUI {
     constructor() {
@@ -10,12 +12,35 @@ class ResultsUI {
             column: 'population',
             direction: 'desc'
         };
+        this.selectedResults = new Set(); // Track selected items
         this.initialize();
+    }
+
+    showLoading(message = 'Loading results...') {
+        if (!this.resultsContainer) return;
+        
+        this.resultsContainer.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">${message}</div>
+            </div>
+        `;
+    }
+
+    hideLoading() {
+        if (!this.resultsContainer) return;
+        // Clear only if it contains the loading indicator
+        if (this.resultsContainer.querySelector('.loading-container')) {
+            this.resultsContainer.innerHTML = '';
+        }
     }
 
     async initialize() {
         try {
             const params = new URLSearchParams(window.location.search);
+            
+            // Show loading immediately
+            this.showLoading('Loading and processing data...');
             
             // Get and parse parameters
             const searchParams = {
@@ -35,12 +60,18 @@ class ResultsUI {
             // Initialize search service if needed
             await searchService.initialize();
 
+            // Update loading message
+            this.showLoading('Searching for people groups...');
+
             const results = await searchService.searchNearby(
                 searchParams.upg,
                 searchParams.radius,
                 searchParams.units,
                 searchParams.type
             );
+
+            // Hide loading before displaying results
+            this.hideLoading();
 
             // Display search parameters first
             this.displaySearchParams(searchParams);
@@ -49,6 +80,7 @@ class ResultsUI {
             this.displayResults(results);
         } catch (error) {
             console.error('Results initialization failed:', error);
+            this.hideLoading();
             this.displayError(error.message);
         }
     }
@@ -267,6 +299,29 @@ class ResultsUI {
             `;
             this.resultsContainer.appendChild(debugInfo);
         }
+
+        // Add the action buttons after the table
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions-container';
+        actionsDiv.innerHTML = `
+            <button id="addToListButton" class="button primary" disabled>
+                Add to Top 100 List
+            </button>
+        `;
+        this.resultsContainer.appendChild(actionsDiv);
+
+        // Add click handler for the add to list button
+        const addButton = document.getElementById('addToListButton');
+        addButton.addEventListener('click', () => this.addToTop100List());
+
+        // Add change handlers for checkboxes
+        const checkboxes = table.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const index = e.target.getAttribute('data-result-index');
+                this.handleSelectionChange(e.target, index);
+            });
+        });
     }
 
     displayError(message) {
@@ -279,6 +334,88 @@ class ResultsUI {
         `;
         this.resultsContainer.innerHTML = '';
         this.resultsContainer.appendChild(errorDiv);
+    }
+
+    // Add this method to handle selection changes
+    handleSelectionChange(checkbox, resultIndex) {
+        if (checkbox.checked) {
+            this.selectedResults.add(this.currentResults[resultIndex]);
+        } else {
+            this.selectedResults.delete(this.currentResults[resultIndex]);
+        }
+        // Update the add to list button state
+        this.updateAddToListButton();
+    }
+
+    // Add this method to update button state
+    updateAddToListButton() {
+        const button = document.getElementById('addToListButton');
+        if (button) {
+            button.disabled = this.selectedResults.size === 0;
+        }
+    }
+
+    // Temporarily simplify the add to list functionality
+    async addToTop100List() {
+        try {
+            const button = document.getElementById('addToListButton');
+            button.disabled = true;
+            button.textContent = 'Adding to list...';
+
+            // Get the selected items
+            const selectedItems = Array.from(this.selectedResults);
+            
+            // Get Firestore instance
+            const db = firebaseService.getDb();
+            
+            // Get existing items to check count
+            const top100Ref = collection(db, 'top100');
+            const snapshot = await getDocs(top100Ref);
+            const currentCount = snapshot.size;
+
+            if (currentCount + selectedItems.length > 100) {
+                throw new Error('Adding these items would exceed the 100 item limit');
+            }
+
+            // Add each item to Firebase
+            const promises = selectedItems.map(item => {
+                const cleanItem = {
+                    type: item.type,
+                    name: item.name,
+                    population: parseInt(item.population) || 0,
+                    country: item.country,
+                    religion: item.religion,
+                    language: item.language,
+                    distance: item.distance,
+                    addedAt: new Date().toISOString(),
+                    coordinates: item.coordinates || null
+                };
+
+                return addDoc(top100Ref, cleanItem);
+            });
+
+            await Promise.all(promises);
+            console.log(`Successfully added ${selectedItems.length} items to Top 100`);
+
+            // Show success message
+            alert('Selected items have been added to the Top 100 list');
+            
+            // Reset selections
+            this.selectedResults.clear();
+            this.updateAddToListButton();
+            
+            // Redirect to top100 page
+            window.location.href = 'top100.html';
+
+        } catch (error) {
+            console.error('Failed to add items to Top 100:', error);
+            alert('Failed to add items to the Top 100 list: ' + error.message);
+        } finally {
+            // Reset button
+            const button = document.getElementById('addToListButton');
+            button.disabled = false;
+            button.textContent = 'Add to Top 100 List';
+        }
     }
 }
 

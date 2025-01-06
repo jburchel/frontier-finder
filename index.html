@@ -18,6 +18,18 @@
         window.speechSynthesis.speak(utterance);
     }
     </script>
+    <script type="module">
+        import { firebaseService } from './js/firebase.js';
+        
+        // Initialize Firebase when the page loads
+        window.addEventListener('load', async () => {
+            try {
+                await firebaseService.initialize();
+            } catch (error) {
+                console.error('Failed to initialize Firebase:', error);
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="container">

@@ -1,184 +1,184 @@
 import { firebaseService } from './firebase.js';
 
-/**
- * Top 100 Priority List page handling
- */
 class Top100Page {
     constructor() {
-        this.listContainer = document.getElementById('top100List');
-        this.typeFilter = document.getElementById('typeFilter');
-        this.sortOptions = document.getElementById('sortOptions');
-        
         this.groups = [];
-        console.log('Top100Page initialized');
+        this.currentFilter = 'all';
+        this.currentSort = 'dateAdded';
+        this.sortDirection = 'desc';
         this.initialize();
     }
 
-    /**
-     * Initialize the page
-     */
     async initialize() {
         try {
-            console.group('Top 100 Page Initialization');
             console.log('Starting initialization...');
-            
-            // Load groups
             await this.loadGroups();
-            
-            // Setup event listeners
             this.setupEventListeners();
-            
+            this.updateDisplay();
             console.log('Initialization complete');
-            console.groupEnd();
-            
         } catch (error) {
             console.error('Failed to initialize Top 100 page:', error);
-            this.showError('Failed to load Top 100 list: ' + error.message);
-            console.groupEnd();
+            this.showError('Failed to load the Top 100 list. Please try again later.');
         }
     }
 
-    /**
-     * Load groups from Firestore
-     */
     async loadGroups() {
-        console.group('Loading Top 100 Groups');
         try {
-            console.log('Fetching groups from Firestore...');
+            console.log('Loading Top 100 Groups');
+            this.showLoading();
             this.groups = await firebaseService.getTop100();
-            console.log('Groups received:', this.groups);
-            
-            // Show browser compatibility warning if needed
-            if (this.groups.length === 1 && this.groups[0].id === 'mock1') {
-                this.showWarning('Browser privacy settings are blocking Firestore access. Try using Chrome or Firefox for development.');
-            }
-            
-            this.displayGroups(this.groups);
-            console.groupEnd();
+            this.hideLoading();
+            console.log(`Groups received: ${this.groups.length}`);
         } catch (error) {
             console.error('Failed to load groups:', error);
-            console.groupEnd();
             throw error;
         }
     }
 
-    /**
-     * Display groups in the list
-     */
-    displayGroups(groups) {
-        if (!this.listContainer) {
-            console.error('List container element not found');
+    setupEventListeners() {
+        // Filter change handler
+        document.getElementById('groupFilter').addEventListener('change', (e) => {
+            this.currentFilter = e.target.value;
+            this.updateDisplay();
+        });
+
+        // Sort button handlers
+        document.querySelectorAll('.sort-controls button').forEach(button => {
+            button.addEventListener('click', () => {
+                const sortType = button.dataset.sort;
+                if (this.currentSort === sortType) {
+                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.currentSort = sortType;
+                    this.sortDirection = 'desc';
+                }
+                this.updateDisplay();
+            });
+        });
+    }
+
+    updateDisplay() {
+        const filteredGroups = this.filterGroups();
+        const sortedGroups = this.sortGroups(filteredGroups);
+        this.updateSummary(filteredGroups);
+        this.renderTable(sortedGroups);
+        this.updateSortButtons();
+    }
+
+    filterGroups() {
+        if (this.currentFilter === 'all') return [...this.groups];
+        return this.groups.filter(group => group.type === this.currentFilter);
+    }
+
+    sortGroups(groups) {
+        return [...groups].sort((a, b) => {
+            let valueA, valueB;
+            
+            switch (this.currentSort) {
+                case 'dateAdded':
+                    valueA = new Date(a.addedAt);
+                    valueB = new Date(b.addedAt);
+                    break;
+                case 'population':
+                    valueA = parseInt(a.population) || 0;
+                    valueB = parseInt(b.population) || 0;
+                    break;
+                default:
+                    valueA = (a[this.currentSort] || '').toLowerCase();
+                    valueB = (b[this.currentSort] || '').toLowerCase();
+            }
+
+            const comparison = valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+            return this.sortDirection === 'asc' ? comparison : -comparison;
+        });
+    }
+
+    updateSummary(filteredGroups) {
+        const summary = document.getElementById('listSummary');
+        const fpgCount = filteredGroups.filter(g => g.type === 'FPG').length;
+        const uupgCount = filteredGroups.filter(g => g.type === 'UUPG').length;
+
+        summary.innerHTML = `
+            <h3>List Summary</h3>
+            <p>Total Groups: ${filteredGroups.length}</p>
+            <ul>
+                <li>FPGs: ${fpgCount}</li>
+                <li>UUPGs: ${uupgCount}</li>
+            </ul>
+        `;
+    }
+
+    renderTable(groups) {
+        const tbody = document.getElementById('top100Body');
+        const tableContainer = document.querySelector('.table-container');
+        const emptyState = document.getElementById('emptyState');
+
+        if (groups.length === 0) {
+            tableContainer.style.display = 'none';
+            emptyState.style.display = 'block';
             return;
         }
 
-        console.log('Displaying groups:', groups.length);
+        tableContainer.style.display = 'block';
+        emptyState.style.display = 'none';
 
-        this.listContainer.innerHTML = groups.map((group, index) => `
-            <div class="priority-card" data-id="${group.id}">
-                <div class="priority-number">${index + 1}</div>
-                <div class="card-content">
-                    <h3>${group.PeopNameInCountry}</h3>
-                    <p><strong>Type:</strong> ${group.type}</p>
-                    <p><strong>Population:</strong> ${group.Population.toLocaleString()}</p>
-                    <p><strong>Evangelical:</strong> ${group.PercentEvangelical}%</p>
-                    <p><strong>Primary Religion:</strong> ${group.PrimaryReligion}</p>
-                    <p><strong>Primary Language:</strong> ${group.PrimaryLanguageName}</p>
-                    <p><strong>Added:</strong> ${new Date(group.addedAt.toDate()).toLocaleDateString()}</p>
-                </div>
-                <button class="delete-button" data-id="${group.id}">Remove</button>
-            </div>
+        tbody.innerHTML = groups.map(group => `
+            <tr>
+                <td>${group.type}</td>
+                <td>${group.name}</td>
+                <td>${parseInt(group.population).toLocaleString()}</td>
+                <td>${group.country}</td>
+                <td>${group.religion}</td>
+                <td>${group.language}</td>
+                <td>${new Date(group.addedAt).toLocaleDateString()}</td>
+                <td class="actions-cell">
+                    <button class="delete-button" onclick="window.top100Page.deleteGroup('${group.id}')">
+                        Remove
+                    </button>
+                </td>
+            </tr>
         `).join('');
     }
 
-    /**
-     * Setup event listeners
-     */
-    setupEventListeners() {
-        // Type filter
-        this.typeFilter?.addEventListener('change', (e) => {
-            this.filterGroups(e.target.value);
-        });
-
-        // Sort options
-        this.sortOptions?.addEventListener('click', (e) => {
-            const button = e.target.closest('.sort-button');
-            if (button) {
-                this.sortGroups(button.dataset.sort);
-            }
-        });
-
-        // Delete buttons
-        this.listContainer?.addEventListener('click', async (e) => {
-            const deleteButton = e.target.closest('.delete-button');
-            if (deleteButton) {
-                await this.removeGroup(deleteButton.dataset.id);
-            }
+    updateSortButtons() {
+        document.querySelectorAll('.sort-controls button').forEach(button => {
+            button.classList.toggle('active', button.dataset.sort === this.currentSort);
         });
     }
 
-    /**
-     * Filter groups by type
-     */
-    filterGroups(type) {
-        const filtered = type === 'all' 
-            ? this.groups 
-            : this.groups.filter(group => group.type.toLowerCase() === type);
-        this.displayGroups(filtered);
-    }
+    async deleteGroup(id) {
+        if (!confirm('Are you sure you want to remove this group from your Top 100 list?')) {
+            return;
+        }
 
-    /**
-     * Sort groups by criteria
-     */
-    sortGroups(criteria) {
-        const sortFunctions = {
-            date: (a, b) => b.addedAt.toDate() - a.addedAt.toDate(),
-            country: (a, b) => a.Country.localeCompare(b.Country),
-            population: (a, b) => b.Population - a.Population
-        };
-
-        this.groups.sort(sortFunctions[criteria]);
-        this.displayGroups(this.groups);
-    }
-
-    /**
-     * Remove a group from the list
-     */
-    async removeGroup(id) {
         try {
-            if (!confirm('Are you sure you want to remove this people group?')) {
-                return;
-            }
-
             await firebaseService.removeFromTop100(id);
-            await this.loadGroups(); // Reload the list
-            
+            this.groups = this.groups.filter(g => g.id !== id);
+            this.updateDisplay();
         } catch (error) {
-            console.error('Failed to remove group:', error);
-            alert('Failed to remove group: ' + error.message);
+            console.error('Failed to delete group:', error);
+            alert('Failed to remove group. Please try again.');
         }
     }
 
-    /**
-     * Show error message
-     */
-    showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = message;
-        this.listContainer?.parentNode.insertBefore(errorDiv, this.listContainer);
+    showLoading() {
+        document.getElementById('loadingState').style.display = 'flex';
     }
 
-    showWarning(message) {
-        const warning = document.createElement('div');
-        warning.className = 'warning-message';
-        warning.innerHTML = `
-            <span class="warning-icon">⚠️</span>
-            <span class="warning-text">${message}</span>
+    hideLoading() {
+        document.getElementById('loadingState').style.display = 'none';
+    }
+
+    showError(message) {
+        const errorHtml = `
+            <div class="error-message">
+                <p>${message}</p>
+                <button onclick="window.location.reload()" class="button">Try Again</button>
+            </div>
         `;
-        this.listContainer.parentNode.insertBefore(warning, this.listContainer);
+        document.querySelector('main').innerHTML = errorHtml;
     }
 }
 
-// Initialize page
-const top100Page = new Top100Page();
-export default top100Page; 
+// Create and expose instance for event handlers
+window.top100Page = new Top100Page(); 
