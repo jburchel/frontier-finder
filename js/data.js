@@ -175,24 +175,38 @@ async function initializeUI() {
 }
 
 async function fetchPeopleGroups(params) {
-    try {
+    const callbackName = 'jpCallback_' + Math.random().toString(36).substr(2, 9);
+    
+    return new Promise((resolve, reject) => {
+        // Add callback to window
+        window[callbackName] = (data) => {
+            resolve(data);
+            // Clean up
+            delete window[callbackName];
+            document.head.removeChild(script);
+        };
+        
+        // Create script element
+        const script = document.createElement('script');
+        
+        // Add parameters to URL
         const queryParams = new URLSearchParams({
             ...params,
-            api_key: config.joshuaProjectApiKey
+            api_key: config.joshuaProjectApiKey,
+            callback: callbackName
         });
         
-        const response = await fetch(`${config.apiBaseUrl}/people_groups?${queryParams}`);
+        // Use v1 API endpoint with JSONP
+        script.src = `${config.apiBaseUrl}/people_groups?${queryParams}`;
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        script.onerror = () => {
+            reject(new Error('Failed to load JSONP script'));
+            delete window[callbackName];
+            document.head.removeChild(script);
+        };
         
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching people groups:', error);
-        throw error;
-    }
+        document.head.appendChild(script);
+    });
 }
 
 function checkRateLimit(headers) {
@@ -339,53 +353,104 @@ async function testJoshuaProjectAPI() {
 }
 
 // Add the searchNearby function if it doesn't exist
-async function searchNearby(selectedUPG, radius, units, searchType) {
+async function searchNearby(selectedCountry, selectedUPG, radius, units, searchType) {
     try {
+        console.log('Starting search with params:', { selectedCountry, selectedUPG, radius, units, searchType });
+        
         // Get the coordinates of the selected UPG
         const upgs = await loadExistingUPGs();
-        const baseUPG = upgs.find(upg => upg.name === selectedUPG);
+        const baseUPG = upgs.find(upg => upg.country === selectedCountry && upg.name === selectedUPG);
         
         if (!baseUPG) {
             throw new Error('Selected UPG not found');
         }
 
-        // Prepare search parameters
+        // Prepare search parameters for Joshua Project API
         const params = {
             lat: baseUPG.latitude,
             lon: baseUPG.longitude,
             rad: radius,
-            rad_units: units,
+            rad_units: units === 'Kilometers' ? 'km' : 'mi',
             limit: 100
         };
 
         // Add type-specific parameters
-        if (searchType === 'fpg') {
-            params.is_fpg = true;
-        } else if (searchType === 'uupg') {
-            params.is_uupg = true;
+        if (searchType === 'FPG') {
+            params.is_fpg = 1;
+        } else if (searchType === 'UUPG') {
+            params.is_uupg = 1;
         }
 
+        console.log('Fetching from Joshua Project API with params:', params);
+
         // Fetch results from Joshua Project API
-        try {
-            const results = await fetchPeopleGroups(params);
-            return {
-                baseUPG,
-                results: results || []
-            };
-        } catch (error) {
-            console.warn('API search failed, falling back to local data:', error);
-            // Implement local search fallback here if needed
-            return {
-                baseUPG,
-                results: [],
-                error: 'API search failed'
-            };
-        }
+        const results = await fetchPeopleGroups(params);
+        console.log('API Results:', results);
+
+        return {
+            baseUPG,
+            results: results || []
+        };
     } catch (error) {
         console.error('Search failed:', error);
         throw error;
     }
 }
+
+// Add event listener for form submission
+document.addEventListener('DOMContentLoaded', () => {
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const country = document.getElementById('country').value;
+                const upg = document.getElementById('upg').value;
+                const radius = document.getElementById('radius').value;
+                const units = document.querySelector('input[name="units"]:checked').value;
+                const searchType = document.querySelector('input[name="searchType"]:checked').value;
+
+                console.log('Form submitted with values:', {
+                    country,
+                    upg,
+                    radius,
+                    units,
+                    searchType
+                });
+
+                // Show loading state
+                const searchButton = searchForm.querySelector('button[type="submit"]');
+                const originalButtonText = searchButton.textContent;
+                searchButton.disabled = true;
+                searchButton.textContent = 'Searching...';
+
+                const results = await searchNearby(country, upg, radius, units, searchType);
+                
+                // Handle results - you might want to redirect to results page or update UI
+                console.log('Search results:', results);
+
+                // If you want to redirect to results page:
+                const searchParams = new URLSearchParams({
+                    country,
+                    upg,
+                    radius,
+                    units,
+                    type: searchType
+                });
+                window.location.href = `results.html?${searchParams.toString()}`;
+
+            } catch (error) {
+                console.error('Search error:', error);
+                // Show error message to user
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = `Search failed: ${error.message}`;
+                searchForm.insertAdjacentElement('beforebegin', errorDiv);
+            }
+        });
+    }
+});
 
 // Remove all other DOMContentLoaded listeners and keep just this one
 document.addEventListener('DOMContentLoaded', async () => {
