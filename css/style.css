@@ -271,3 +271,49 @@ button:hover {
     border-radius: 4px;
     background-color: rgba(255,165,0,0.1);
 }
+
+/* Results page specific styles */
+.back-button {
+    display: inline-block;
+    margin: 1rem 0;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.search-summary {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.results-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.result-card {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.no-results {
+    color: var(--neutral-gray);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .results-columns {
+        grid-template-columns: 1fr;
+    }
+}
