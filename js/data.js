@@ -180,36 +180,45 @@ async function fetchPeopleGroups(params) {
     // Build the URL with parameters
     const queryParams = new URLSearchParams({
         ...params,
-        api_key: config.joshuaProjectApiKey
     }).toString();
     
     const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
-    console.log('Fetching from:', url);
+    console.log('Full API URL:', url);
 
     try {
         // Use JSONP for cross-origin requests
         return new Promise((resolve, reject) => {
             const callbackName = 'jp_callback_' + Date.now();
-            const script = document.createElement('script');
+            console.log('Using callback name:', callbackName);
+            
+            // Set timeout to handle failed requests
+            const timeout = setTimeout(() => {
+                delete window[callbackName];
+                document.head.removeChild(script);
+                reject(new Error('API request timed out'));
+            }, 10000);
             
             // Add callback to window
             window[callbackName] = (data) => {
+                clearTimeout(timeout);
+                console.log('JSONP callback received data:', data);
                 delete window[callbackName];
                 document.head.removeChild(script);
                 resolve(data);
             };
             
-            // Add error handling
-            script.onerror = () => {
+            const script = document.createElement('script');
+            script.onerror = (error) => {
+                clearTimeout(timeout);
+                console.error('JSONP script error:', error);
                 delete window[callbackName];
                 document.head.removeChild(script);
                 reject(new Error('Failed to load data from Joshua Project API'));
             };
             
-            // Set script source with callback
             script.src = `${url}&callback=${callbackName}`;
+            console.log('Adding script with src:', script.src);
             
-            // Add script to page
             document.head.appendChild(script);
         });
     } catch (error) {
@@ -333,7 +342,7 @@ async function testJoshuaProjectAPI() {
             const script = document.createElement('script');
             
             // Use v1 API endpoint with JSONP
-            script.src = `https://joshuaproject.net/api/v1/people_groups?api_key=${config.joshuaProjectApiKey}&limit=1&callback=${callbackName}`;
+            script.src = `${config.apiBaseUrl}/people_groups?api_key=${config.joshuaProjectApiKey}&limit=1&callback=${callbackName}`;
             
             // Handle errors
             script.onerror = () => {
@@ -370,6 +379,8 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
         const upgs = await loadExistingUPGs();
         const baseUPG = upgs.find(upg => upg.country === selectedCountry && upg.name === selectedUPG);
         
+        console.log('Base UPG found:', baseUPG);
+
         if (!baseUPG) {
             throw new Error('Selected UPG not found');
         }
@@ -380,20 +391,24 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
             longitude: baseUPG.longitude,
             radius: radius,
             radius_units: units.toLowerCase() === 'kilometers' ? 'km' : 'mi',
-            limit: 100
+            limit: 100,
+            fields: 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,PercentEvangelical,JPScale,ROL3,IsUUPG,IsFPG',
+            api_key: config.joshuaProjectApiKey
         };
 
         // Add type-specific parameters
         if (searchType === 'fpg') {
-            params.is_frontier = 1;
+            params.IsFPG = 'Y';
         } else if (searchType === 'uupg') {
-            params.is_uupg = 1;
+            params.IsUUPG = 'Y';
         }
 
         console.log('API request params:', params);
+        console.log('API URL:', `${config.apiBaseUrl}/people_groups?${new URLSearchParams(params)}`);
 
         try {
             const results = await fetchPeopleGroups(params);
+            console.log('Raw API response:', results);
             return {
                 baseUPG,
                 results: results.data || []

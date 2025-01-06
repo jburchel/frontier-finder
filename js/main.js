@@ -58,11 +58,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const params = new URLSearchParams({
                         country, upg, radius, units, type
                     });
-                    const basePath = window.location.pathname.includes('/frontier-finder') 
-                        ? '/frontier-finder' 
-                        : '';
-                    console.log('Redirecting to:', `${basePath}/results.html?${params.toString()}`);
-                    window.location.href = `${basePath}/results.html?${params.toString()}`;
+                    window.location.href = `results.html?${params.toString()}`;
                     
                 } catch (error) {
                     console.error('Search failed:', error);

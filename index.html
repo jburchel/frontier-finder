@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/frontier-finder/">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '';
+        document.write(`<base href="${baseHref}">`);
+    </script>
     <title>Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -118,7 +123,7 @@
             <div class="top-100-section">
                 <h2>Top 100 Priority List</h2>
                 <p class="instructions">View and manage your Top 100 Priority List.</p>
-                <a href="/frontier-finder/top100.html" class="button">View Top 100 List</a>
+                <a href="top100.html" class="button">View Top 100 List</a>
             </div>
         </main>
 

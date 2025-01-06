@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/frontier-finder/">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '';
+        document.write(`<base href="${baseHref}">`);
+    </script>
     <title>Search Results - Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -13,7 +18,7 @@
         <header>
             <img src="images/crossover-global-logo.png" alt="Crossover Global Logo" class="logo">
             <h1>Search Results</h1>
-            <a href="/frontier-finder/index.html" class="back-button">← Back to Search</a>
+            <a href="index.html" class="back-button">← Back to Search</a>
         </header>
 
         <main>
