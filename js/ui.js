@@ -10,34 +10,32 @@ class UI {
         this.countrySelect = document.getElementById('country');
         this.upgSelect = document.getElementById('upg');
         this.radiusInput = document.getElementById('radius');
-        this.searchButton = this.form?.querySelector('button[type="submit"]');
+        this.searchButton = document.querySelector('button[type="submit"]');
         
         // Results elements
         this.resultsSection = document.querySelector('.results-section');
         this.uupgList = document.getElementById('uupgList');
         this.fpgList = document.getElementById('fpgList');
-        
-        // Initialize UI
-        this.initialize();
     }
 
     /**
      * Initialize UI components and event listeners
      */
-    async initialize() {
+    async initializeAsync() {
         try {
-            // Initialize search service
-            await searchService.initialize();
+            console.log('Initializing UI...');
             
             // Setup event listeners
             this.setupEventListeners();
             
-            // Populate initial country dropdown
-            this.populateCountries();
+            // Populate initial data
+            await this.populateCountries();
             
+            console.log('UI initialization complete');
         } catch (error) {
             console.error('UI initialization failed:', error);
-            this.showError('Failed to initialize application');
+            this.showError('Failed to initialize application: ' + error.message);
+            throw error;
         }
     }
 
@@ -60,21 +58,33 @@ class UI {
     /**
      * Populate country dropdown from current UPGs
      */
-    populateCountries() {
-        if (!this.countrySelect) return;
+    async populateCountries() {
+        try {
+            // Get unique countries from searchService
+            const countries = await searchService.getCountries();
+            
+            if (!countries || countries.length === 0) {
+                console.error('No UPG data available');
+                return;
+            }
 
-        // Get unique countries
-        const countries = [...new Set(searchService.currentUPGs
-            .map(upg => upg.country))]
-            .sort();
-
-        // Add options
-        countries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            this.countrySelect.appendChild(option);
-        });
+            // Clear existing options
+            this.countrySelect.innerHTML = '<option value="">Select a Country</option>';
+            
+            // Add new options
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                this.countrySelect.appendChild(option);
+            });
+            
+            // Enable the dropdown
+            this.countrySelect.disabled = false;
+        } catch (error) {
+            console.error('Failed to populate countries:', error);
+            throw error;
+        }
     }
 
     /**
@@ -109,23 +119,52 @@ class UI {
     async handleSearch() {
         try {
             this.setLoading(true);
-            
-            // Get form values
-            const formData = new FormData(this.form);
-            const searchParams = {
-                country: formData.get('country'),
-                upgName: formData.get('upg'),
-                radius: formData.get('radius'),
-                units: formData.get('units'),
-                type: formData.get('type')
-            };
 
-            // Perform search
-            const results = await searchService.searchNearby(searchParams);
-            
-            // Display results
-            this.displayResults(results);
-            
+            // Get form values
+            const country = this.countrySelect.value;
+            const upgName = this.upgSelect.value;
+            const radius = this.radiusInput.value;
+            const unitsEl = document.querySelector('input[name="units"]:checked');
+            const typeEl = document.querySelector('input[name="searchType"]:checked');
+
+            // Debug logging
+            console.log('Form values:', {
+                country,
+                upgName,
+                radius,
+                units: unitsEl?.value,
+                type: typeEl?.value,
+                unitsElement: unitsEl,
+                typeElement: typeEl
+            });
+
+            // Validate inputs with more specific error messages
+            if (!country) throw new Error('Please select a country');
+            if (!upgName) throw new Error('Please select a UPG');
+            if (!radius || radius < 1) throw new Error('Please enter a valid search radius');
+            if (!unitsEl) throw new Error('Please select a distance unit (Miles or Kilometers)');
+            if (!typeEl) throw new Error('Please select a search type (FPG, UUPG, or Both)');
+
+            // Find the selected UPG
+            const selectedUPG = searchService.currentUPGs.find(
+                upg => upg.country === country && upg.name === upgName
+            );
+
+            if (!selectedUPG) {
+                throw new Error('Selected UPG not found');
+            }
+
+            // Encode parameters for URL
+            const params = new URLSearchParams({
+                upg: encodeURIComponent(JSON.stringify(selectedUPG)),
+                radius: radius,
+                units: unitsEl.value,
+                type: typeEl.value
+            });
+
+            // Navigate to results page with parameters
+            window.location.href = `results.html?${params.toString()}`;
+
         } catch (error) {
             console.error('Search failed:', error);
             this.showError(error.message);
@@ -137,41 +176,92 @@ class UI {
     /**
      * Display search results
      */
-    displayResults(results) {
-        if (!this.resultsSection) return;
-        
-        // Show results section
-        this.resultsSection.style.display = 'block';
-        
+    displayResults(searchResults) {
+        const resultsContainer = document.getElementById('searchResults');
+        if (!resultsContainer) {
+            console.error('Results container not found');
+            return;
+        }
+
         // Clear previous results
-        if (this.uupgList) this.uupgList.innerHTML = '';
-        if (this.fpgList) this.fpgList.innerHTML = '';
+        resultsContainer.innerHTML = '';
+
+        // Show results section
+        const resultsSection = document.querySelector('.results-section');
+        if (resultsSection) {
+            resultsSection.style.display = 'block';
+        }
+
+        // Handle no results
+        if (!searchResults?.results || searchResults.results.length === 0) {
+            resultsContainer.innerHTML = '<p class="no-results">No results found</p>';
+            return;
+        }
+
+        // Create results table
+        const table = document.createElement('table');
+        table.className = 'results-table';
         
-        // Display results
-        results.results.forEach(group => {
-            const element = this.createResultCard(group);
-            if (group.IsUUPG && this.uupgList) {
-                this.uupgList.appendChild(element);
-            } else if (this.fpgList) {
-                this.fpgList.appendChild(element);
-            }
+        // Add table header
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Type</th>
+                    <th>People Group</th>
+                    <th>Population</th>
+                    <th>Country</th>
+                    <th>Religion</th>
+                    <th>Language</th>
+                    <th>Distance (${this.getDistanceUnit()})</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        `;
+
+        // Add results to table
+        const tbody = table.querySelector('tbody');
+        searchResults.results.forEach((result, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" id="select-${index}" data-result-index="${index}">
+                </td>
+                <td>${result.type || 'Unknown'}</td>
+                <td>${result.name || 'Unknown'}</td>
+                <td>${result.population?.toLocaleString() || 'Unknown'}</td>
+                <td>${result.country || 'Unknown'}</td>
+                <td>${result.religion || 'Unknown'}</td>
+                <td>${result.language || 'Unknown'}</td>
+                <td>${result.distance !== undefined ? result.distance : 'Unknown'}</td>
+            `;
+            tbody.appendChild(row);
         });
+
+        // Add table to container
+        resultsContainer.appendChild(table);
+
+        // Show sort options if there are results
+        const sortOptions = document.getElementById('sortOptions');
+        if (sortOptions) {
+            sortOptions.style.display = 'block';
+        }
+
+        // Update search parameters display
+        this.updateSearchParams(searchResults.baseUPG);
     }
 
     /**
-     * Create a result card element
+     * Helper function to get current distance unit
      */
-    createResultCard(group) {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.innerHTML = `
-            <h3>${group.PeopNameInCountry}</h3>
-            <p>Population: ${group.Population.toLocaleString()}</p>
-            <p>Evangelical: ${group.PercentEvangelical}%</p>
-            <p>Primary Religion: ${group.PrimaryReligion}</p>
-            <p>Primary Language: ${group.PrimaryLanguageName}</p>
-        `;
-        return card;
+    getDistanceUnit() {
+        const unitRadio = document.querySelector('input[name="units"]:checked');
+        if (!unitRadio) {
+            console.warn('No distance unit selected, defaulting to Kilometers');
+            return 'km';
+        }
+        return unitRadio.value === 'Miles' ? 'miles' : 'km';
     }
 
     /**
@@ -198,6 +288,20 @@ class UI {
             this.searchButton.disabled = isLoading;
             this.searchButton.textContent = isLoading ? 'Searching...' : 'Search';
         }
+    }
+
+    /**
+     * Add method to update search parameters display
+     */
+    updateSearchParams(baseUPG) {
+        const searchParams = document.getElementById('searchParams');
+        if (!searchParams) return;
+
+        searchParams.innerHTML = `
+            <p><strong>Base UPG:</strong> ${baseUPG.name}</p>
+            <p><strong>Country:</strong> ${baseUPG.country}</p>
+            <p><strong>Location:</strong> ${baseUPG.latitude.toFixed(2)}, ${baseUPG.longitude.toFixed(2)}</p>
+        `;
     }
 }
 

@@ -10,7 +10,7 @@
         document.write(`<base href="${baseHref}">`);
     </script>
     <title>Frontier Finder</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
     <link rel="icon" type="image/png" href="images/favicon.png">
     <script>
     function speakText(text) {
@@ -43,7 +43,7 @@
                         <div class="input-group">
                             <label for="country">Select Country:</label>
                             <select id="country" name="country" required>
-                                <option value="">Select a country</option>
+                                <option value="">Select a Country</option>
                             </select>
                         </div>
 
@@ -58,27 +58,30 @@
                         <div class="input-group">
                             <label for="radius">Search Radius:</label>
                             <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
-                            <div class="radio-group inline">
-                                <label>
-                                    <input type="radio" name="units" value="Miles"> Miles
-                                </label>
-                                <label>
-                                    <input type="radio" name="units" value="Kilometers" checked> Kilometers
-                                </label>
+                            <div class="form-group">
+                                <label>Distance Units:</label>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="units" value="M" checked> Miles
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="units" value="K"> Kilometers
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="input-group">
+                        <div class="form-group">
                             <label>Search Type:</label>
-                            <div class="radio-group inline">
+                            <div class="radio-group">
                                 <label>
-                                    <input type="radio" name="type" value="fpg"> FPG
+                                    <input type="radio" name="searchType" value="fpg" checked> FPG
                                 </label>
                                 <label>
-                                    <input type="radio" name="type" value="uupg"> UUPG
+                                    <input type="radio" name="searchType" value="uupg"> UUPG
                                 </label>
                                 <label>
-                                    <input type="radio" name="type" value="both" checked> Both
+                                    <input type="radio" name="searchType" value="both"> Both
                                 </label>
                             </div>
                         </div>
@@ -125,6 +128,10 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="searchResults" class="search-results">
+                    <!-- Results will be displayed here -->
+                </div>
             </div>
 
             <div class="top-100-section">
@@ -139,6 +146,7 @@
         </footer>
 
         <!-- Application Scripts -->
+        <script type="module" src="js/config.js"></script>
         <script type="module" src="js/main.js"></script>
 
         <!-- Responsive Voice Search -->
