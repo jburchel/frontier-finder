@@ -180,25 +180,24 @@ async function fetchPeopleGroups(params) {
     // Build the URL with parameters
     const queryParams = new URLSearchParams({
         api_key: config.joshuaProjectApiKey,
+        format: 'jsonp',
         ...params
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups.json?${queryParams}`;
     console.log('Full API URL:', url);
 
     return new Promise((resolve, reject) => {
-        const callbackName = 'jp_callback_' + Date.now();
+        const callbackName = 'jpCallback_' + Date.now();
         
         // Add callback to window
         window[callbackName] = (data) => {
             resolve(data);
-            // Clean up
             delete window[callbackName];
             document.head.removeChild(script);
         };
         
         const script = document.createElement('script');
-        
         script.onload = () => {
             console.log('Script loaded successfully');
         };

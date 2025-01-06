@@ -144,24 +144,18 @@
         <script>
             async function testAPI() {
                 try {
-                    // Create a unique callback name
                     const callbackName = 'jpCallback_' + Date.now();
-                    
-                    // Create promise to handle JSONP response
                     const jsonpPromise = new Promise((resolve, reject) => {
-                        // Add callback to window
                         window[callbackName] = (data) => {
                             resolve(data);
-                            // Clean up
                             delete window[callbackName];
                             document.head.removeChild(script);
                         };
                         
                         const script = document.createElement('script');
-                        // Use the correct endpoint format
-                        script.src = `https://joshuaproject.net/api/v2/people_groups?api_key=080e14ad747e&limit=1&callback=${callbackName}`;
+                        // Note the .json extension and format=jsonp parameter
+                        script.src = `https://api.joshuaproject.net/v2/people_groups.json?api_key=080e14ad747e&limit=1&format=jsonp&callback=${callbackName}`;
                         
-                        // Add load event handler
                         script.onload = () => {
                             console.log('Script loaded successfully');
                         };

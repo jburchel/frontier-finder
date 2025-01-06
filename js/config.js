@@ -1,7 +1,7 @@
 // Joshua Project API configuration
 export const config = {
     joshuaProjectApiKey: '080e14ad747e',
-    apiBaseUrl: 'https://joshuaproject.net/api/v2', // v2 API endpoint
+    apiBaseUrl: 'https://api.joshuaproject.net/v2', // Back to v2 API endpoint
     headers: {
         'Accept': 'application/json'
     }
@@ -9,7 +9,7 @@ export const config = {
 
 // Test the API key
 export async function testApiKey() {
-    const testUrl = `${config.apiBaseUrl}/people_groups.php?api_key=${config.joshuaProjectApiKey}&limit=1`;
+    const testUrl = `${config.apiBaseUrl}/people_groups.json?api_key=${config.joshuaProjectApiKey}&limit=1`;
     try {
         const response = await fetch(testUrl);
         if (!response.ok) {
