@@ -114,14 +114,3 @@ function getValueFromCard(card, sortBy) {
             return 0;
     }
 }
-
-function initializeUI() {
-    // Add mission-focused context
-    const searchContext = document.createElement('div');
-    searchContext.className = 'mission-context';
-    searchContext.innerHTML = `
-        <p class="gospel-stats">42% Of the world's population is unreached with the gospel</p>
-        <p class="ministry-focus">Spiritual needs are everywhere, but access to the gospel is not.</p>
-    `;
-    document.querySelector('.search-section').prepend(searchContext);
-}
