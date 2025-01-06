@@ -365,20 +365,9 @@ class ResultsUI {
             // Get the selected items
             const selectedItems = Array.from(this.selectedResults);
             
-            // Get Firestore instance
-            const db = firebaseService.getDb();
-            
-            // Get existing items to check count
-            const top100Ref = collection(db, 'top100');
-            const snapshot = await getDocs(top100Ref);
-            const currentCount = snapshot.size;
-
-            if (currentCount + selectedItems.length > 100) {
-                throw new Error('Adding these items would exceed the 100 item limit');
-            }
-
-            // Add each item to Firebase
+            // Add each item to Firebase using the firebaseService
             const promises = selectedItems.map(item => {
+                // Clean up the item data before saving
                 const cleanItem = {
                     type: item.type,
                     name: item.name,
@@ -387,11 +376,10 @@ class ResultsUI {
                     religion: item.religion,
                     language: item.language,
                     distance: item.distance,
-                    addedAt: new Date().toISOString(),
-                    coordinates: item.coordinates || null
+                    addedAt: new Date().toISOString()
                 };
 
-                return addDoc(top100Ref, cleanItem);
+                return firebaseService.addToTop100(cleanItem);
             });
 
             await Promise.all(promises);
