@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="origin-trial" content="storage-access">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Top 100 Priority List - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <h1>Top 100 Priority List</h1>
+        </header>
+
+        <main>
+            <div class="list-controls">
+                <div class="filter-options">
+                    <label>
+                        Show:
+                        <select id="typeFilter">
+                            <option value="all">All Groups</option>
+                            <option value="fpg">FPGs Only</option>
+                            <option value="uupg">UUPGs Only</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div id="sortOptions" class="sort-options">
+                    <span>Sort by:</span>
+                    <button class="sort-button" data-sort="date">Date Added</button>
+                    <button class="sort-button" data-sort="country">Country</button>
+                    <button class="sort-button" data-sort="population">Population</button>
+                </div>
+            </div>
+
+            <div id="top100List" class="priority-list">
+                <!-- Priority list items will be inserted here -->
+            </div>
+
+            <div class="actions">
+                <a href="index.html" class="button">Back to Search</a>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/top100.js"></script>
+</body>
+</html> 

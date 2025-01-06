@@ -6,7 +6,7 @@
     <script>
         // Dynamically set base href depending on environment
         const isGitHubPages = window.location.hostname.includes('github.io');
-        const baseHref = isGitHubPages ? '/frontier-finder/' : '';
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
         document.write(`<base href="${baseHref}">`);
     </script>
     <title>Frontier Finder</title>
@@ -22,7 +22,7 @@
 <body>
     <div class="container">
         <header>
-            <img src="images/crossover-global-logo.png" alt="Crossover Global Logo" class="logo">
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
             <h1>Frontier Finder</h1>
             <p class="tagline">"Making Christ's last command our first priority."</p>
             <p class="mission-statement">
@@ -39,55 +39,47 @@
 
                 <form id="searchForm" class="search-form">
                     <div class="search-grid">
-                        <!-- Column 1 -->
-                        <div class="search-row">
-                            <div class="input-group">
-                                <label for="country">Select Country:</label>
-                                <select id="country" name="country" required>
-                                    <option value="">Select a country</option>
-                                </select>
+                        <!-- Top Row -->
+                        <div class="input-group">
+                            <label for="country">Select Country:</label>
+                            <select id="country" name="country" required>
+                                <option value="">Select a country</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="upg">Select UPG:</label>
+                            <select id="upg" name="upg" required disabled>
+                                <option value="">Select a UPG</option>
+                            </select>
+                        </div>
+
+                        <!-- Bottom Row -->
+                        <div class="input-group">
+                            <label for="radius">Search Radius:</label>
+                            <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
+                            <div class="radio-group inline">
+                                <label>
+                                    <input type="radio" name="units" value="Miles"> Miles
+                                </label>
+                                <label>
+                                    <input type="radio" name="units" value="Kilometers" checked> Kilometers
+                                </label>
                             </div>
                         </div>
-                        
-                        <div class="search-row">
-                            <div class="input-group">
-                                <label for="radius">Search Radius:</label>
-                                <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
-                                <div class="radio-group inline">
-                                    <label>
-                                        <input type="radio" name="units" value="Miles"> Miles
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="units" value="Kilometers" checked> Kilometers
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Column 2 -->
-                        <div class="search-row">
-                            <div class="input-group">
-                                <label for="upg">Select UPG:</label>
-                                <select id="upg" name="upg" required disabled>
-                                    <option value="">Select a UPG</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="search-row">
-                            <div class="input-group">
-                                <label>Search Type:</label>
-                                <div class="radio-group inline">
-                                    <label>
-                                        <input type="radio" name="type" value="fpg"> FPG
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="type" value="uupg"> UUPG
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="type" value="both" checked> Both
-                                    </label>
-                                </div>
+
+                        <div class="input-group">
+                            <label>Search Type:</label>
+                            <div class="radio-group inline">
+                                <label>
+                                    <input type="radio" name="type" value="fpg"> FPG
+                                </label>
+                                <label>
+                                    <input type="radio" name="type" value="uupg"> UUPG
+                                </label>
+                                <label>
+                                    <input type="radio" name="type" value="both" checked> Both
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -147,9 +139,7 @@
         </footer>
 
         <!-- Application Scripts -->
-        <script type="module" src="js/data.js"></script>
         <script type="module" src="js/main.js"></script>
-        <script type="module" src="js/test-api.js"></script>
 
         <!-- Responsive Voice Search -->
         <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>

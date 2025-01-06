@@ -335,30 +335,45 @@ button:hover {
 /* Search form grid layout */
 .search-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
-.search-row {
-    margin-bottom: 1rem;
-}
-
 .input-group {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 1rem;
 }
 
 .input-group label {
-    min-width: 120px;
     margin: 0;
+    font-weight: bold;
+    min-width: 120px;
+}
+
+/* Special handling for select inputs to be full width */
+.input-group:nth-child(1),
+.input-group:nth-child(2) {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.input-group:nth-child(1) select,
+.input-group:nth-child(2) select {
+    width: 100%;
 }
 
 .input-group select,
 .input-group input[type="number"] {
-    flex: 1;
     margin: 0;
+}
+
+/* Specific width for radius input */
+input[type="number"]#radius {
+    width: 100px;
 }
 
 .radio-group.inline {
@@ -388,17 +403,17 @@ button:hover {
     .search-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .input-group {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
     }
-    
+
     .input-group label {
         margin-bottom: 0.5rem;
     }
-    
+
     .radio-group.inline {
-        justify-content: flex-start;
+        margin-top: 0.5rem;
     }
 }
