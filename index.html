@@ -137,24 +137,10 @@
         <!-- Application Scripts -->
         <script type="module" src="js/data.js"></script>
         <script type="module" src="js/main.js"></script>
+        <script type="module" src="js/test-api.js"></script>
 
         <!-- Responsive Voice Search -->
         <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
-        
-        <script type="module">
-            import { testJoshuaProjectAPI } from './js/test-api.js';
-            
-            window.testAPI = async function() {
-                try {
-                    const result = await testJoshuaProjectAPI();
-                    console.log('API Test successful:', result);
-                    alert('API Test Successful! Check console for details.');
-                } catch (error) {
-                    console.error('API Test Failed:', error);
-                    alert('API Test Failed: ' + error.message);
-                }
-            };
-        </script>
         
         <script type="module">
             // Quick test to verify everything is loading

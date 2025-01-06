@@ -1,6 +1,6 @@
 import { config } from './config.js';
 
-// Simple test function that uses a direct JSONP request
+// Simple test function that uses a direct script tag
 export async function testJoshuaProjectAPI() {
     return new Promise((resolve, reject) => {
         const callbackName = 'jp_test_' + Date.now();
@@ -21,12 +21,25 @@ export async function testJoshuaProjectAPI() {
         };
         
         const script = document.createElement('script');
-        script.src = `${config.apiBaseUrl}/people_groups/PeopleID3/1?api_key=${config.joshuaProjectApiKey}&callback=${callbackName}`;
         
-        script.onerror = () => {
-            console.error('Failed to load API script');
+        // Use a simpler endpoint format
+        const url = new URL(`${config.apiBaseUrl}/people_groups`);
+        url.searchParams.append('api_key', config.joshuaProjectApiKey);
+        url.searchParams.append('limit', '1');
+        url.searchParams.append('callback', callbackName);
+        
+        console.log('Testing API with URL:', url.toString());
+        script.src = url.toString();
+        
+        script.onerror = (error) => {
+            console.error('Failed to load API script:', error);
             cleanup();
             reject(new Error('Failed to connect to Joshua Project API'));
+        };
+        
+        // Add load handler
+        script.onload = () => {
+            console.log('Script loaded successfully');
         };
         
         document.head.appendChild(script);
@@ -37,13 +50,23 @@ export async function testJoshuaProjectAPI() {
                 cleanup();
                 reject(new Error('API request timed out'));
             }
-        }, 5000);
+        }, 10000); // 10 second timeout
     });
 }
 
-// Run the test
-testJoshuaProjectAPI().then(data => {
-    console.log('API is working:', data);
-}).catch(error => {
-    console.error('API test failed:', error);
+// Add event listener for the test button
+document.addEventListener('DOMContentLoaded', () => {
+    const testButton = document.getElementById('testApiButton');
+    if (testButton) {
+        testButton.addEventListener('click', async () => {
+            try {
+                const result = await testJoshuaProjectAPI();
+                console.log('API Test successful:', result);
+                alert('API Test Successful! Check console for details.');
+            } catch (error) {
+                console.error('API Test Failed:', error);
+                alert('API Test Failed: ' + error.message);
+            }
+        });
+    }
 }); 
