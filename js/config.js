@@ -1,7 +1,7 @@
 // Joshua Project API configuration
 export const config = {
     joshuaProjectApiKey: '080e14ad747e',
-    apiBaseUrl: 'https://api.joshuaproject.net/v2', // v2 API endpoint
+    apiBaseUrl: 'https://joshuaproject.net/api/v2', // v2 API endpoint
     headers: {
         'Accept': 'application/json'
     }

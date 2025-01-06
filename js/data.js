@@ -183,7 +183,7 @@ async function fetchPeopleGroups(params) {
         ...params
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups.jsonp?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
     console.log('Full API URL:', url);
 
     return new Promise((resolve, reject) => {
@@ -198,14 +198,20 @@ async function fetchPeopleGroups(params) {
         };
         
         const script = document.createElement('script');
-        script.src = `${url}&callback=${callbackName}`;
         
-        script.onerror = () => {
+        script.onload = () => {
+            console.log('Script loaded successfully');
+        };
+        
+        script.onerror = (error) => {
+            console.error('Script load error:', error);
             reject(new Error('Failed to load data from Joshua Project API'));
             delete window[callbackName];
             document.head.removeChild(script);
         };
         
+        script.src = `${url}&callback=${callbackName}`;
+        console.log('Adding script with src:', script.src);
         document.head.appendChild(script);
     });
 }
