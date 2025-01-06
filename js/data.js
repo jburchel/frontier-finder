@@ -178,12 +178,25 @@ async function fetchPeopleGroups(params) {
     const callbackName = 'jpCallback_' + Math.random().toString(36).substr(2, 9);
     
     return new Promise((resolve, reject) => {
+        // Set timeout to prevent hanging
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('Request timed out'));
+        }, 10000); // 10 second timeout
+
+        // Cleanup function
+        const cleanup = () => {
+            delete window[callbackName];
+            if (script && script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+            clearTimeout(timeout);
+        };
+
         // Add callback to window
         window[callbackName] = (data) => {
+            cleanup();
             resolve(data);
-            // Clean up
-            delete window[callbackName];
-            document.head.removeChild(script);
         };
         
         // Create script element
@@ -200,11 +213,11 @@ async function fetchPeopleGroups(params) {
         script.src = `${config.apiBaseUrl}/people_groups?${queryParams}`;
         
         script.onerror = () => {
+            cleanup();
             reject(new Error('Failed to load JSONP script'));
-            delete window[callbackName];
-            document.head.removeChild(script);
         };
         
+        // Add script to page
         document.head.appendChild(script);
     });
 }
@@ -397,56 +410,52 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
     }
 }
 
-// Add event listener for form submission
+// Update the form submission handler
 document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('searchForm');
     if (searchForm) {
         searchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const searchButton = searchForm.querySelector('button[type="submit"]');
+            const originalButtonText = searchButton.textContent;
+            
             try {
+                // Disable button and show loading state
+                searchButton.disabled = true;
+                searchButton.textContent = 'Searching...';
+
                 const country = document.getElementById('country').value;
                 const upg = document.getElementById('upg').value;
                 const radius = document.getElementById('radius').value;
                 const units = document.querySelector('input[name="units"]:checked').value;
                 const searchType = document.querySelector('input[name="searchType"]:checked').value;
 
-                console.log('Form submitted with values:', {
-                    country,
-                    upg,
-                    radius,
-                    units,
-                    searchType
-                });
-
-                // Show loading state
-                const searchButton = searchForm.querySelector('button[type="submit"]');
-                const originalButtonText = searchButton.textContent;
-                searchButton.disabled = true;
-                searchButton.textContent = 'Searching...';
-
                 const results = await searchNearby(country, upg, radius, units, searchType);
                 
-                // Handle results - you might want to redirect to results page or update UI
-                console.log('Search results:', results);
-
-                // If you want to redirect to results page:
-                const searchParams = new URLSearchParams({
+                // Store results in sessionStorage before redirect
+                sessionStorage.setItem('searchResults', JSON.stringify(results));
+                
+                // Redirect to results page
+                window.location.href = `results.html?${new URLSearchParams({
                     country,
                     upg,
                     radius,
                     units,
                     type: searchType
-                });
-                window.location.href = `results.html?${searchParams.toString()}`;
+                }).toString()}`;
 
             } catch (error) {
                 console.error('Search error:', error);
-                // Show error message to user
+                // Show error message
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-message';
                 errorDiv.textContent = `Search failed: ${error.message}`;
                 searchForm.insertAdjacentElement('beforebegin', errorDiv);
+                
+                // Reset button state
+                searchButton.disabled = false;
+                searchButton.textContent = originalButtonText;
             }
         });
     }
@@ -492,3 +501,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
+
+// Add this helper function
+function showError(message, container = document.querySelector('.container')) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.cssText = `
+        color: red;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid red;
+        border-radius: 4px;
+        background-color: rgba(255,0,0,0.1);
+    `;
+    errorDiv.textContent = `⚠️ ${message}`;
+    
+    // Remove any existing error messages
+    const existingError = container.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    container.insertAdjacentElement('afterbegin', errorDiv);
+}

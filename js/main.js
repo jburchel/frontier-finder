@@ -114,3 +114,22 @@ function getValueFromCard(card, sortBy) {
             return 0;
     }
 }
+
+// Add this to handle the results page
+if (window.location.pathname.includes('results.html')) {
+    const results = JSON.parse(sessionStorage.getItem('searchResults'));
+    const params = new URLSearchParams(window.location.search);
+    
+    // Display results
+    if (results) {
+        document.getElementById('searchParams').innerHTML = `
+            <p>Country: ${params.get('country')}</p>
+            <p>UPG: ${params.get('upg')}</p>
+            <p>Radius: ${params.get('radius')} ${params.get('units')}</p>
+            <p>Search Type: ${params.get('type')}</p>
+        `;
+        
+        // Show results section
+        document.querySelector('.results-section').style.display = 'block';
+    }
+}

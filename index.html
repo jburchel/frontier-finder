@@ -140,6 +140,20 @@
         <!-- Responsive Voice Search -->
         <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
         
+        <script type="module">
+            // Quick test to verify everything is loading
+            window.addEventListener('load', () => {
+                console.group('App Load Verification');
+                console.log('1. Checking image:', document.querySelector('.logo').complete);
+                console.log('2. Checking scripts:', {
+                    config: typeof window.jpConfig !== 'undefined',
+                    data: typeof window.loadExistingUPGs !== 'undefined'
+                });
+                console.log('3. Checking form:', document.getElementById('searchForm') !== null);
+                console.groupEnd();
+            });
+        </script>
+        
     </div>
 </body>
 </html>
