@@ -331,3 +331,74 @@ button:hover {
 .test-button:hover {
     background-color: #ec971f;
 }
+
+/* Search form grid layout */
+.search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-row {
+    margin-bottom: 1rem;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.input-group label {
+    min-width: 120px;
+    margin: 0;
+}
+
+.input-group select,
+.input-group input[type="number"] {
+    flex: 1;
+    margin: 0;
+}
+
+.radio-group.inline {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+}
+
+.radio-group.inline label {
+    min-width: auto;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .input-group label {
+        margin-bottom: 0.5rem;
+    }
+    
+    .radio-group.inline {
+        justify-content: flex-start;
+    }
+}
