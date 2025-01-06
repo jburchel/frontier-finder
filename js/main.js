@@ -52,7 +52,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const params = new URLSearchParams({
                         country, upg, radius, units, type
                     });
-                    window.location.href = `results.html?${params.toString()}`;
+                    // Get the base path for GitHub Pages
+                    const basePath = window.location.pathname.includes('/frontier-finder') 
+                        ? '/frontier-finder' 
+                        : '';
+                    window.location.href = `${basePath}/results.html?${params.toString()}`;
                     
                 } catch (error) {
                     console.error('Search failed:', error);
