@@ -16,49 +16,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up deployment environment
+      - name: List repository contents
         run: |
-          echo "Setting up deployment environment..."
-          mkdir -p css js images data
-          touch .nojekyll
-          
-          # Debug: Show current directory structure
-          echo "Current directory structure:"
+          echo "Current repository contents:"
           ls -la
-          
-          # Debug: Show contents of each directory
-          echo "Contents of directories:"
-          for dir in css js images data; do
-            echo "Contents of $dir/:"
-            ls -la $dir/ || echo "$dir is empty"
-          done
-
-      - name: Copy files to deployment locations
-        run: |
-          echo "Copying files to deployment locations..."
-          
-          # Copy HTML files
-          echo "Copying HTML files..."
-          cp -v index.html results.html ./
-          
-          # Copy CSS files
-          echo "Copying CSS files..."
-          cp -v css/style.css css/
-          
-          # Copy JS files
-          echo "Copying JS files..."
-          cp -v js/*.js js/
-          
-          # Copy images
-          echo "Copying images..."
-          cp -v images/* images/ || true
-          
-          # Copy data files
-          echo "Copying data files..."
-          cp -v data/*.csv data/ || true
-          
-          # Debug: Show final structure
-          echo "Final directory structure:"
+          echo "Directory structure:"
           ls -R
 
       - name: Deploy to GitHub Pages
@@ -78,8 +40,6 @@ jobs:
           git checkout gh-pages
           echo "Files in gh-pages branch:"
           ls -la
-          echo "Complete directory structure:"
-          ls -R
           
           # Check for critical files
           for file in index.html results.html css/style.css js/data.js; do
