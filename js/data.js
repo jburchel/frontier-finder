@@ -179,53 +179,33 @@ async function fetchPeopleGroups(params) {
     
     // Build the URL with parameters
     const queryParams = new URLSearchParams({
-        ...params,
         api_key: config.joshuaProjectApiKey,
-        format: 'jsonp'  // Request JSONP format
+        ...params
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups.jsonp?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
     console.log('Full API URL:', url);
 
     return new Promise((resolve, reject) => {
-        const callbackName = 'jp_callback_' + Date.now();
+        const callbackName = `jpCallback_${Date.now()}`;
         
-        // Set timeout to handle failed requests
-        const timeout = setTimeout(() => {
-            delete window[callbackName];
-            if (script && script.parentNode) {
-                document.head.removeChild(script);
-            }
-            reject(new Error('API request timed out'));
-        }, 20000); // Increase timeout to 20 seconds
-
         // Add callback to window
         window[callbackName] = (data) => {
-            clearTimeout(timeout);
-            console.log('JSONP callback received data:', data);
+            console.log('Received data:', data);
             delete window[callbackName];
-            if (script && script.parentNode) {
-                document.head.removeChild(script);
-            }
+            document.head.removeChild(script);
             resolve(data);
         };
 
         const script = document.createElement('script');
-        script.onerror = (error) => {
-            clearTimeout(timeout);
-            console.error('JSONP script error:', error);
+        script.src = `${url}&callback=${callbackName}`;
+        
+        script.onerror = () => {
             delete window[callbackName];
-            if (script.parentNode) {
-                document.head.removeChild(script);
-            }
+            document.head.removeChild(script);
             reject(new Error('Failed to load data from Joshua Project API'));
         };
 
-        // Set script source
-        script.src = `${url}&callback=${callbackName}`;
-        console.log('Adding script with src:', script.src);
-        
-        // Add script to page
         document.head.appendChild(script);
     });
 }
@@ -382,32 +362,26 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
         const upgs = await loadExistingUPGs();
         const baseUPG = upgs.find(upg => upg.country === selectedCountry && upg.name === selectedUPG);
         
-        console.log('Base UPG found:', baseUPG);
-
         if (!baseUPG) {
             throw new Error('Selected UPG not found');
         }
 
         // Prepare search parameters
         const params = {
-            latitude: baseUPG.latitude,
-            longitude: baseUPG.longitude,
-            radius: radius,
-            radius_units: units.toLowerCase() === 'kilometers' ? 'km' : 'mi',
-            limit: 100,
-            fields: 'PeopleID1,PeopleName,Latitude,Longitude,Population,PrimaryReligion,PercentEvangelical,JPScale,ROL3,IsUUPG,IsFPG',
-            api_key: config.joshuaProjectApiKey
+            lat: baseUPG.latitude,
+            lon: baseUPG.longitude,
+            rad: radius,
+            rad_units: units.toLowerCase() === 'kilometers' ? 'km' : 'mi'
         };
 
         // Add type-specific parameters
         if (searchType === 'fpg') {
-            params.is_frontier = true;
+            params.is_frontier = 1;
         } else if (searchType === 'uupg') {
-            params.is_uupg = true;
+            params.is_uupg = 1;
         }
 
         console.log('API request params:', params);
-        console.log('API URL:', `${config.apiBaseUrl}/people_groups?${new URLSearchParams(params)}`);
 
         try {
             const results = await fetchPeopleGroups(params);
@@ -418,7 +392,6 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
             };
         } catch (error) {
             console.warn('API search failed:', error);
-            showError(`API search failed: ${error.message}`);
             return {
                 baseUPG,
                 results: [],
