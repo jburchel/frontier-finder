@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (container) {
                 container.insertAdjacentHTML('afterbegin', `
                     <div class="warning-message" style="color: orange; padding: 10px; margin: 10px; border: 1px solid orange;">
-                        ⚠️ Unable to connect to Joshua Project API. Some features may be limited.
+                        ⚠️ Unable to connect to Joshua Project API. Using local data only. Click "Test API" to diagnose the connection.
                     </div>
                 `);
             }

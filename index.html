@@ -141,6 +141,35 @@
         <!-- Responsive Voice Search -->
         <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
         
+        <script>
+            async function testAPI() {
+                try {
+                    const testURL = 'https://api.joshuaproject.net/v2/people_groups.php';
+                    const params = new URLSearchParams({
+                        api_key: '080e14ad747e',
+                        limit: 1
+                    });
+                    
+                    console.log('Testing API with URL:', `${testURL}?${params}`);
+                    
+                    const response = await fetch(`${testURL}?${params}`);
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', Object.fromEntries(response.headers));
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('API Test Response:', data);
+                    alert('API Test Successful! Check console for details.');
+                } catch (error) {
+                    console.error('API Test Failed:', error);
+                    alert('API Test Failed: ' + error.message);
+                }
+            }
+        </script>
+        
         <script type="module">
             // Quick test to verify everything is loading
             window.addEventListener('load', () => {
