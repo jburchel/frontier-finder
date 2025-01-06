@@ -82,7 +82,7 @@
 
                     <div class="form-group">
                         <button type="submit" class="search-button">Search</button>
-                        <button type="button" onclick="testAPI()" class="test-button">Test API</button>
+                        <button type="button" id="testApiButton" class="test-button">Test API</button>
                     </div>
                 </form>
             </div>
@@ -141,67 +141,19 @@
         <!-- Responsive Voice Search -->
         <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
         
-        <script>
-            async function testAPI() {
+        <script type="module">
+            import { testJoshuaProjectAPI } from './js/test-api.js';
+            
+            window.testAPI = async function() {
                 try {
-                    // Create a unique callback name
-                    const callbackName = 'jp_' + Date.now();
-                    
-                    // Create promise to handle JSONP response
-                    const jsonpPromise = new Promise((resolve, reject) => {
-                        // Add callback to window
-                        window[callbackName] = (data) => {
-                            console.log('Callback received data:', data);
-                            resolve(data);
-                            cleanup();
-                        };
-                        
-                        // Create cleanup function
-                        const cleanup = () => {
-                            delete window[callbackName];
-                            if (script.parentNode) {
-                                document.head.removeChild(script);
-                            }
-                        };
-                        
-                        const script = document.createElement('script');
-                        
-                        // Set timeout
-                        const timeout = setTimeout(() => {
-                            console.error('API request timed out');
-                            cleanup();
-                            reject(new Error('API request timed out'));
-                        }, 10000);
-                        
-                        // Use their recommended format
-                        script.src = `https://api.joshuaproject.net/v2/people_groups/PeopleID3/1.json?api_key=080e14ad747e&callback=${callbackName}`;
-                        
-                        script.onload = () => {
-                            console.log('Script loaded successfully');
-                            clearTimeout(timeout);
-                        };
-                        
-                        script.onerror = (error) => {
-                            console.error('Script load error:', error);
-                            clearTimeout(timeout);
-                            cleanup();
-                            reject(new Error('Failed to load JSONP script'));
-                        };
-                        
-                        console.log('Adding script with src:', script.src);
-                        document.head.appendChild(script);
-                    });
-
-                    console.log('Making JSONP API call...');
-                    const data = await jsonpPromise;
-                    console.log('API Test Response:', data);
+                    const result = await testJoshuaProjectAPI();
+                    console.log('API Test successful:', result);
                     alert('API Test Successful! Check console for details.');
-                    
                 } catch (error) {
                     console.error('API Test Failed:', error);
                     alert('API Test Failed: ' + error.message);
                 }
-            }
+            };
         </script>
         
         <script type="module">

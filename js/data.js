@@ -183,20 +183,11 @@ async function fetchPeopleGroups(params) {
         ...params
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups.json?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups`;
     console.log('Full API URL:', url);
 
     return new Promise((resolve, reject) => {
-        // Create a unique callback name
-        const callbackName = 'jp_' + Date.now();
-        
-        // Create cleanup function
-        const cleanup = () => {
-            delete window[callbackName];
-            if (script.parentNode) {
-                document.head.removeChild(script);
-            }
-        };
+        const callbackName = 'jp_callback_' + Date.now();
         
         // Add callback to window
         window[callbackName] = (data) => {
@@ -205,28 +196,23 @@ async function fetchPeopleGroups(params) {
             cleanup();
         };
         
-        const script = document.createElement('script');
-        
-        // Set timeout
-        const timeout = setTimeout(() => {
-            console.error('API request timed out');
-            cleanup();
-            reject(new Error('API request timed out'));
-        }, 10000);
-        
-        script.onload = () => {
-            console.log('Script loaded successfully');
-            clearTimeout(timeout);
+        // Create cleanup function
+        const cleanup = () => {
+            delete window[callbackName];
+            if (script && script.parentNode) {
+                document.head.removeChild(script);
+            }
         };
         
-        script.onerror = (error) => {
-            console.error('Script load error:', error);
-            clearTimeout(timeout);
+        const script = document.createElement('script');
+        script.src = `${url}?${queryParams}&callback=${callbackName}`;
+        
+        script.onerror = () => {
+            console.error('Script load error');
             cleanup();
             reject(new Error('Failed to load data from Joshua Project API'));
         };
         
-        script.src = `${url}&callback=${callbackName}`;
         console.log('Adding script with src:', script.src);
         document.head.appendChild(script);
     });
