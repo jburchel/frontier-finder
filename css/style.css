@@ -670,16 +670,22 @@ input[type="number"]#radius {
 
 .sort-controls button {
     padding: 8px 16px;
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
+    background-color: #183963;
+    color: white;
+    border: 1px solid #183963;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sort-controls button:hover {
+    background-color: #122b4a;
 }
 
 .sort-controls button.active {
-    background-color: #183963;
+    background-color: #39A949;
     color: white;
-    border-color: #183963;
+    border-color: #39A949;
 }
 
 .actions-cell {
