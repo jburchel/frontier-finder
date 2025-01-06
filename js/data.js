@@ -180,51 +180,54 @@ async function fetchPeopleGroups(params) {
     // Build the URL with parameters
     const queryParams = new URLSearchParams({
         ...params,
+        api_key: config.joshuaProjectApiKey,
+        format: 'jsonp'  // Request JSONP format
     }).toString();
     
-    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
+    const url = `${config.apiBaseUrl}/people_groups.jsonp?${queryParams}`;
     console.log('Full API URL:', url);
 
-    try {
-        // Use JSONP for cross-origin requests
-        return new Promise((resolve, reject) => {
-            const callbackName = 'jp_callback_' + Date.now();
-            console.log('Using callback name:', callbackName);
-            
-            // Set timeout to handle failed requests
-            const timeout = setTimeout(() => {
-                delete window[callbackName];
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jp_callback_' + Date.now();
+        
+        // Set timeout to handle failed requests
+        const timeout = setTimeout(() => {
+            delete window[callbackName];
+            if (script && script.parentNode) {
                 document.head.removeChild(script);
-                reject(new Error('API request timed out'));
-            }, 10000);
-            
-            // Add callback to window
-            window[callbackName] = (data) => {
-                clearTimeout(timeout);
-                console.log('JSONP callback received data:', data);
-                delete window[callbackName];
+            }
+            reject(new Error('API request timed out'));
+        }, 20000); // Increase timeout to 20 seconds
+
+        // Add callback to window
+        window[callbackName] = (data) => {
+            clearTimeout(timeout);
+            console.log('JSONP callback received data:', data);
+            delete window[callbackName];
+            if (script && script.parentNode) {
                 document.head.removeChild(script);
-                resolve(data);
-            };
-            
-            const script = document.createElement('script');
-            script.onerror = (error) => {
-                clearTimeout(timeout);
-                console.error('JSONP script error:', error);
-                delete window[callbackName];
+            }
+            resolve(data);
+        };
+
+        const script = document.createElement('script');
+        script.onerror = (error) => {
+            clearTimeout(timeout);
+            console.error('JSONP script error:', error);
+            delete window[callbackName];
+            if (script.parentNode) {
                 document.head.removeChild(script);
-                reject(new Error('Failed to load data from Joshua Project API'));
-            };
-            
-            script.src = `${url}&callback=${callbackName}`;
-            console.log('Adding script with src:', script.src);
-            
-            document.head.appendChild(script);
-        });
-    } catch (error) {
-        console.error('API request failed:', error);
-        throw error;
-    }
+            }
+            reject(new Error('Failed to load data from Joshua Project API'));
+        };
+
+        // Set script source
+        script.src = `${url}&callback=${callbackName}`;
+        console.log('Adding script with src:', script.src);
+        
+        // Add script to page
+        document.head.appendChild(script);
+    });
 }
 
 function checkRateLimit(headers) {
@@ -392,15 +395,15 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
             radius: radius,
             radius_units: units.toLowerCase() === 'kilometers' ? 'km' : 'mi',
             limit: 100,
-            fields: 'PeopleID,PeopleName,Latitude,Longitude,Population,PrimaryReligion,PercentEvangelical,JPScale,ROL3,IsUUPG,IsFPG',
+            fields: 'PeopleID1,PeopleName,Latitude,Longitude,Population,PrimaryReligion,PercentEvangelical,JPScale,ROL3,IsUUPG,IsFPG',
             api_key: config.joshuaProjectApiKey
         };
 
         // Add type-specific parameters
         if (searchType === 'fpg') {
-            params.IsFPG = 'Y';
+            params.is_frontier = true;
         } else if (searchType === 'uupg') {
-            params.IsUUPG = 'Y';
+            params.is_uupg = true;
         }
 
         console.log('API request params:', params);
