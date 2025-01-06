@@ -25,27 +25,46 @@ document.addEventListener('DOMContentLoaded', async function() {
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const country = document.getElementById('country').value;
-            const upg = document.getElementById('upg').value;
-            const radius = document.getElementById('radius').value;
-            const units = document.getElementById('units').value;
-            const searchType = document.getElementById('type').value;
-            
-            if (!country || !upg || !radius) {
-                alert('Please fill in all required fields');
-                return;
+            try {
+                const country = document.getElementById('country').value;
+                const upg = document.getElementById('upg').value;
+                const radius = document.getElementById('radius').value;
+                const units = document.querySelector('input[name="units"]:checked').value;
+                const type = document.querySelector('input[name="type"]:checked').value;
+                
+                if (!country || !upg || !radius) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                const searchButton = searchForm.querySelector('button[type="submit"]');
+                searchButton.disabled = true;
+                searchButton.textContent = 'Searching...';
+                
+                try {
+                    const results = await searchNearby(country, upg, radius, units, type);
+                    console.log('Search results:', results);
+                    
+                    // Store results in sessionStorage
+                    sessionStorage.setItem('searchResults', JSON.stringify(results));
+                    
+                    // Redirect to results page
+                    const params = new URLSearchParams({
+                        country, upg, radius, units, type
+                    });
+                    window.location.href = `results.html?${params.toString()}`;
+                    
+                } catch (error) {
+                    console.error('Search failed:', error);
+                    showError(`Search failed: ${error.message}`);
+                    searchButton.disabled = false;
+                    searchButton.textContent = 'Search';
+                }
+                
+            } catch (error) {
+                console.error('Form error:', error);
+                showError(error.message);
             }
-            
-            // Redirect to results page with search parameters
-            const searchParams = new URLSearchParams({
-                country,
-                upg,
-                radius,
-                units,
-                type: searchType
-            });
-            
-            window.location.href = `results.html?${searchParams.toString()}`;
         });
 
     } catch (error) {

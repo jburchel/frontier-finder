@@ -1,7 +1,7 @@
 // Joshua Project API configuration
 export const config = {
     joshuaProjectApiKey: '080e14ad747e', // Your API key
-    apiBaseUrl: 'https://joshuaproject.net/api/v1', // Change to v1 API
+    apiBaseUrl: 'https://api.joshuaproject.net/v1', // Updated API endpoint
     headers: {
         'Accept': 'application/json'
     }
@@ -17,5 +17,4 @@ export function validateApiKey() {
 }
 
 window.jpConfig = config;
-window.validateApiKey = validateApiKey;
 export default config;

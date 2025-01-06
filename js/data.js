@@ -175,51 +175,47 @@ async function initializeUI() {
 }
 
 async function fetchPeopleGroups(params) {
-    const callbackName = 'jpCallback_' + Math.random().toString(36).substr(2, 9);
+    console.log('Fetching with params:', params);
     
-    return new Promise((resolve, reject) => {
-        // Set timeout to prevent hanging
-        const timeout = setTimeout(() => {
-            cleanup();
-            reject(new Error('Request timed out'));
-        }, 10000); // 10 second timeout
+    // Build the URL with parameters
+    const queryParams = new URLSearchParams({
+        ...params,
+        api_key: config.joshuaProjectApiKey
+    }).toString();
+    
+    const url = `${config.apiBaseUrl}/people_groups?${queryParams}`;
+    console.log('Fetching from:', url);
 
-        // Cleanup function
-        const cleanup = () => {
-            delete window[callbackName];
-            if (script && script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
-            clearTimeout(timeout);
-        };
-
-        // Add callback to window
-        window[callbackName] = (data) => {
-            cleanup();
-            resolve(data);
-        };
-        
-        // Create script element
-        const script = document.createElement('script');
-        
-        // Add parameters to URL
-        const queryParams = new URLSearchParams({
-            ...params,
-            api_key: config.joshuaProjectApiKey,
-            callback: callbackName
+    try {
+        // Use JSONP for cross-origin requests
+        return new Promise((resolve, reject) => {
+            const callbackName = 'jp_callback_' + Date.now();
+            const script = document.createElement('script');
+            
+            // Add callback to window
+            window[callbackName] = (data) => {
+                delete window[callbackName];
+                document.head.removeChild(script);
+                resolve(data);
+            };
+            
+            // Add error handling
+            script.onerror = () => {
+                delete window[callbackName];
+                document.head.removeChild(script);
+                reject(new Error('Failed to load data from Joshua Project API'));
+            };
+            
+            // Set script source with callback
+            script.src = `${url}&callback=${callbackName}`;
+            
+            // Add script to page
+            document.head.appendChild(script);
         });
-        
-        // Use v1 API endpoint with JSONP
-        script.src = `${config.apiBaseUrl}/people_groups?${queryParams}`;
-        
-        script.onerror = () => {
-            cleanup();
-            reject(new Error('Failed to load JSONP script'));
-        };
-        
-        // Add script to page
-        document.head.appendChild(script);
-    });
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
 }
 
 function checkRateLimit(headers) {
@@ -365,7 +361,7 @@ async function testJoshuaProjectAPI() {
     }
 }
 
-// Add the searchNearby function if it doesn't exist
+// Update the searchNearby function
 async function searchNearby(selectedCountry, selectedUPG, radius, units, searchType) {
     try {
         console.log('Starting search with params:', { selectedCountry, selectedUPG, radius, units, searchType });
@@ -378,32 +374,39 @@ async function searchNearby(selectedCountry, selectedUPG, radius, units, searchT
             throw new Error('Selected UPG not found');
         }
 
-        // Prepare search parameters for Joshua Project API
+        // Prepare search parameters
         const params = {
-            lat: baseUPG.latitude,
-            lon: baseUPG.longitude,
-            rad: radius,
-            rad_units: units === 'Kilometers' ? 'km' : 'mi',
+            latitude: baseUPG.latitude,
+            longitude: baseUPG.longitude,
+            radius: radius,
+            radius_units: units.toLowerCase() === 'kilometers' ? 'km' : 'mi',
             limit: 100
         };
 
         // Add type-specific parameters
-        if (searchType === 'FPG') {
-            params.is_fpg = 1;
-        } else if (searchType === 'UUPG') {
+        if (searchType === 'fpg') {
+            params.is_frontier = 1;
+        } else if (searchType === 'uupg') {
             params.is_uupg = 1;
         }
 
-        console.log('Fetching from Joshua Project API with params:', params);
+        console.log('API request params:', params);
 
-        // Fetch results from Joshua Project API
-        const results = await fetchPeopleGroups(params);
-        console.log('API Results:', results);
-
-        return {
-            baseUPG,
-            results: results || []
-        };
+        try {
+            const results = await fetchPeopleGroups(params);
+            return {
+                baseUPG,
+                results: results.data || []
+            };
+        } catch (error) {
+            console.warn('API search failed:', error);
+            showError(`API search failed: ${error.message}`);
+            return {
+                baseUPG,
+                results: [],
+                error: error.message
+            };
+        }
     } catch (error) {
         console.error('Search failed:', error);
         throw error;
@@ -417,10 +420,14 @@ document.addEventListener('DOMContentLoaded', () => {
         searchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const searchButton = searchForm.querySelector('button[type="submit"]');
+            const searchButton = e.target.querySelector('button[type="submit"]');
             const originalButtonText = searchButton.textContent;
             
             try {
+                // Clear any existing errors
+                const existingError = document.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
                 // Disable button and show loading state
                 searchButton.disabled = true;
                 searchButton.textContent = 'Searching...';
@@ -429,29 +436,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const upg = document.getElementById('upg').value;
                 const radius = document.getElementById('radius').value;
                 const units = document.querySelector('input[name="units"]:checked').value;
-                const searchType = document.querySelector('input[name="searchType"]:checked').value;
+                const type = document.querySelector('input[name="type"]:checked').value;
 
-                const results = await searchNearby(country, upg, radius, units, searchType);
+                if (!country || !upg || !radius) {
+                    throw new Error('Please fill in all required fields');
+                }
+
+                console.log('Form values:', { country, upg, radius, units, type });
+
+                const results = await searchNearby(country, upg, radius, units, type);
                 
-                // Store results in sessionStorage before redirect
+                if (results.error) {
+                    throw new Error(results.error);
+                }
+
+                // Store results and redirect
                 sessionStorage.setItem('searchResults', JSON.stringify(results));
-                
-                // Redirect to results page
                 window.location.href = `results.html?${new URLSearchParams({
-                    country,
-                    upg,
-                    radius,
-                    units,
-                    type: searchType
+                    country, upg, radius, units, type
                 }).toString()}`;
 
             } catch (error) {
                 console.error('Search error:', error);
-                // Show error message
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = `Search failed: ${error.message}`;
-                searchForm.insertAdjacentElement('beforebegin', errorDiv);
+                showError(error.message);
                 
                 // Reset button state
                 searchButton.disabled = false;
@@ -503,24 +510,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Add this helper function
-function showError(message, container = document.querySelector('.container')) {
+function showError(message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-        color: red;
-        padding: 10px;
-        margin: 10px 0;
-        border: 1px solid red;
-        border-radius: 4px;
-        background-color: rgba(255,0,0,0.1);
-    `;
     errorDiv.textContent = `⚠️ ${message}`;
     
     // Remove any existing error messages
-    const existingError = container.querySelector('.error-message');
+    const existingError = document.querySelector('.error-message');
     if (existingError) {
         existingError.remove();
     }
     
-    container.insertAdjacentElement('afterbegin', errorDiv);
+    // Add new error message at the top of the form
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.insertAdjacentElement('beforebegin', errorDiv);
+    }
 }
