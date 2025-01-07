@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Update Pronunciations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="warning">
+        <h2>⚠️ Update Pronunciations</h2>
+        <p>This tool will update all pronunciations using the enhanced rules.</p>
+    </div>
+    
+    <button id="updateButton">Start Update</button>
+    
+    <button id="testButton">Test Pronunciations</button>
+    
+    <button id="jpTestButton">Test JP Pronunciations</button>
+    
+    <div id="log" class="log">
+        <p>Waiting to start update process...</p>
+    </div>
+
+    <script type="module">
+        import { firebaseService } from './js/firebase.js';
+        import { pronunciationService } from './js/services/pronunciationService.js';
+        import { updatePronunciationsWithNewRules } from './js/utils.js';
+        import { jpPronunciationService } from './js/services/jpPronunciationService.js';
+
+        // Add event listener instead of inline onclick
+        document.getElementById('updateButton').addEventListener('click', async () => {
+            const button = document.getElementById('updateButton');
+            const log = document.getElementById('log');
+            
+            button.disabled = true;
+            log.innerHTML = '<p>Starting pronunciation update...</p>';
+            
+            try {
+                await firebaseService.initialize();
+                const result = await updatePronunciationsWithNewRules(
+                    firebaseService,
+                    pronunciationService
+                );
+                
+                log.innerHTML += `
+                    <p>Update completed successfully:</p>
+                    <ul>
+                        <li>${result.updatedCount} pronunciations updated</li>
+                        <li>${result.totalCount} total groups processed</li>
+                    </ul>
+                    <p>You can now return to the Top 100 list to see the updates.</p>
+                `;
+            } catch (error) {
+                log.innerHTML += `
+                    <p style="color: red">Error during update: ${error.message}</p>
+                `;
+                console.error('Update error:', error);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // Add test function
+        document.getElementById('testButton').addEventListener('click', () => {
+            const testCases = [
+                'Chechen',
+                'Talysh',
+                'Karachay',
+                'Kurdish',
+                'Georgian'
+            ];
+
+            const log = document.getElementById('log');
+            log.innerHTML = '<h3>Test Results:</h3>';
+
+            testCases.forEach(name => {
+                const pronunciation = pronunciationService.generatePronunciation(name);
+                log.innerHTML += `<p>${name} → ${pronunciation}</p>`;
+            });
+        });
+
+        // Add test function
+        document.getElementById('jpTestButton').addEventListener('click', async () => {
+            const testCases = [
+                'Chechen',
+                'Talysh',
+                'Karachay',
+                'Kurdish',
+                'Georgian'
+            ];
+
+            const log = document.getElementById('log');
+            log.innerHTML = '<h3>Joshua Project Pronunciation Test:</h3>';
+
+            for (const name of testCases) {
+                const pronunciation = await jpPronunciationService.getPronunciation(name);
+                log.innerHTML += `<p>${name} → ${pronunciation || 'Not found'}</p>`;
+            }
+        });
+    </script>
+</body>
+</html> 

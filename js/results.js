@@ -1,7 +1,8 @@
 import { searchService } from './search.js';
 import { firebaseService } from './firebase.js';
 import { collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { formatGroupType } from './utils.js';
+import { formatGroupType, formatDistance } from './utils.js';
+import { pronunciationService } from './services/pronunciationService.js';
 
 class ResultsUI {
     constructor() {
@@ -227,29 +228,6 @@ class ResultsUI {
         // Clear existing content first
         this.resultsContainer.innerHTML = '';
 
-        // Add filter controls if this is a 'both' type search
-        const searchParams = new URLSearchParams(window.location.search);
-        const searchType = searchParams.get('type');
-        
-        if (searchType === 'both') {
-            const filterControls = this.createFilterControls();
-            this.resultsContainer.appendChild(filterControls);
-            
-            // Add results summary
-            const summary = document.createElement('div');
-            summary.className = 'results-summary';
-            const fpgCount = results.filter(r => r.type === 'FPG').length;
-            const uupgCount = results.filter(r => r.type === 'UUPG').length;
-            summary.innerHTML = `
-                <p>Found ${results.length} total results:</p>
-                <ul>
-                    <li>${fpgCount} Frontier People Groups (FPGs)</li>
-                    <li>${uupgCount} Unengaged Unreached People Groups (UUPGs)</li>
-                </ul>
-            `;
-            this.resultsContainer.appendChild(summary);
-        }
-
         // Create and add the table
         const table = document.createElement('table');
         table.className = 'results-table';
@@ -268,7 +246,7 @@ class ResultsUI {
                     <th>Distance</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="resultsTableBody">
                 ${results.map((result, index) => `
                     <tr>
                         <td><input type="checkbox" id="select-${index}" data-result-index="${index}"></td>
@@ -279,14 +257,14 @@ class ResultsUI {
                             <button class="play-button" 
                                     title="Play pronunciation"
                                     aria-label="Play pronunciation of ${result.name}"
-                                    onclick="event.preventDefault(); event.stopPropagation();"
+                                    data-text="${result.name}"
                                     ${!result.pronunciation ? 'disabled' : ''}>
                             </button>
                         </td>
                         <td>${result.population.toLocaleString()}</td>
                         <td>${result.country}</td>
-                        <td>${result.religion}</td>
-                        <td>${result.distance}</td>
+                        <td>${result.religion || 'Unknown'}</td>
+                        <td>${formatDistance(result.distance)}</td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -297,18 +275,23 @@ class ResultsUI {
         // Setup sorting after table is added to DOM
         this.setupSorting(table);
 
-        // Add debug info in development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            const debugInfo = document.createElement('div');
-            debugInfo.className = 'debug-info';
-            debugInfo.innerHTML = `
-                <details>
-                    <summary>Debug Information</summary>
-                    <pre>${JSON.stringify(results, null, 2)}</pre>
-                </details>
-            `;
-            this.resultsContainer.appendChild(debugInfo);
-        }
+        // Add event listeners for play buttons
+        table.querySelectorAll('.play-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const text = button.getAttribute('data-text');
+                await pronunciationService.speakPronunciation(text);
+            });
+        });
+
+        // Add change handlers for checkboxes
+        const checkboxes = table.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const index = e.target.getAttribute('data-result-index');
+                this.handleSelectionChange(e.target, index);
+            });
+        });
 
         // Add the action buttons after the table
         const actionsDiv = document.createElement('div');
@@ -322,16 +305,9 @@ class ResultsUI {
 
         // Add click handler for the add to list button
         const addButton = document.getElementById('addToListButton');
-        addButton.addEventListener('click', () => this.addToTop100List());
-
-        // Add change handlers for checkboxes
-        const checkboxes = table.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const index = e.target.getAttribute('data-result-index');
-                this.handleSelectionChange(e.target, index);
-            });
-        });
+        if (addButton) {
+            addButton.addEventListener('click', () => this.addToTop100List());
+        }
     }
 
     displayError(message) {

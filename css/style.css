@@ -427,7 +427,7 @@ input[type="number"]#radius {
 
 .results-table th,
 .results-table td {
-    padding: 12px;
+    padding: 8px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
@@ -907,19 +907,18 @@ footer p {
 
 /* Update play button styles */
 .play-button {
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
     width: 24px;
     height: 24px;
-    padding: 0;
-    display: inline-flex;
+    border-radius: 50%;
+    background-color: #183963;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
+    padding: 0;
+    margin: 0 auto;
 }
 
 .play-button::before {
@@ -929,60 +928,135 @@ footer p {
     border-style: solid;
     border-width: 6px 0 6px 10px;
     border-color: transparent transparent transparent #ffffff;
-    margin-left: 2px; /* Slight offset to center the triangle */
+    margin-left: 2px;
 }
 
 .play-button:hover {
-    background: var(--button-hover-color);
-    transform: scale(1.1);
+    background-color: #39A949;
 }
 
 .play-button:disabled {
-    background: var(--neutral-gray);
+    background-color: #7F7F7F;
     cursor: not-allowed;
-    opacity: 0.7;
 }
 
-.play-button:disabled:hover {
-    transform: none;
+/* Update table cell styles */
+.play-button-cell {
+    width: 40px;
+    text-align: center;
 }
 
-/* Ensure table cell alignment with new content */
+.pronunciation-text {
+    font-style: italic;
+    color: #666;
+}
+
+/* Ensure consistent column widths */
+.results-table th:nth-child(1) { width: 8%; }   /* Type */
+.results-table th:nth-child(2) { width: 15%; }  /* People Group */
+.results-table th:nth-child(3) { width: 15%; }  /* Pronunciation */
+.results-table th:nth-child(4) { width: 5%; }   /* Play */
+.results-table th:nth-child(5) { width: 12%; }  /* Population */
+.results-table th:nth-child(6) { width: 15%; }  /* Country */
+.results-table th:nth-child(7) { width: 15%; }  /* Religion */
+.results-table th:nth-child(8) { width: 8%; }   /* Actions */
+
+/* Fix alignment for multi-line cells */
 .results-table td {
     vertical-align: middle;
-}
-
-/* Table header alignment */
-.results-table th {
-    text-align: left;
-    padding: 12px 8px;
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.results-table td {
+    line-height: 1.2;
     padding: 8px;
     border-bottom: 1px solid #eee;
 }
 
-/* Ensure consistent column widths */
-.results-table th:nth-child(1) { width: 5%; }   /* Select */
-.results-table th:nth-child(2) { width: 8%; }   /* Type */
-.results-table th:nth-child(3) { width: 15%; }  /* People Group */
-.results-table th:nth-child(4) { width: 15%; }  /* Pronunciation */
-.results-table th:nth-child(5) { width: 5%; }   /* Play Button */
-.results-table th:nth-child(6) { width: 12%; }  /* Population */
-.results-table th:nth-child(7) { width: 12%; }  /* Country */
-.results-table th:nth-child(8) { width: 15%; }  /* Religion */
-.results-table th:nth-child(9) { width: 13%; }  /* Distance */
-
-/* Center play button in its cell */
-.play-button-cell {
-    text-align: center;
+/* Ensure actions column alignment */
+.actions-cell {
+    text-align: center !important;
+    padding: 8px !important;
+    vertical-align: middle;
 }
 
-/* Adjust pronunciation text alignment */
+/* Update delete button styling */
+.delete-button {
+    padding: 4px 8px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Ensure icon is centered in delete button */
+.delete-button i {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Add playing state */
+.play-button.playing {
+    background: var(--primary-color);
+}
+
+.play-button.playing::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-width: 0;
+    border-style: double;
+    border-color: #ffffff;
+    margin-left: 0;
+    background: #ffffff;
+}
+
+/* Add these styles to your existing CSS file */
+
+.speak-button {
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+    background-color: #183963;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.speak-button:hover {
+    background-color: #39A949;
+}
+
+.speak-button:disabled {
+    background-color: #7F7F7F;
+    cursor: not-allowed;
+}
+
+.speak-button i {
+    font-size: 0.875rem;
+}
+
+/* Style for the pronunciation text */
+td .pronunciation-text {
+    font-family: monospace;
+    color: #183963;
+}
+
+/* Ensure table cells have enough space */
+.table td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
 .pronunciation-text {
-    color: var(--neutral-gray);
-    font-style: italic;
+    font-family: monospace;
+    color: #183963;
+    margin-right: 0.5rem;
 }

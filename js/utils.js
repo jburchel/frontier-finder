@@ -149,3 +149,91 @@ export function checkMissingPronunciations(firebaseService) {
         });
     });
 } 
+
+export async function updatePronunciationsWithNewRules(firebaseService, pronunciationService) {
+    try {
+        console.log('Starting pronunciation update with new rules...');
+        const groups = await firebaseService.getTop100();
+        let updatedCount = 0;
+        
+        for (const group of groups) {
+            try {
+                // Generate new pronunciation using enhanced rules
+                const newPronunciation = pronunciationService.generatePronunciation(
+                    group.name,
+                    // Optionally detect language based on country
+                    detectLanguage(group.country)
+                );
+
+                if (newPronunciation && newPronunciation !== group.pronunciation) {
+                    await firebaseService.updateDocument(group.id, {
+                        pronunciation: newPronunciation
+                    });
+                    updatedCount++;
+                    console.log(`Updated pronunciation for "${group.name}": ${newPronunciation}`);
+                }
+            } catch (error) {
+                console.error(`Failed to update pronunciation for "${group.name}":`, error);
+            }
+        }
+        
+        console.log(`
+            Update complete:
+            - ${updatedCount} pronunciations updated
+            - ${groups.length} total groups processed
+        `);
+
+        return { updatedCount, totalCount: groups.length };
+    } catch (error) {
+        console.error('Failed to update pronunciations:', error);
+        throw error;
+    }
+}
+
+// Helper function to detect language based on country
+function detectLanguage(country) {
+    const languageMap = {
+        // Middle Eastern/Arabic
+        'Saudi Arabia': 'arabic',
+        'Iran': 'persian',
+        'Iraq': 'arabic',
+        'Egypt': 'arabic',
+        'Syria': 'arabic',
+        'Jordan': 'arabic',
+        'Yemen': 'arabic',
+        
+        // Asian
+        'China': 'chinese',
+        'Mongolia': 'mongolian',
+        'Kazakhstan': 'kazakh',
+        'Kyrgyzstan': 'kyrgyz',
+        'Uzbekistan': 'uzbek',
+        'Tajikistan': 'tajik',
+        
+        // Eastern European
+        'Russia': 'russian',
+        'Ukraine': 'ukrainian',
+        'Belarus': 'belarusian',
+        'Georgia': 'georgian',
+        'Armenia': 'armenian',
+        'Azerbaijan': 'azerbaijani',
+        
+        // South Asian
+        'India': 'indic',
+        'Pakistan': 'urdu',
+        'Bangladesh': 'bengali',
+        'Afghanistan': 'dari',
+        
+        // Default to 'english' for any unmapped countries
+        'default': 'english'
+    };
+    
+    return languageMap[country] || languageMap['default'];
+} 
+
+export function formatDistance(distance) {
+    if (typeof distance === 'number') {
+        return distance.toFixed(2);
+    }
+    return distance || '0.00';
+} 

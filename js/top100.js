@@ -1,5 +1,7 @@
 import { firebaseService } from './firebase.js';
 import { formatGroupType } from './utils.js';
+import { speechService } from './services/speechService.js';
+import { pronunciationService } from './services/pronunciationService.js';
 
 class Top100Page {
     constructor() {
@@ -110,20 +112,17 @@ class Top100Page {
     }
 
     renderTable(groups) {
-        const tbody = document.getElementById('top100Body');
-        const tableContainer = document.querySelector('.table-container');
+        const tableBody = document.getElementById('top100TableBody');
         const emptyState = document.getElementById('emptyState');
 
         if (groups.length === 0) {
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'block';
+            if (emptyState) emptyState.style.display = 'block';
             return;
         }
 
-        tableContainer.style.display = 'block';
-        emptyState.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'none';
 
-        tbody.innerHTML = groups.map(group => `
+        tableBody.innerHTML = groups.map(group => `
             <tr>
                 <td>${formatGroupType(group.type)}</td>
                 <td>${group.name}</td>
@@ -132,21 +131,37 @@ class Top100Page {
                     <button class="play-button" 
                             title="Play pronunciation"
                             aria-label="Play pronunciation of ${group.name}"
-                            onclick="event.preventDefault(); event.stopPropagation();"
+                            data-text="${group.name}"
                             ${!group.pronunciation ? 'disabled' : ''}>
                     </button>
                 </td>
                 <td>${parseInt(group.population).toLocaleString()}</td>
                 <td>${group.country}</td>
-                <td>${group.religion}</td>
-                <td>${new Date(group.addedAt).toLocaleDateString()}</td>
+                <td>${group.religion || 'Islam'}</td>
                 <td class="actions-cell">
-                    <button class="delete-button" onclick="window.top100Page.deleteGroup('${group.id}')">
-                        Remove
+                    <button class="delete-button" data-id="${group.id}">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
         `).join('');
+
+        // Add event listeners for play buttons
+        tableBody.querySelectorAll('.play-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const text = button.getAttribute('data-text');
+                await pronunciationService.speakPronunciation(text);
+            });
+        });
+
+        // Add event listeners for delete buttons
+        tableBody.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                this.deleteGroup(id);
+            });
+        });
     }
 
     updateSortButtons() {
@@ -190,4 +205,49 @@ class Top100Page {
 }
 
 // Create and expose instance for event handlers
-window.top100Page = new Top100Page(); 
+window.top100Page = new Top100Page();
+
+// Add global play function
+window.playPronunciation = (pronunciation) => {
+    if (!pronunciation) return;
+    speechService.speak(pronunciation);
+};
+
+async function displayTop100Items(items) {
+    const tableBody = document.getElementById('top100TableBody');
+    tableBody.innerHTML = '';
+
+    for (const item of items) {
+        const row = document.createElement('tr');
+        const pronunciation = await pronunciationService.generatePronunciation(item.peopleName);
+        
+        row.innerHTML = `
+            <td>${item.peopleName}</td>
+            <td>
+                ${pronunciation}
+                <button class="btn btn-sm btn-secondary speak-button" 
+                        data-text="${item.peopleName}">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </td>
+            <td>${item.population.toLocaleString()}</td>
+            <td>${item.country}</td>
+            <td>${item.type}</td>
+            <td>
+                <button class="btn btn-danger delete-button" data-id="${item.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        // Add click handler for the speak button
+        const speakButton = row.querySelector('.speak-button');
+        speakButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const text = speakButton.getAttribute('data-text');
+            await pronunciationService.speakPronunciation(text);
+        });
+
+        tableBody.appendChild(row);
+    }
+} 

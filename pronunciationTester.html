@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pronunciation Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .test-panel, .batch-panel {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        input, textarea, button {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+        }
+        button {
+            background: #183963;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #39A949;
+        }
+        .result-panel {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .test-result {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .example-names {
+            margin: 20px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .pronunciation-result {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pronunciation Tester</h1>
+        
+        <div class="test-panel">
+            <h2>Test Single Name</h2>
+            <input type="text" id="testInput" placeholder="Enter people group name">
+            <button onclick="testPronunciation()">Test</button>
+            
+            <div id="result" class="result-panel">
+                <div class="pronunciation-result">
+                    <h3>IPA-Based Pronunciation</h3>
+                    <p>Phonetic: <span id="phoneticResult"></span></p>
+                    <button onclick="playAudio()" id="playButton">Play Audio</button>
+                </div>
+            </div>
+
+            <div class="example-names">
+                <h3>Example Names to Try:</h3>
+                <ul>
+                    <li>Chechen</li>
+                    <li>Talysh</li>
+                    <li>Kurdish</li>
+                    <li>Uzbek</li>
+                    <li>Bengali</li>
+                    <li>Kazakh</li>
+                    <li>Georgian</li>
+                    <li>Tajik</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="batch-panel">
+            <h2>Batch Test</h2>
+            <textarea id="batchInput" rows="8" 
+                placeholder="Enter multiple names, one per line&#10;Example:&#10;Chechen&#10;Talysh&#10;Kurdish"></textarea>
+            <button onclick="batchTest()">Test All</button>
+            <div id="batchResults"></div>
+        </div>
+    </div>
+    
+    <div class="pronunciation-controls">
+        <button id="speakButton" class="btn btn-secondary">
+            <i class="fas fa-volume-up"></i> Listen
+        </button>
+    </div>
+    
+    <script type="module">
+        import { pronunciationService } from './js/services/pronunciationService.js';
+        import { speechService } from './js/services/speechService.js';
+        
+        window.testPronunciation = async () => {
+            try {
+                const name = document.getElementById('testInput').value;
+                if (!name) return;
+                
+                const phonetic = await pronunciationService.generatePronunciation(name);
+                document.getElementById('phoneticResult').textContent = phonetic;
+                console.log(`Generated pronunciation for "${name}":`, phonetic);
+            } catch (error) {
+                console.error('Error testing pronunciation:', error);
+                document.getElementById('phoneticResult').textContent = 'Error generating pronunciation';
+            }
+        };
+        
+        window.playAudio = () => {
+            const phonetic = document.getElementById('phoneticResult').textContent;
+            speechService.speak(phonetic);
+        };
+        
+        window.batchTest = async () => {
+            const names = document.getElementById('batchInput').value.split('\n');
+            const results = document.getElementById('batchResults');
+            results.innerHTML = '';
+            
+            for (const name of names) {
+                if (!name.trim()) continue;
+                try {
+                    const phonetic = await pronunciationService.generatePronunciation(name.trim());
+                    results.innerHTML += `
+                        <div class="test-result">
+                            <span>${name}</span>
+                            <span>${phonetic}</span>
+                            <button onclick="speechService.speak('${phonetic}')">Play</button>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(`Error processing "${name}":`, error);
+                }
+            }
+        };
+        
+        // Initialize services
+        Promise.all([
+            pronunciationService.initialize(),
+            speechService.initialize()
+        ]).then(() => {
+            console.log('Services initialized');
+        }).catch(error => {
+            console.error('Error initializing services:', error);
+        });
+        
+        document.getElementById('speakButton').addEventListener('click', async () => {
+            const currentWord = document.getElementById('wordInput').value;
+            const pronunciation = await pronunciationService.getPronunciation(currentWord);
+            
+            if (pronunciation) {
+                await pronunciationService.speakPronunciation(currentWord);
+            }
+        });
+    </script>
+</body>
+</html> 

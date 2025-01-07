@@ -11,6 +11,7 @@
     </script>
     <title>Search Results - Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
 </head>
 <body>
@@ -27,7 +28,21 @@
             </div>
 
             <div id="searchResults" class="search-results">
-                <!-- Results will be displayed here -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>People Group</th>
+                            <th>Pronunciation</th>
+                            <th>Population</th>
+                            <th>Country</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
             </div>
 
             <div class="actions">
@@ -42,6 +57,7 @@
     </div>
 
     <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/services/pronunciationService.js"></script>
     <script type="module" src="js/results.js"></script>
 </body>
 </html> 
