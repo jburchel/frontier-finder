@@ -46,31 +46,22 @@
         <main>
             <div class="search-section">
                 <h2>Find Frontier and Unengaged People Groups</h2>
-                <p class="instructions">Search for Frontier People Groups (FPGs) and Unreached UnengagedPeople Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
-
+                <p>Search for Frontier People Groups (FPGs) and Unreached UnengagedPeople Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
+                
                 <form id="searchForm" class="search-form">
                     <div class="search-grid">
-                        <!-- Top Row -->
-                        <div class="input-group">
-                            <label for="country">Select Country:</label>
-                            <select id="country" name="country" required>
-                                <option value="">Select a Country</option>
-                            </select>
-                        </div>
+                        <!-- Column 1 -->
+                        <div>
+                            <div class="input-group">
+                                <label for="country">Select Country:</label>
+                                <select id="country" name="country" required>
+                                    <option value="">Select a Country</option>
+                                </select>
+                            </div>
 
-                        <div class="input-group">
-                            <label for="upg">Select UPG:</label>
-                            <select id="upg" name="upg" required disabled>
-                                <option value="">Select a UPG</option>
-                            </select>
-                        </div>
-
-                        <!-- Bottom Row -->
-                        <div class="input-group">
-                            <label for="radius">Search Radius:</label>
-                            <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
-                            <div class="form-group">
-                                <label>Distance Units:</label>
+                            <div class="input-group">
+                                <label for="radius">Search Radius:</label>
+                                <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
                                 <div class="radio-group">
                                     <label>
                                         <input type="radio" name="units" value="M" checked> Miles
@@ -82,26 +73,33 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Search Type:</label>
-                            <div class="radio-group">
-                                <label>
-                                    <input type="radio" name="searchType" value="fpg" checked> FPG
-                                </label>
-                                <label>
-                                    <input type="radio" name="searchType" value="uupg"> UUPG
-                                </label>
-                                <label>
-                                    <input type="radio" name="searchType" value="both"> Both
-                                </label>
+                        <!-- Column 2 -->
+                        <div>
+                            <div class="input-group">
+                                <label for="upg">Select UPG:</label>
+                                <select id="upg" name="upg" required disabled>
+                                    <option value="">Select a UPG</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Search Type:</label>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="searchType" value="fpg" checked> FPG
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="searchType" value="uupg"> UUPG
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="searchType" value="both"> Both
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="button-group">
-                        <button type="submit" class="search-button">Search</button>
-                        
-                    </div>
+                    <button type="submit" class="search-button">Search</button>
                 </form>
             </div>
 

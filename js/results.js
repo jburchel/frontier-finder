@@ -297,9 +297,9 @@ class ResultsUI {
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'actions-container';
         actionsDiv.innerHTML = `
-            <button id="addToListButton" class="button primary" disabled>
-                Add to Top 100 List
-            </button>
+            <button onclick="window.location.href='index.html'" class="button secondary">New Search</button>
+            <button onclick="window.location.href='top100.html'" class="button secondary">View Top 100</button>
+            <button id="addToListButton" class="button primary" disabled>Add to Top 100 List</button>
         `;
         this.resultsContainer.appendChild(actionsDiv);
 

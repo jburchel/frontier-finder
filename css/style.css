@@ -93,11 +93,15 @@ h1 {
 }
 
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 1rem;
+    display: flex;
     align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row label {
+    min-width: 120px;
+    margin: 0;
 }
 
 .form-group {
@@ -120,14 +124,12 @@ label {
 /* Dropdown styles */
 select {
     height: 42px;
-    padding: 0 0.25rem;
+    padding: 0 0.75rem;
     border: 1px solid var(--neutral-gray);
     border-radius: var(--border-radius);
     font-size: 1rem;
     background-color: white;
-    flex: 1;
     min-width: 200px;
-    max-width: 300px;
 }
 
 /* Placeholder text color */
@@ -336,40 +338,63 @@ button:hover {
 /* Search form grid layout */
 .search-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, auto);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1rem;
 }
 
 .input-group {
     display: flex;
-    flex-direction: row;
     align-items: center;
     gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .input-group label {
-    margin: 0;
-    font-weight: bold;
     min-width: 120px;
-}
-
-/* Special handling for select inputs to be full width */
-.input-group:nth-child(1),
-.input-group:nth-child(2) {
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.input-group:nth-child(1) select,
-.input-group:nth-child(2) select {
-    width: 100%;
-}
-
-.input-group select,
-.input-group input[type="number"] {
     margin: 0;
+    white-space: nowrap;
+}
+
+.input-group select {
+    flex: 1;
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.input-group input[type="number"] {
+    width: 100px;
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-section {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.search-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
 }
 
 /* Specific width for radius input */
@@ -602,27 +627,45 @@ input[type="number"]#radius {
 }
 
 .actions-container {
-    margin: 15px 0;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    align-items: center;
 }
 
 .actions-container .button {
-    min-width: 200px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-width: 150px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.actions-container .button.primary {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.actions-container .button.primary:hover {
+    background-color: var(--button-hover-color);
+}
+
+.actions-container .button.secondary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.actions-container .button.secondary:hover {
+    background-color: var(--secondary-color);
 }
 
 .actions-container .button:disabled {
-    background-color: #ccc;
+    background-color: var(--neutral-gray);
     cursor: not-allowed;
-}
-
-/* Add hover effect only when not disabled */
-.actions-container .button:not(:disabled):hover {
-    background-color: #122b4a;
+    opacity: 0.7;
 }
 
 /* Top 100 Page Specific Styles */
@@ -1059,4 +1102,90 @@ td .pronunciation-text {
     font-family: monospace;
     color: #183963;
     margin-right: 0.5rem;
+}
+
+/* Form layout improvements */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row label {
+    min-width: 120px;
+    margin: 0;
+}
+
+/* Style for the search radius input to match dropdowns */
+input[type="number"] {
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    width: 100px;
+}
+
+/* Section with accent bar */
+.search-section {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.search-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Update existing select styles if needed */
+select {
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: white;
+    min-width: 200px;
+}
+
+.search-section p {
+    margin-bottom: 2rem;
+}
+
+/* Update button container styles */
+.search-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.search-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-width: 150px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: var(--button-hover-color);
 }
