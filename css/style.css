@@ -36,19 +36,19 @@ body {
 /* Header styles */
 header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .logo {
     max-width: 200px;
     height: auto;
-    margin: 20px auto;
+    margin: 15px auto;
     display: block;
 }
 
 h1 {
     color: var(--primary-color);
-    margin: 1rem 0;
+    margin: 0.75rem 0;
     font-size: 2.5rem;
 }
 
@@ -59,7 +59,7 @@ h1 {
 }
 
 .mission-statement {
-    color: var(--primary-color);
+    color: var(--secondary-color);
     max-width: 800px;
     margin: 0 auto;
     font-style: italic;
@@ -68,19 +68,19 @@ h1 {
 /* Search section styles */
 .search-section {
     background: var(--background);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .search-section h2 {
     color: var(--primary-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .instructions {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     color: var(--neutral-gray);
 }
 
@@ -88,23 +88,23 @@ h1 {
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-    margin-bottom: 1.5rem;
+    gap: 2rem;
+    margin-bottom: 1rem;
     align-items: center;
 }
 
 .form-group {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
     justify-content: flex-start;
 }
 
@@ -197,6 +197,7 @@ button {
     border: none;
     border-radius: var(--border-radius);
     font-size: 1rem;
+    justify:center;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -213,7 +214,7 @@ button:hover {
 .results-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 /* Search button */
@@ -287,8 +288,8 @@ button:hover {
 
 .search-summary {
     background: white;
-    padding: 1rem;
-    margin-bottom: 2rem;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
 }
@@ -296,7 +297,7 @@ button:hover {
 .results-columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .result-card {
@@ -539,8 +540,8 @@ input[type="number"]#radius {
 
 /* Filter controls */
 .filter-controls {
-    margin: 20px 0;
-    padding: 15px;
+    margin: 15px 0;
+    padding: 12px;
     background-color: #f8f9fa;
     border-radius: 4px;
     border-left: 4px solid #183963;
@@ -601,8 +602,8 @@ input[type="number"]#radius {
 }
 
 .actions-container {
-    margin: 20px 0;
-    padding: 20px;
+    margin: 15px 0;
+    padding: 15px;
     background-color: #f8f9fa;
     border-radius: 4px;
     display: flex;
@@ -629,37 +630,37 @@ input[type="number"]#radius {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 20px 0;
-    padding: 20px;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
     background-color: #f8f9fa;
     border-radius: 4px;
     border-left: 4px solid #183963;
 }
 
 .list-summary {
-    margin: 20px 0;
-    padding: 15px;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
     background-color: #f8f9fa;
     border-radius: 4px;
     border-left: 4px solid #39A949;
 }
 
 .table-container {
-    margin: 20px 0;
+    margin: 0.75rem 0;
     overflow-x: auto;
 }
 
 .empty-state {
     text-align: center;
-    padding: 40px;
+    padding: 1.5rem;
     background-color: #f8f9fa;
     border-radius: 4px;
-    margin: 20px 0;
+    margin: 1rem 0;
 }
 
 .empty-state p {
     color: #666;
-    margin-bottom: 20px;
+    margin-bottom: 1rem;
 }
 
 .sort-controls {
@@ -711,14 +712,14 @@ input[type="number"]#radius {
 .error-message {
     background-color: #fff3f3;
     border-left: 4px solid #dc3545;
-    padding: 20px;
-    margin: 20px 0;
+    padding: 1rem;
+    margin: 1rem 0;
     border-radius: 4px;
 }
 
 .error-message p {
     color: #dc3545;
-    margin-bottom: 15px;
+    margin-bottom: 0.75rem;
 }
 
 .error-message .button {
@@ -727,4 +728,169 @@ input[type="number"]#radius {
 
 .error-message .button:hover {
     background-color: #c82333;
+}
+
+/* Top 100 section styles */
+.top-100-section {
+    text-align: center;
+    margin: 1.5rem auto;
+    max-width: 600px;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #183963;
+}
+
+.top-100-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.top-100-section .instructions {
+    margin-bottom: 1rem;
+}
+
+.top-100-section .button {
+    display: inline-block;
+    text-decoration: none;
+    margin: 0 auto;
+}
+
+/* Footer styles */
+footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid #eee;
+}
+
+footer p {
+    color: var(--neutral-gray);
+    margin: 0;
+}
+
+/* Existing media query improvements and additions */
+@media (max-width: 768px) {
+    /* Container adjustments */
+    .container {
+        padding: 10px;
+    }
+
+    /* Header adjustments */
+    .logo {
+        max-width: 150px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .mission-statement {
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
+
+    /* Form adjustments */
+    .search-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-group label {
+        margin-bottom: 0.5rem;
+    }
+
+    select, input[type="number"] {
+        width: 100%;
+        max-width: none;
+    }
+
+    /* Radio groups */
+    .radio-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Results table adjustments */
+    .results-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .results-columns {
+        grid-template-columns: 1fr;
+    }
+
+    /* Controls section adjustments */
+    .controls-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .sort-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Top 100 section */
+    .top-100-section {
+        margin: 1rem 10px;
+        padding: 1rem;
+    }
+
+    /* Button adjustments */
+    .button {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .actions-container {
+        flex-direction: column;
+    }
+
+    .actions-container .button {
+        width: 100%;
+    }
+
+    /* Table container for mobile */
+    .table-container {
+        margin: 0.5rem 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Add horizontal scroll indicator */
+    .table-container::after {
+        content: '← Scroll →';
+        display: block;
+        text-align: center;
+        padding: 0.5rem;
+        color: var(--neutral-gray);
+        font-size: 0.8rem;
+    }
+}
+
+/* Additional small screen adjustments */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .search-section {
+        padding: 1rem;
+    }
+
+    .button {
+        padding: 0.75rem 1rem;
+    }
 }

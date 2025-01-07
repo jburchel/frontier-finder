@@ -1,4 +1,5 @@
 import { firebaseService } from './firebase.js';
+import { formatGroupType } from './utils.js';
 
 class Top100Page {
     constructor() {
@@ -95,15 +96,15 @@ class Top100Page {
 
     updateSummary(filteredGroups) {
         const summary = document.getElementById('listSummary');
-        const fpgCount = filteredGroups.filter(g => g.type === 'FPG').length;
-        const uupgCount = filteredGroups.filter(g => g.type === 'UUPG').length;
+        const fpgCount = filteredGroups.filter(g => g.type.toLowerCase() === 'fpg').length;
+        const uupgCount = filteredGroups.filter(g => g.type.toLowerCase() === 'uupg').length;
 
         summary.innerHTML = `
             <h3>List Summary</h3>
             <p>Total Groups: ${filteredGroups.length}</p>
             <ul>
-                <li>FPGs: ${fpgCount}</li>
-                <li>UUPGs: ${uupgCount}</li>
+                <li>${formatGroupType('FPG')}s: ${fpgCount}</li>
+                <li>${formatGroupType('UUPG')}s: ${uupgCount}</li>
             </ul>
         `;
     }
@@ -124,7 +125,7 @@ class Top100Page {
 
         tbody.innerHTML = groups.map(group => `
             <tr>
-                <td>${group.type}</td>
+                <td>${formatGroupType(group.type)}</td>
                 <td>${group.name}</td>
                 <td>${parseInt(group.population).toLocaleString()}</td>
                 <td>${group.country}</td>

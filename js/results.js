@@ -1,6 +1,7 @@
 import { searchService } from './search.js';
 import { firebaseService } from './firebase.js';
 import { collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { formatGroupType } from './utils.js';
 
 class ResultsUI {
     constructor() {
@@ -270,7 +271,7 @@ class ResultsUI {
                 ${results.map((result, index) => `
                     <tr>
                         <td><input type="checkbox" id="select-${index}" data-result-index="${index}"></td>
-                        <td>${result.type}</td>
+                        <td>${formatGroupType(result.type)}</td>
                         <td>${result.name}</td>
                         <td>${result.population.toLocaleString()}</td>
                         <td>${result.country}</td>
