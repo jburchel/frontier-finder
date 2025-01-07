@@ -1,5 +1,6 @@
 import { config } from './config.js';
 import { jpApi } from './api.js';
+import { pronunciationService } from './services/pronunciationService.js';
 
 /**
  * Search functionality for Frontier Finder
@@ -10,6 +11,7 @@ class SearchService {
         this.uupgs = null;
         this.initialized = false;
         this.jpApi = jpApi; // Store API instance
+        this.pronunciationMap = null; // Cache pronunciations
     }
 
     /**
@@ -167,6 +169,11 @@ class SearchService {
             console.log('Current UPGs loaded:', this.currentUPGs.length);
             this.initialized = true;
             
+            // Load pronunciations during initialization
+            const { pronunciationMap } = await import('./data/pronunciations.js');
+            this.pronunciationMap = pronunciationMap;
+            console.log('Search service initialized with pronunciations');
+            
         } catch (error) {
             console.error('Failed to initialize search service:', error);
             throw error;
@@ -229,6 +236,16 @@ class SearchService {
                 return distA - distB;
             });
 
+            // Add pronunciations to results
+            results = await Promise.all(results.map(async result => {
+                const pronunciation = await this.generatePronunciation(result.name);
+                return {
+                    ...result,
+                    pronunciation: pronunciation || 'pronunciation pending'
+                };
+            }));
+
+            console.log(`Found ${results.length} results with pronunciations`);
             return results;
         } catch (error) {
             console.error('Search failed:', error);
@@ -379,6 +396,16 @@ class SearchService {
             
         console.log('Available countries:', countries.length);
         return countries;
+    }
+
+    async generatePronunciation(name) {
+        // First check if we have a manual pronunciation
+        if (this.pronunciationMap && this.pronunciationMap[name]) {
+            return this.pronunciationMap[name];
+        }
+
+        // Generate pronunciation if we don't have one
+        return pronunciationService.generatePronunciation(name);
     }
 }
 

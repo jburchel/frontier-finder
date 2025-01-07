@@ -19,6 +19,16 @@ class FirebaseService {
         this.collectionName = 'top100';
     }
 
+    // Helper method to get collection reference
+    getCollectionRef() {
+        return collection(this.db, 'top100');
+    }
+
+    // Helper method to get document reference
+    getDocRef(docId) {
+        return doc(this.db, 'top100', docId);
+    }
+
     async initialize() {
         if (this.initialized) return;
 
@@ -41,34 +51,15 @@ class FirebaseService {
             }
 
             console.log('Fetching Top 100 list...');
-            const top100Ref = collection(this.db, this.collectionName);
+            const snapshot = await getDocs(this.getCollectionRef());
             
-            try {
-                const snapshot = await getDocs(top100Ref);
-                const results = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    // Ensure ID is always included and not empty
-                    if (!doc.id) {
-                        console.warn(`Document found with no ID:`, data);
-                    }
-                    return {
-                        id: doc.id || null,
-                        ...data
-                    };
-                });
-                
-                // Log any items without IDs
-                const itemsWithoutIds = results.filter(item => !item.id);
-                if (itemsWithoutIds.length > 0) {
-                    console.warn(`Found ${itemsWithoutIds.length} items without IDs:`, itemsWithoutIds);
-                }
-                
-                console.log(`Retrieved ${results.length} items from Top 100:`, results);
-                return results;
-            } catch (error) {
-                console.error('Error getting documents:', error);
-                throw error;
-            }
+            const results = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            
+            console.log(`Retrieved ${results.length} items from Top 100:`, results);
+            return results;
         } catch (error) {
             console.error('Failed to get Top 100:', error);
             throw error;
@@ -81,7 +72,6 @@ class FirebaseService {
                 await this.initialize();
             }
 
-            // Import pronunciations
             const { pronunciationMap } = await import('./data/pronunciations.js');
 
             const cleanItem = {
@@ -90,7 +80,7 @@ class FirebaseService {
                 addedAt: new Date().toISOString()
             };
 
-            const docRef = await addDoc(collection(this.db, this.collectionName), cleanItem);
+            const docRef = await addDoc(this.getCollectionRef(), cleanItem);
             console.log('Added item to Top 100:', docRef.id);
             return docRef.id;
         } catch (error) {
@@ -105,7 +95,7 @@ class FirebaseService {
                 await this.initialize();
             }
 
-            const docRef = doc(this.db, this.collectionName, itemId);
+            const docRef = this.getDocRef(itemId);
             await deleteDoc(docRef);
             console.log('Removed item from Top 100:', itemId);
         } catch (error) {
@@ -120,18 +110,93 @@ class FirebaseService {
                 await this.initialize();
             }
 
-            // Only proceed if we have a valid ID
             if (!id) {
                 console.warn('Skipping update for document with no ID');
                 return;
             }
 
-            const docRef = doc(this.db, this.collectionName, id);
+            const docRef = this.getDocRef(id);
             await updateDoc(docRef, data);
             console.log('Updated document:', id, 'with data:', data);
         } catch (error) {
             console.error(`Failed to update document ${id}:`, error);
             throw error;
+        }
+    }
+
+    async removeInvalidEntries() {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            console.log('Removing invalid entries...');
+            const snapshot = await getDocs(this.getCollectionRef());
+            
+            const deletePromises = snapshot.docs
+                .filter(doc => !doc.id || doc.id === '')
+                .map(doc => deleteDoc(doc.ref));
+            
+            await Promise.all(deletePromises);
+            console.log('Invalid entries removed');
+        } catch (error) {
+            console.error('Failed to remove invalid entries:', error);
+            throw error;
+        }
+    }
+
+    async cleanupInvalidEntries() {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            console.log('Starting cleanup of invalid entries...');
+            const snapshot = await getDocs(this.getCollectionRef());
+            
+            // Find all documents without IDs or pronunciations
+            const invalidDocs = snapshot.docs.filter(doc => {
+                const data = doc.data();
+                return !doc.id || !data.pronunciation;
+            });
+
+            console.log(`Found ${invalidDocs.length} invalid entries to remove`);
+
+            // Delete each invalid document
+            for (const doc of invalidDocs) {
+                try {
+                    await deleteDoc(doc.ref);
+                    console.log(`Removed invalid entry: ${doc.data().name}`);
+                } catch (error) {
+                    console.error(`Failed to remove entry: ${doc.data().name}`, error);
+                }
+            }
+
+            console.log('Cleanup complete');
+        } catch (error) {
+            console.error('Failed to cleanup invalid entries:', error);
+            throw error;
+        }
+    }
+
+    async savePronunciation(peopleName, pronunciation) {
+        try {
+            if (!this.initialized) {
+                await this.initialize();
+            }
+
+            // Save to a pronunciations collection
+            const pronunciationsRef = collection(this.db, 'pronunciations');
+            await addDoc(pronunciationsRef, {
+                name: peopleName,
+                pronunciation: pronunciation,
+                generatedAt: new Date().toISOString(),
+                isGenerated: true
+            });
+
+            console.log(`Saved pronunciation for ${peopleName}`);
+        } catch (error) {
+            console.error('Failed to save pronunciation:', error);
         }
     }
 }

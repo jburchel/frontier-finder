@@ -77,40 +77,57 @@ export async function repairDatabaseItems(firebaseService) {
         const groups = await firebaseService.getTop100();
         let repairedCount = 0;
         let skippedCount = 0;
+        let failedCount = 0;
         
-        for (const group of groups) {
-            if (!group.id) {
-                try {
-                    // Create a new document with the same data
-                    const newId = await firebaseService.addToTop100({
-                        type: group.type,
-                        name: group.name,
-                        population: group.population,
-                        country: group.country,
-                        religion: group.religion,
-                        language: group.language,
-                        distance: group.distance,
-                        addedAt: group.addedAt || new Date().toISOString()
-                    });
-                    
+        // First, identify items without IDs
+        const itemsToRepair = groups.filter(group => !group.id);
+        console.log(`Found ${itemsToRepair.length} items needing repair:`, 
+            itemsToRepair.map(g => g.name));
+        
+        // Then, delete these invalid entries
+        await firebaseService.removeInvalidEntries();
+        
+        // Now add them back properly
+        for (const group of itemsToRepair) {
+            try {
+                // Create a new document with the same data
+                const cleanItem = {
+                    type: group.type || 'UUPG',
+                    name: group.name,
+                    population: parseInt(group.population) || 0,
+                    country: group.country,
+                    religion: group.religion,
+                    language: group.language,
+                    distance: group.distance,
+                    addedAt: group.addedAt || new Date().toISOString()
+                };
+
+                const newId = await firebaseService.addToTop100(cleanItem);
+                if (newId) {
                     repairedCount++;
-                    console.log(`Repaired item: "${group.name}" with new ID: ${newId}`);
-                } catch (error) {
-                    console.error(`Failed to repair item "${group.name}":`, error);
+                    console.log(`Successfully repaired: ${group.name} with new ID: ${newId}`);
                 }
-            } else {
-                skippedCount++;
+            } catch (error) {
+                failedCount++;
+                console.error(`Failed to repair item "${group.name}":`, error);
             }
         }
+        
+        const results = {
+            repairedCount,
+            skippedCount,
+            failedCount,
+            totalCount: groups.length
+        };
         
         console.log(`
             Repair complete:
             - ${repairedCount} items repaired
-            - ${skippedCount} items already valid
+            - ${failedCount} items failed
             - ${groups.length} total items processed
         `);
         
-        return { repairedCount, skippedCount, totalCount: groups.length };
+        return results;
     } catch (error) {
         console.error('Failed to repair database:', error);
         throw error;
