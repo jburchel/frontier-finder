@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Top 100 Priority List - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <h1>Top 100 Priority List</h1>
+            <a href="index.html" class="back-button">← Back to Search</a>
+        </header>
+
+        <main>
+            <div class="controls-section">
+                <div class="filter-controls">
+                    <label for="groupFilter">Show:</label>
+                    <select id="groupFilter">
+                        <option value="all">All Groups</option>
+                        <option value="FPG">FPGs Only</option>
+                        <option value="UUPG">UUPGs Only</option>
+                    </select>
+                </div>
+
+                <div class="sort-controls">
+                    <label>Sort by:</label>
+                    <button class="button" data-sort="dateAdded">Date Added</button>
+                    <button class="button" data-sort="country">Country</button>
+                    <button class="button" data-sort="population">Population</button>
+                </div>
+            </div>
+
+            <div id="listSummary" class="list-summary">
+                <!-- Summary will be inserted here -->
+            </div>
+
+            <div id="top100List" class="results-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>People Group</th>
+                            <th>Pronunciation</th>
+                            <th>Play</th>
+                            <th>Population</th>
+                            <th>Country</th>
+                            <th>Religion</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top100TableBody">
+                        <!-- Items will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>No people groups have been added to your Top 100 list yet.</p>
+                <a href="index.html" class="button">Start Searching</a>
+            </div>
+
+            <div id="loadingState" class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading Top 100 list...</div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/top100.js"></script>
+</body>
+</html> 
