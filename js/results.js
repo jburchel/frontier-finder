@@ -260,10 +260,11 @@ class ResultsUI {
                     <th>Select</th>
                     <th>Type</th>
                     <th>People Group</th>
+                    <th>Pronunciation</th>
+                    <th>Play</th>
                     <th>Population</th>
                     <th>Country</th>
                     <th>Religion</th>
-                    <th>Language</th>
                     <th>Distance</th>
                 </tr>
             </thead>
@@ -273,10 +274,18 @@ class ResultsUI {
                         <td><input type="checkbox" id="select-${index}" data-result-index="${index}"></td>
                         <td>${formatGroupType(result.type)}</td>
                         <td>${result.name}</td>
+                        <td class="pronunciation-text">[${result.pronunciation || 'pronunciation pending'}]</td>
+                        <td class="play-button-cell">
+                            <button class="play-button" 
+                                    title="Play pronunciation"
+                                    aria-label="Play pronunciation of ${result.name}"
+                                    onclick="event.preventDefault(); event.stopPropagation();"
+                                    ${!result.pronunciation ? 'disabled' : ''}>
+                            </button>
+                        </td>
                         <td>${result.population.toLocaleString()}</td>
                         <td>${result.country}</td>
                         <td>${result.religion}</td>
-                        <td>${result.language}</td>
                         <td>${result.distance}</td>
                     </tr>
                 `).join('')}
@@ -372,10 +381,10 @@ class ResultsUI {
                 const cleanItem = {
                     type: item.type,
                     name: item.name,
+                    pronunciation: item.pronunciation,  // Include pronunciation
                     population: parseInt(item.population) || 0,
                     country: item.country,
                     religion: item.religion,
-                    language: item.language,
                     distance: item.distance,
                     addedAt: new Date().toISOString()
                 };

@@ -894,3 +894,95 @@ footer p {
         padding: 0.75rem 1rem;
     }
 }
+
+/* Pronunciation styles */
+.pronunciation {
+    color: var(--neutral-gray);
+    font-style: italic;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Update play button styles */
+.play-button {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.play-button::before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #ffffff;
+    margin-left: 2px; /* Slight offset to center the triangle */
+}
+
+.play-button:hover {
+    background: var(--button-hover-color);
+    transform: scale(1.1);
+}
+
+.play-button:disabled {
+    background: var(--neutral-gray);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.play-button:disabled:hover {
+    transform: none;
+}
+
+/* Ensure table cell alignment with new content */
+.results-table td {
+    vertical-align: middle;
+}
+
+/* Table header alignment */
+.results-table th {
+    text-align: left;
+    padding: 12px 8px;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.results-table td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Ensure consistent column widths */
+.results-table th:nth-child(1) { width: 5%; }   /* Select */
+.results-table th:nth-child(2) { width: 8%; }   /* Type */
+.results-table th:nth-child(3) { width: 15%; }  /* People Group */
+.results-table th:nth-child(4) { width: 15%; }  /* Pronunciation */
+.results-table th:nth-child(5) { width: 5%; }   /* Play Button */
+.results-table th:nth-child(6) { width: 12%; }  /* Population */
+.results-table th:nth-child(7) { width: 12%; }  /* Country */
+.results-table th:nth-child(8) { width: 15%; }  /* Religion */
+.results-table th:nth-child(9) { width: 13%; }  /* Distance */
+
+/* Center play button in its cell */
+.play-button-cell {
+    text-align: center;
+}
+
+/* Adjust pronunciation text alignment */
+.pronunciation-text {
+    color: var(--neutral-gray);
+    font-style: italic;
+}

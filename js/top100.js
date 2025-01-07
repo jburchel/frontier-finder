@@ -127,10 +127,18 @@ class Top100Page {
             <tr>
                 <td>${formatGroupType(group.type)}</td>
                 <td>${group.name}</td>
+                <td class="pronunciation-text">[${group.pronunciation || 'pronunciation pending'}]</td>
+                <td class="play-button-cell">
+                    <button class="play-button" 
+                            title="Play pronunciation"
+                            aria-label="Play pronunciation of ${group.name}"
+                            onclick="event.preventDefault(); event.stopPropagation();"
+                            ${!group.pronunciation ? 'disabled' : ''}>
+                    </button>
+                </td>
                 <td>${parseInt(group.population).toLocaleString()}</td>
                 <td>${group.country}</td>
                 <td>${group.religion}</td>
-                <td>${group.language}</td>
                 <td>${new Date(group.addedAt).toLocaleDateString()}</td>
                 <td class="actions-cell">
                     <button class="delete-button" onclick="window.top100Page.deleteGroup('${group.id}')">
