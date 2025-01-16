@@ -70,6 +70,14 @@ class Top100Page {
                 this.updateDisplay();
             });
         });
+
+        // Export button handler
+        const exportButton = document.getElementById('exportButton');
+        if (exportButton) {
+            exportButton.addEventListener('click', () => {
+                this.exportToCSV();
+            });
+        }
     }
 
     updateDisplay() {
@@ -315,6 +323,52 @@ class Top100Page {
         const filteredGroups = this.filterGroups();
         const groupCount = filteredGroups.length;
         document.getElementById('groupCount').textContent = groupCount;
+    }
+
+    exportToCSV() {
+        // Get the currently filtered and sorted groups
+        const filteredGroups = this.filterGroups();
+        
+        // Define the CSV headers
+        const headers = [
+            'Name',
+            'Pronunciation',
+            'Population',
+            'Country',
+            'Type'
+        ];
+
+        // Convert groups to CSV rows
+        const csvRows = [
+            headers.join(','), // Header row
+            ...filteredGroups.map(group => [
+                `"${group.name.replace(/"/g, '""')}"`, // Escape quotes in names
+                `"${(group.pronunciation || 'pronunciation pending').replace(/"/g, '""')}"`,
+                group.population,
+                `"${group.country.replace(/"/g, '""')}"`,
+                group.type
+            ].join(','))
+        ];
+
+        // Create the CSV content
+        const csvContent = csvRows.join('\n');
+
+        // Create a Blob with the CSV content
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        
+        // Create a download link
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            // Create a URL for the blob
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `top100_list_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
     }
 }
 
