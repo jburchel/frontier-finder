@@ -29,8 +29,11 @@ class Top100Page {
 
     async loadGroups() {
         try {
+            console.log('Loading groups...');
             this.groups = await this.firebaseService.getTop100();
+            console.log('Groups loaded:', this.groups);
             this.groups = this.groups.filter(group => group && group.name);
+            console.log('Groups filtered:', this.groups);
             this.updateSortButtons();
         } catch (error) {
             console.error('Failed to load groups:', error);
@@ -61,14 +64,17 @@ class Top100Page {
     }
 
     updateDisplay() {
+        console.log('Updating display...');
         const tableBody = document.getElementById('top100TableBody');
         if (!tableBody) {
             console.error('Table body not found');
             return;
         }
         tableBody.innerHTML = '';
+        console.log('Table body cleared');
 
         if (!this.groups || this.groups.length === 0) {
+            console.log('No groups to display');
             document.querySelector('main').innerHTML = `
                 <div class="empty-state">
                     <p>Your Top 100 list is empty.</p>
@@ -79,12 +85,15 @@ class Top100Page {
         }
 
         // Sort the groups before displaying
+        console.log('Sorting groups...');
         this.sortGroups();
+        console.log('Groups sorted:', this.groups);
 
         this.groups.forEach(group => {
             const row = this.createTableRow(group);
             tableBody.appendChild(row);
         });
+        console.log('Table updated');
         this.updateListSummary();
     }
 
