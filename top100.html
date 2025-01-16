@@ -34,33 +34,33 @@
                 </div>
 
                 <div class="sort-controls">
-                    <label>Sort by:</label>
-                    <button class="button" data-sort="dateAdded">Date Added</button>
-                    <button class="button" data-sort="country">Country</button>
-                    <button class="button" data-sort="population">Population</button>
+                    <button data-sort="name" data-label="Name" class="button">Name</button>
+                    <button data-sort="population" data-label="Population" class="button">Population</button>
+                    <button data-sort="country" data-label="Country" class="button">Country</button>
+                    <button data-sort="type" data-label="Type" class="button">Type</button>
+                    <button data-sort="addedAt" data-label="Added At" class="button active">Added At</button>
                 </div>
             </div>
 
-            <div id="listSummary" class="list-summary">
-                <!-- Summary will be inserted here -->
+            <div class="list-summary">
+                <p>Displaying <span id="groupCount">0</span> items</p>
             </div>
 
-            <div id="top100List" class="results-container">
-                <table class="results-table">
+            <div class="table-container">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th>Type</th>
-                            <th>People Group</th>
+                            <th>Name</th>
                             <th>Pronunciation</th>
-                            <th>Play</th>
                             <th>Population</th>
                             <th>Country</th>
-                            <th>Religion</th>
+                            <th>Type</th>
+                            <th>Added At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="top100TableBody">
-                        <!-- Items will be populated here -->
+                        <!-- Top 100 list will be populated here -->
                     </tbody>
                 </table>
             </div>

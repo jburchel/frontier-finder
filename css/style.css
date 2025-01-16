@@ -713,23 +713,26 @@ input[type="number"]#radius {
 }
 
 .sort-controls button {
-    padding: 8px 16px;
-    background-color: #183963;
-    color: white;
-    border: 1px solid #183963;
+    background-color: var(--neutral-gray);
+    color: var(--text-color);
+    border: none;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .sort-controls button:hover {
-    background-color: #122b4a;
+    background-color: var(--light-gray);
 }
 
 .sort-controls button.active {
-    background-color: #39A949;
+    background-color: var(--primary-color);
     color: white;
-    border-color: #39A949;
+}
+
+.sort-controls button.active:hover {
+    background-color: var(--secondary-color);
 }
 
 .actions-cell {

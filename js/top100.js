@@ -7,34 +7,34 @@ class Top100Page {
     constructor() {
         this.groups = [];
         this.currentFilter = 'all';
-        this.currentSort = 'dateAdded';
+        this.currentSort = 'addedAt';
         this.sortDirection = 'desc';
+        this.firebaseService = firebaseService;
         this.initialize();
     }
 
     async initialize() {
         try {
-            console.log('Starting initialization...');
+            this.showLoading();
+            await this.firebaseService.initialize();
             await this.loadGroups();
-            this.setupEventListeners();
             this.updateDisplay();
-            console.log('Initialization complete');
         } catch (error) {
             console.error('Failed to initialize Top 100 page:', error);
-            this.showError('Failed to load the Top 100 list. Please try again later.');
+            this.showError('Failed to load Top 100 list. Please try again.');
+        } finally {
+            this.hideLoading();
         }
     }
 
     async loadGroups() {
         try {
-            console.log('Loading Top 100 Groups');
-            this.showLoading();
-            this.groups = await firebaseService.getTop100();
-            this.hideLoading();
-            console.log(`Groups received: ${this.groups.length}`);
+            this.groups = await this.firebaseService.getTop100();
+            this.groups = this.groups.filter(group => group && group.name);
+            this.updateSortButtons();
         } catch (error) {
             console.error('Failed to load groups:', error);
-            throw error;
+            this.showError('Failed to load groups. Please try again.');
         }
     }
 
@@ -61,11 +61,31 @@ class Top100Page {
     }
 
     updateDisplay() {
-        const filteredGroups = this.filterGroups();
-        const sortedGroups = this.sortGroups(filteredGroups);
-        this.updateSummary(filteredGroups);
-        this.renderTable(sortedGroups);
-        this.updateSortButtons();
+        const tableBody = document.getElementById('top100TableBody');
+        if (!tableBody) {
+            console.error('Table body not found');
+            return;
+        }
+        tableBody.innerHTML = '';
+
+        if (!this.groups || this.groups.length === 0) {
+            document.querySelector('main').innerHTML = `
+                <div class="empty-state">
+                    <p>Your Top 100 list is empty.</p>
+                    <p>Add items from the search results page.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Sort the groups before displaying
+        this.sortGroups();
+
+        this.groups.forEach(group => {
+            const row = this.createTableRow(group);
+            tableBody.appendChild(row);
+        });
+        this.updateListSummary();
     }
 
     filterGroups() {
@@ -73,26 +93,47 @@ class Top100Page {
         return this.groups.filter(group => group.type === this.currentFilter);
     }
 
-    sortGroups(groups) {
-        return [...groups].sort((a, b) => {
-            let valueA, valueB;
-            
-            switch (this.currentSort) {
-                case 'dateAdded':
-                    valueA = new Date(a.addedAt);
-                    valueB = new Date(b.addedAt);
-                    break;
-                case 'population':
-                    valueA = parseInt(a.population) || 0;
-                    valueB = parseInt(b.population) || 0;
-                    break;
-                default:
-                    valueA = (a[this.currentSort] || '').toLowerCase();
-                    valueB = (b[this.currentSort] || '').toLowerCase();
+    sortGroups() {
+        this.groups.sort((a, b) => {
+            const aValue = a[this.currentSort];
+            const bValue = b[this.currentSort];
+
+            if (aValue == null && bValue == null) return 0;
+            if (aValue == null) return this.sortDirection === 'asc' ? -1 : 1;
+            if (bValue == null) return this.sortDirection === 'asc' ? 1 : -1;
+
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return this.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
             }
 
-            const comparison = valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
-            return this.sortDirection === 'asc' ? comparison : -comparison;
+            const aString = String(aValue).toLowerCase();
+            const bString = String(bValue).toLowerCase();
+
+            if (aString < bString) return this.sortDirection === 'asc' ? -1 : 1;
+            if (aString > bString) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    handleSort(sortBy) {
+        if (this.currentSort === sortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort = sortBy;
+            this.sortDirection = 'asc';
+        }
+        this.updateSortButtons();
+        this.updateDisplay();
+    }
+
+    updateSortButtons() {
+        document.querySelectorAll('.sort-controls button').forEach(button => {
+            button.classList.toggle('active', button.dataset.sort === this.currentSort);
+            if (button.dataset.sort === this.currentSort) {
+                button.innerHTML = button.dataset.label + (this.sortDirection === 'asc' ? ' &#9650;' : ' &#9660;');
+            } else {
+                button.innerHTML = button.dataset.label;
+            }
         });
     }
 
@@ -161,12 +202,6 @@ class Top100Page {
                 const id = button.getAttribute('data-id');
                 this.deleteGroup(id);
             });
-        });
-    }
-
-    updateSortButtons() {
-        document.querySelectorAll('.sort-controls button').forEach(button => {
-            button.classList.toggle('active', button.dataset.sort === this.currentSort);
         });
     }
 
