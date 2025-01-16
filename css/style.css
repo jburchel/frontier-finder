@@ -1192,3 +1192,62 @@ select {
 .search-button:hover {
     background-color: var(--button-hover-color);
 }
+
+/* Table column widths and alignment */
+.table th {
+    text-align: left;
+    padding: 8px;
+}
+
+.table th:nth-child(1) { width: 25%; }  /* Name - slightly wider */
+.table th:nth-child(2) { width: 20%; }  /* Pronunciation - slightly wider */
+.table th:nth-child(3) { width: 40px; } /* Play button - fixed narrow width */
+.table th:nth-child(4) { 
+    width: 15%;
+    text-align: right;
+}
+.table th:nth-child(5) { width: 20%; }  /* Country */
+.table th:nth-child(6) { width: 10%; }  /* Type */
+.table th:nth-child(7) { 
+    width: 10%;
+    text-align: center;
+}
+
+.play-button-cell {
+    width: 40px;
+    text-align: center;
+    padding: 0;
+}
+
+.pronunciation-cell {
+    font-style: italic;
+    color: #666;
+    text-align: left;
+    padding-right: 0;     /* Tighter spacing next to play button */
+}
+
+.actions-cell {
+    text-align: center;
+}
+
+/* Update table cell alignment */
+.table td {
+    vertical-align: middle;
+    padding: 8px;
+    text-align: left;
+}
+
+.table td.play-button-cell {
+    text-align: center;
+    padding: 0;
+}
+
+.table td.actions-cell {
+    text-align: center;
+}
+
+/* Population alignment */
+.table td:nth-child(4) {
+    text-align: right;
+    padding-right: 16px;
+}

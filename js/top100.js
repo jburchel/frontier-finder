@@ -10,7 +10,10 @@ class Top100Page {
         this.currentSort = 'addedAt';
         this.sortDirection = 'desc';
         this.firebaseService = firebaseService;
-        this.initialize();
+        this.initialize().then(() => {
+            this.setupEventListeners();
+            console.log('Event listeners set up');
+        });
     }
 
     async initialize() {
@@ -43,14 +46,19 @@ class Top100Page {
 
     setupEventListeners() {
         // Filter change handler
-        document.getElementById('groupFilter').addEventListener('change', (e) => {
-            this.currentFilter = e.target.value;
-            this.updateDisplay();
-        });
+        const filterSelect = document.getElementById('groupFilter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', (e) => {
+                console.log('Filter changed:', e.target.value);
+                this.currentFilter = e.target.value;
+                this.updateDisplay();
+            });
+        }
 
         // Sort button handlers
         document.querySelectorAll('.sort-controls button').forEach(button => {
             button.addEventListener('click', () => {
+                console.log('Sort button clicked:', button.dataset.sort);
                 const sortType = button.dataset.sort;
                 if (this.currentSort === sortType) {
                     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -58,6 +66,7 @@ class Top100Page {
                     this.currentSort = sortType;
                     this.sortDirection = 'desc';
                 }
+                this.updateSortButtons();
                 this.updateDisplay();
             });
         });
@@ -71,7 +80,6 @@ class Top100Page {
             return;
         }
         tableBody.innerHTML = '';
-        console.log('Table body cleared');
 
         if (!this.groups || this.groups.length === 0) {
             console.log('No groups to display');
@@ -84,24 +92,27 @@ class Top100Page {
             return;
         }
 
-        // Sort the groups before displaying
-        console.log('Sorting groups...');
+        // First sort the groups
         this.sortGroups();
-        console.log('Groups sorted:', this.groups);
-
-        this.groups.forEach(group => {
+        
+        // Then filter them
+        const filteredGroups = this.filterGroups();
+        
+        // Update the display with filtered and sorted groups
+        filteredGroups.forEach(group => {
             const row = this.createTableRow(group);
             tableBody.appendChild(row);
         });
-        console.log('Table updated');
+        
         this.updateListSummary();
+        this.updateSortButtons();
     }
 
     createTableRow(group) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${group.name}</td>
-            <td class="pronunciation-text">[${group.pronunciation || 'pronunciation pending'}]</td>
+            <td class="pronunciation-cell">[${group.pronunciation || 'pronunciation pending'}]</td>
             <td class="play-button-cell">
                 <button class="play-button" 
                         title="Play pronunciation"
@@ -112,7 +123,7 @@ class Top100Page {
             </td>
             <td>${parseInt(group.population).toLocaleString()}</td>
             <td>${group.country}</td>
-            <td>${group.type}</td >
+            <td>${group.type}</td>
             <td class="actions-cell">
                 <button class="delete-button" data-id="${group.id}">
                     <i class="fas fa-trash"></i>
@@ -137,11 +148,20 @@ class Top100Page {
     }
 
     filterGroups() {
-        if (this.currentFilter === 'all') return [...this.groups];
-        return this.groups.filter(group => group.type === this.currentFilter);
+        console.log('Filtering groups with filter:', this.currentFilter);
+        if (this.currentFilter === 'all') {
+            return [...this.groups];
+        }
+        // Match the filter value exactly with the group type
+        const filtered = this.groups.filter(group => 
+            group.type.toUpperCase() === this.currentFilter.toUpperCase()
+        );
+        console.log('Filtered groups:', filtered);
+        return filtered;
     }
 
     sortGroups() {
+        console.log('Sorting groups by:', this.currentSort, 'in direction:', this.sortDirection);
         this.groups.sort((a, b) => {
             const aValue = a[this.currentSort];
             const bValue = b[this.currentSort];
@@ -150,10 +170,14 @@ class Top100Page {
             if (aValue == null) return this.sortDirection === 'asc' ? -1 : 1;
             if (bValue == null) return this.sortDirection === 'asc' ? 1 : -1;
 
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return this.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+            // Handle population specially since it's a number
+            if (this.currentSort === 'population') {
+                const aNum = parseInt(aValue) || 0;
+                const bNum = parseInt(bValue) || 0;
+                return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
             }
 
+            // Handle string comparisons
             const aString = String(aValue).toLowerCase();
             const bString = String(bValue).toLowerCase();
 
@@ -161,6 +185,7 @@ class Top100Page {
             if (aString > bString) return this.sortDirection === 'asc' ? 1 : -1;
             return 0;
         });
+        console.log('Groups after sorting:', this.groups);
     }
 
     handleSort(sortBy) {
