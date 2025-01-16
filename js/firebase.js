@@ -166,9 +166,9 @@ class FirebaseService {
             for (const doc of invalidDocs) {
                 try {
                     await deleteDoc(doc.ref);
-                    console.log(`Removed invalid entry: ${doc.data().name}`);
+                    console.log(`Removed invalid entry: ${doc.data()?.name}`);
                 } catch (error) {
-                    console.error(`Failed to remove entry: ${doc.data().name}`, error);
+                    console.error(`Failed to remove entry: ${doc.data()?.name}`, error);
                 }
             }
 
