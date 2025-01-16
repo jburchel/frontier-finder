@@ -22,6 +22,11 @@
             <a href="index.html" class="back-button">← Back to Search</a>
         </header>
 
+        <div id="loadingState" class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading Top 100 list...</div>
+        </div>
+
         <main>
             <div class="controls-section">
                 <div class="filter-controls">
@@ -42,7 +47,7 @@
                 </div>
             </div>
 
-            <div class="list-summary">
+            <div id="listSummary" class="list-summary">
                 <p>Displaying <span id="groupCount">0</span> items</p>
             </div>
 
@@ -68,11 +73,6 @@
             <div id="emptyState" class="empty-state" style="display: none;">
                 <p>No people groups have been added to your Top 100 list yet.</p>
                 <a href="index.html" class="button">Start Searching</a>
-            </div>
-
-            <div id="loadingState" class="loading-container">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Loading Top 100 list...</div>
             </div>
         </main>
 

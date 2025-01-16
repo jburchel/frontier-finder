@@ -97,6 +97,45 @@ class Top100Page {
         this.updateListSummary();
     }
 
+    createTableRow(group) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${group.name}</td>
+            <td class="pronunciation-text">[${group.pronunciation || 'pronunciation pending'}]</td>
+            <td class="play-button-cell">
+                <button class="play-button" 
+                        title="Play pronunciation"
+                        aria-label="Play pronunciation of ${group.name}"
+                        data-text="${group.name}"
+                        ${!group.pronunciation ? 'disabled' : ''}>
+                </button>
+            </td>
+            <td>${parseInt(group.population).toLocaleString()}</td>
+            <td>${group.country}</td>
+            <td>${group.type}</td >
+            <td class="actions-cell">
+                <button class="delete-button" data-id="${group.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        // Add event listeners for play buttons
+        row.querySelector('.play-button').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const text = e.target.getAttribute('data-text');
+            await pronunciationService.speakPronunciation(text);
+        });
+
+        // Add event listeners for delete buttons
+        row.querySelector('.delete-button').addEventListener('click', () => {
+            const id = row.querySelector('.delete-button').getAttribute('data-id');
+            this.deleteGroup(id);
+        });
+
+        return row;
+    }
+
     filterGroups() {
         if (this.currentFilter === 'all') return [...this.groups];
         return this.groups.filter(group => group.type === this.currentFilter);
@@ -245,6 +284,12 @@ class Top100Page {
             </div>
         `;
         document.querySelector('main').innerHTML = errorHtml;
+    }
+
+    updateListSummary() {
+        const filteredGroups = this.filterGroups();
+        const groupCount = filteredGroups.length;
+        document.getElementById('groupCount').textContent = groupCount;
     }
 }
 
