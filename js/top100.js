@@ -35,6 +35,25 @@ class Top100Page {
             console.log('Loading groups...');
             this.groups = await this.firebaseService.getTop100();
             console.log('Groups loaded:', this.groups);
+            // Generate missing pronunciations
+            const pronunciationPromises = this.groups
+                .filter(group => !group.pronunciation)
+                .map(async group => {
+                    try {
+                        const pronunciation = await pronunciationService.generatePronunciation(group.name);
+                        group.pronunciation = pronunciation;
+                        // Update in Firebase
+                        await this.firebaseService.updateDocument(group.id, { pronunciation });
+                        console.log(`Generated pronunciation for ${group.name}: ${pronunciation}`);
+                    } catch (error) {
+                        console.error(`Failed to generate pronunciation for ${group.name}:`, error);
+                    }
+                });
+            
+            // Wait for all pronunciations to be generated
+            await Promise.all(pronunciationPromises);
+            console.log('All pronunciations generated');
+
             this.groups = this.groups.filter(group => group && group.name);
             console.log('Groups filtered:', this.groups);
             this.updateSortButtons();
@@ -118,6 +137,7 @@ class Top100Page {
 
     createTableRow(group) {
         const row = document.createElement('tr');
+
         row.innerHTML = `
             <td>${group.name}</td>
             <td class="pronunciation-cell">[${group.pronunciation || 'pronunciation pending'}]</td>
@@ -125,7 +145,7 @@ class Top100Page {
                 <button class="play-button" 
                         title="Play pronunciation"
                         aria-label="Play pronunciation of ${group.name}"
-                        data-text="${group.name}"
+                        data-name="${group.name}"
                         ${!group.pronunciation ? 'disabled' : ''}>
                 </button>
             </td>
@@ -140,10 +160,25 @@ class Top100Page {
         `;
 
         // Add event listeners for play buttons
-        row.querySelector('.play-button').addEventListener('click', async (e) => {
+        const playButton = row.querySelector('.play-button');
+        playButton.addEventListener('click', async (e) => {
             e.preventDefault();
-            const text = e.target.getAttribute('data-text');
-            await pronunciationService.speakPronunciation(text);
+            const name = e.target.getAttribute('data-name');
+            try {
+                if (!group.pronunciation) {
+                    const pronunciation = await pronunciationService.generatePronunciation(name);
+                    group.pronunciation = pronunciation;
+                    await this.firebaseService.updateDocument(group.id, { pronunciation });
+                    const pronCell = row.querySelector('.pronunciation-cell');
+                    if (pronCell) {
+                        pronCell.textContent = `[${pronunciation}]`;
+                    }
+                    playButton.disabled = false;
+                }
+                await pronunciationService.speakPronunciation(name, group.pronunciation);
+            } catch (error) {
+                console.error('Failed to speak pronunciation:', error);
+            }
         });
 
         // Add event listeners for delete buttons

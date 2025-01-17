@@ -72,11 +72,21 @@ class FirebaseService {
                 await this.initialize();
             }
 
-            const { pronunciationMap } = await import('./data/pronunciations.js');
+            // Get pronunciation from the item if it exists, or generate it
+            let pronunciation = item.pronunciation;
+            if (!pronunciation) {
+                try {
+                    const { pronunciationService } = await import('./services/pronunciationService.js');
+                    pronunciation = await pronunciationService.generatePronunciation(item.name);
+                } catch (error) {
+                    console.warn('Failed to generate pronunciation:', error);
+                    pronunciation = null;
+                }
+            }
 
             const cleanItem = {
                 ...item,
-                pronunciation: pronunciationMap[item.name] || null,
+                pronunciation: pronunciation,
                 addedAt: new Date().toISOString()
             };
 

@@ -3,12 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-        // Dynamically set base href depending on environment
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
-        document.write(`<base href="${baseHref}">`);
-    </script>
     <title>Top 100 Priority List - Frontier Finder</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -27,7 +21,7 @@
             <div class="loading-text">Loading Top 100 list...</div>
         </div>
 
-        <main>
+        <main class="top100-page">
             <div class="controls-section">
                 <div class="filter-controls">
                     <label for="groupFilter">Show:</label>
@@ -87,7 +81,11 @@
         </footer>
     </div>
 
-    <script type="module" src="js/config.js"></script>
+    <script type="module">
+        // Import firebase config
+        import { config } from './js/config.js';
+        window.config = config;
+    </script>
     <script type="module" src="js/firebase.js"></script>
     <script type="module" src="js/top100.js"></script>
 </body>

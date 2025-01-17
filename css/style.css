@@ -35,21 +35,30 @@ body {
 
 /* Header styles */
 header {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
     margin-bottom: 1.5rem;
 }
 
 .logo {
-    max-width: 200px;
+    max-width: 180px;
     height: auto;
-    margin: 15px auto;
-    display: block;
+    flex-shrink: 0;  /* Prevent logo from shrinking */
+}
+
+.header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 h1 {
     color: var(--primary-color);
-    margin: 0.75rem 0;
+    margin: 0;
     font-size: 2.5rem;
+    line-height: 1.2;
 }
 
 .tagline {
@@ -60,9 +69,31 @@ h1 {
 
 .mission-statement {
     color: var(--secondary-color);
-    max-width: 800px;
-    margin: 0 auto;
     font-style: italic;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive header adjustments */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .logo {
+        max-width: 160px;
+    }
+    
+    .header-content {
+        text-align: center;
+    }
+
+    h1 {
+        margin-bottom: 0.5rem;
+    }
 }
 
 /* Search section styles */
@@ -1279,4 +1310,94 @@ select {
     align-items: center;
     gap: 20px;
     margin-bottom: 20px;
+}
+
+/* Main content layout with sidebar */
+main {
+    /* Only apply grid layout to main pages, not top100 */
+    &:not(.top100-page) {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 2rem;
+        align-items: start;
+    }
+}
+
+/* Top 100 page specific layout */
+.top100-page {
+    display: block;  /* Override grid layout */
+    width: 100%;
+}
+
+.main-content {
+    width: 100%;
+}
+
+/* Definitions sidebar styles */
+.definitions-sidebar {
+    /* Hide sidebar on top100 page */
+    .top100-page & {
+        display: none;
+    }
+    position: sticky;
+    top: 2rem;
+}
+
+.definition-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border-left: 4px solid var(--accent-color);
+}
+
+.definition-box h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.definition-item {
+    margin-bottom: 2rem;
+}
+
+.definition-item:last-child {
+    margin-bottom: 0;
+}
+
+.definition-item h4 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.definition-item h5 {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.definition-item p {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    main {
+        grid-template-columns: 1fr 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+
+    .definitions-sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
 }
