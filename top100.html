@@ -12,8 +12,8 @@
     <div class="container">
         <header>
             <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
-            <h1>Top 100 Priority List</h1>
-            <a href="index.html" class="back-button">← Back to Search</a>
+            <h1 data-i18n="top100PageTitle">Top 100 Priority List</h1>
+            <a href="index.html" class="back-button" data-i18n="backToSearch">← Back to Search</a>
         </header>
 
         <div id="loadingState" class="loading-container">
@@ -24,11 +24,11 @@
         <main class="top100-page">
             <div class="controls-section">
                 <div class="filter-controls">
-                    <label for="groupFilter">Show:</label>
+                    <label for="groupFilter" data-i18n="showLabel">Show:</label>
                     <select id="groupFilter">
-                        <option value="all">All Groups</option>
-                        <option value="FPG">FPGs Only</option>
-                        <option value="UUPG">UUPGs Only</option>
+                        <option value="all" data-i18n="allGroups">All Groups</option>
+                        <option value="FPG" data-i18n="fpgsOnly">FPGs Only</option>
+                        <option value="UUPG" data-i18n="uupgsOnly">UUPGs Only</option>
                     </select>
                 </div>
 
@@ -42,7 +42,8 @@
 
                 <div class="export-controls">
                     <button id="exportButton" class="button">
-                        <i class="fas fa-download"></i> Export to CSV
+                        <i class="fas fa-download"></i>
+                        <span data-i18n="exportToCsv">Export to CSV</span>
                     </button>
                 </div>
             </div>
@@ -55,13 +56,13 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th class="pronunciation-cell">Pronunciation</th>
+                            <th data-i18n="name">Name</th>
+                            <th class="pronunciation-cell" data-i18n="pronunciation">Pronunciation</th>
                             <th class="play-button-cell"></th>
-                            <th>Population</th>
-                            <th>Country</th>
-                            <th>Type</th>
-                            <th>Actions</th>
+                            <th data-i18n="population">Population</th>
+                            <th data-i18n="country">Country</th>
+                            <th data-i18n="type">Type</th>
+                            <th data-i18n="actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="top100TableBody">
@@ -71,8 +72,8 @@
             </div>
 
             <div id="emptyState" class="empty-state" style="display: none;">
-                <p>No people groups have been added to your Top 100 list yet.</p>
-                <a href="index.html" class="button">Start Searching</a>
+                <p data-i18n="noItemsMessage">No people groups have been added to your Top 100 list yet.</p>
+                <a href="index.html" class="button" data-i18n="startSearching">Start Searching</a>
             </div>
         </main>
 
@@ -84,7 +85,12 @@
     <script type="module">
         // Import firebase config
         import { config } from './js/config.js';
+        import { i18nService } from './js/i18n.js';
         window.config = config;
+        // Initialize translations
+        document.addEventListener('DOMContentLoaded', () => {
+            i18nService.initialize();
+        });
     </script>
     <script type="module" src="js/firebase.js"></script>
     <script type="module" src="js/top100.js"></script>

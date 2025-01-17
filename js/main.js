@@ -1,6 +1,7 @@
 import { config } from './config.js';
 import { searchService } from './search.js';
 import { ui } from './ui.js';
+import { i18nService } from './i18n.js';
 
 /**
  * Main application initialization and coordination
@@ -52,6 +53,7 @@ const app = new App();
 
 // Start initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    i18nService.initialize();
     app.initialize().catch(error => {
         console.error('Application failed to start:', error);
     });

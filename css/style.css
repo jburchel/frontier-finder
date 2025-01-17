@@ -241,7 +241,44 @@ button:hover {
 
 /* Results section */
 .results-section {
-    display: none; /* Initially hidden */
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+}
+
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.search-results {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.search-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.search-results th,
+.search-results td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-gray);
+}
+
+.search-results th {
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.search-results tr:hover {
+    background-color: var(--background-color);
 }
 
 .results-columns {
@@ -1312,15 +1349,44 @@ select {
     margin-bottom: 20px;
 }
 
-/* Main content layout with sidebar */
+/* Main content layout */
 main {
-    /* Only apply grid layout to main pages, not top100 */
-    &:not(.top100-page) {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 2rem;
-        align-items: start;
-    }
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Search parameters section */
+.search-parameters {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.search-parameters h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.search-parameters dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.search-parameters dt {
+    color: var(--neutral-gray);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.search-parameters dd {
+    color: var(--text-color);
+    font-weight: 500;
 }
 
 /* Top 100 page specific layout */
@@ -1400,4 +1466,17 @@ main {
         position: static;
         margin-top: 2rem;
     }
+}
+
+/* Language switcher styles */
+.language-switcher {
+    margin-left: 1rem;
+}
+
+.language-switcher select {
+    padding: 0.5rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    background-color: white;
+    cursor: pointer;
 }

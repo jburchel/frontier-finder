@@ -23,28 +23,56 @@
         </header>
 
         <main>
-            <div id="searchParams" class="search-summary">
-                <!-- Search parameters will be displayed here -->
+            <div class="search-parameters">
+                <h2 data-i18n="searchParams">Search Parameters</h2>
+                <dl>
+                    <div>
+                        <dt>Base UPG:</dt>
+                        <dd id="baseUpg"></dd>
+                    </div>
+                    <div>
+                        <dt>Country:</dt>
+                        <dd id="country"></dd>
+                    </div>
+                    <div>
+                        <dt>Location:</dt>
+                        <dd id="location"></dd>
+                    </div>
+                    <div>
+                        <dt>Search Radius:</dt>
+                        <dd id="searchRadius"></dd>
+                    </div>
+                    <div>
+                        <dt>Search Type:</dt>
+                        <dd id="searchType"></dd>
+                    </div>
+                </dl>
             </div>
 
-            <div id="searchResults" class="search-results">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Select</th>
-                            <th>People Group</th>
-                            <th>Pronunciation</th>
-                            <th>Population</th>
-                            <th>Country</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resultsTableBody">
-                        <!-- Results will be populated here -->
-                    </tbody>
-                </table>
+            <div class="results-section">
+                <div id="searchResults" class="search-results">
+                    <div class="table-controls">
+                        <button id="addSelectedButton" class="button" disabled>
+                            <i class="fas fa-plus"></i> Add Selected to Top 100
+                        </button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>People Group</th>
+                                <th>Pronunciation</th>
+                                <th>Population</th>
+                                <th>Country</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
         </main>
 
         <footer>

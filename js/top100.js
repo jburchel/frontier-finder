@@ -2,6 +2,7 @@ import { firebaseService } from './firebase.js';
 import { formatGroupType } from './utils.js';
 import { speechService } from './services/speechService.js';
 import { pronunciationService } from './services/pronunciationService.js';
+import { i18nService } from './i18n.js';
 
 class Top100Page {
     constructor() {
@@ -355,9 +356,13 @@ class Top100Page {
     }
 
     updateListSummary() {
-        const filteredGroups = this.filterGroups();
-        const groupCount = filteredGroups.length;
-        document.getElementById('groupCount').textContent = groupCount;
+        const summaryElement = document.getElementById('groupCount');
+        if (summaryElement) {
+            const filteredGroups = this.filterGroups();
+            summaryElement.setAttribute('data-count', filteredGroups.length);
+            const text = i18nService.translate('displayingItems');
+            summaryElement.textContent = text.replace('{count}', filteredGroups.length);
+        }
     }
 
     exportToCSV() {

@@ -7,7 +7,6 @@ import { pronunciationService } from './services/pronunciationService.js';
 class ResultsUI {
     constructor() {
         this.resultsContainer = document.getElementById('searchResults');
-        this.searchParamsContainer = document.getElementById('searchParams');
         this.currentResults = []; // Store results for sorting
         this.allResults = [];     // Store all results for filtering
         this.sortConfig = {
@@ -88,8 +87,6 @@ class ResultsUI {
     }
 
     displaySearchParams(params) {
-        if (!this.searchParamsContainer) return;
-
         try {
             const upg = params.upg;
             if (!upg) {
@@ -97,17 +94,15 @@ class ResultsUI {
                 return;
             }
 
-            this.searchParamsContainer.innerHTML = `
-                <h3>Search Parameters</h3>
-                <p><strong>Base UPG:</strong> ${upg.name || 'Unknown'}</p>
-                <p><strong>Country:</strong> ${upg.country || 'Unknown'}</p>
-                <p><strong>Location:</strong> ${upg.latitude?.toFixed(2) || 0}, ${upg.longitude?.toFixed(2) || 0}</p>
-                <p><strong>Search Radius:</strong> ${params.radius} ${params.units === 'M' ? 'miles' : 'kilometers'}</p>
-                <p><strong>Search Type:</strong> ${params.type.toUpperCase()}</p>
-            `;
+            // Update the search parameters in the DL
+            document.getElementById('baseUpg').textContent = upg.name || 'Unknown';
+            document.getElementById('country').textContent = upg.country || 'Unknown';
+            document.getElementById('location').textContent = `${upg.latitude?.toFixed(2) || 0}, ${upg.longitude?.toFixed(2) || 0}`;
+            document.getElementById('searchRadius').textContent = `${params.radius} ${params.units === 'M' ? 'miles' : 'kilometers'}`;
+            document.getElementById('searchType').textContent = params.type.toUpperCase();
         } catch (error) {
             console.error('Error displaying search parameters:', error);
-            this.searchParamsContainer.innerHTML = '<p>Error displaying search parameters</p>';
+            console.warn('Failed to update search parameters display');
         }
     }
 
