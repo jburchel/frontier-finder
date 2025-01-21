@@ -46,6 +46,34 @@ class App {
         `;
         document.querySelector('.container')?.insertAdjacentElement('afterbegin', errorDiv);
     }
+
+    populateCountryDropdown(countries) {
+        const countrySelect = document.getElementById('country');
+        if (!countrySelect) return;
+        
+        countrySelect.innerHTML = `<option value="" data-i18n="selectCountryDefault">${i18nService.translate('selectCountryDefault')}</option>`;
+        
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            countrySelect.appendChild(option);
+        });
+    }
+
+    populateUPGDropdown(upgs) {
+        const upgSelect = document.getElementById('upg');
+        if (!upgSelect) return;
+        
+        upgSelect.innerHTML = `<option value="" data-i18n="selectUPGDefault">${i18nService.translate('selectUPGDefault')}</option>`;
+        
+        upgs.forEach(upg => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify(upg);
+            option.textContent = upg.name;
+            upgSelect.appendChild(option);
+        });
+    }
 }
 
 // Create app instance
@@ -53,10 +81,13 @@ const app = new App();
 
 // Start initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    i18nService.initialize();
     app.initialize().catch(error => {
         console.error('Application failed to start:', error);
     });
+    // Initialize i18n after app is initialized
+    setTimeout(() => {
+        i18nService.initialize();
+    }, 100);
 });
 
 // Make app available for debugging in development

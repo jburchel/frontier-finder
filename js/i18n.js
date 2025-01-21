@@ -38,6 +38,18 @@ class I18nService {
                 element.textContent = text;
             }
         });
+        
+        // Update dynamic dropdowns if they exist
+        const countrySelect = document.getElementById('country');
+        const upgSelect = document.getElementById('upg');
+        
+        if (countrySelect && countrySelect.firstChild) {
+            countrySelect.firstChild.textContent = this.translate('selectCountryDefault');
+        }
+        
+        if (upgSelect && upgSelect.firstChild) {
+            upgSelect.firstChild.textContent = this.translate('selectUPGDefault');
+        }
     }
 
     translate(key) {

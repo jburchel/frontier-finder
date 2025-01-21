@@ -18,7 +18,7 @@
 
         <div id="loadingState" class="loading-container">
             <div class="loading-spinner"></div>
-            <div class="loading-text">Loading Top 100 list...</div>
+            <div class="loading-text" data-i18n="loadingTop100">Loading Top 100 list...</div>
         </div>
 
         <main class="top100-page">
@@ -33,11 +33,11 @@
                 </div>
 
                 <div class="sort-controls">
-                    <button data-sort="name" data-label="Name" class="button">Name</button>
-                    <button data-sort="population" data-label="Population" class="button">Population</button>
-                    <button data-sort="country" data-label="Country" class="button">Country</button>
-                    <button data-sort="type" data-label="Type" class="button">Type</button>
-                    <button data-sort="addedAt" data-label="Added At" class="button active">Added At</button>
+                    <button data-sort="name" class="button" data-i18n="sortName">Name</button>
+                    <button data-sort="population" class="button" data-i18n="sortPopulation">Population</button>
+                    <button data-sort="country" class="button" data-i18n="sortCountry">Country</button>
+                    <button data-sort="type" class="button" data-i18n="sortType">Type</button>
+                    <button data-sort="addedAt" class="button active" data-i18n="sortAddedAt">Added At</button>
                 </div>
 
                 <div class="export-controls">
@@ -89,10 +89,11 @@
         window.config = config;
         // Initialize translations
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize i18n first
             i18nService.initialize();
+            // Then initialize the page
+            const top100Page = new Top100Page();
         });
     </script>
-    <script type="module" src="js/firebase.js"></script>
-    <script type="module" src="js/top100.js"></script>
 </body>
 </html> 

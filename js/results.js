@@ -3,6 +3,7 @@ import { firebaseService } from './firebase.js';
 import { collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { formatGroupType, formatDistance } from './utils.js';
 import { pronunciationService } from './services/pronunciationService.js';
+import { i18nService } from './i18n.js';
 
 class ResultsUI {
     constructor() {
@@ -20,10 +21,16 @@ class ResultsUI {
     showLoading(message = 'Loading results...') {
         if (!this.resultsContainer) return;
         
+        const translatedMessage = message === 'Loading results...' ? 
+            i18nService.translate('loadingResults') :
+            message === 'Searching for people groups...' ?
+            i18nService.translate('searchingGroups') :
+            i18nService.translate('loadingProcessing');
+        
         this.resultsContainer.innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <div class="loading-text">${message}</div>
+                <div class="loading-text">${translatedMessage}</div>
             </div>
         `;
     }
@@ -41,7 +48,7 @@ class ResultsUI {
             const params = new URLSearchParams(window.location.search);
             
             // Show loading immediately
-            this.showLoading('Loading and processing data...');
+            this.showLoading(i18nService.translate('loadingProcessing'));
             
             // Get and parse parameters
             const searchParams = {
@@ -62,7 +69,7 @@ class ResultsUI {
             await searchService.initialize();
 
             // Update loading message
-            this.showLoading('Searching for people groups...');
+            this.showLoading(i18nService.translate('searchingGroups'));
 
             const results = await searchService.searchNearby(
                 searchParams.upg,
@@ -71,8 +78,22 @@ class ResultsUI {
                 searchParams.type
             );
 
+            console.log('Search results:', results);
+
             // Hide loading before displaying results
             this.hideLoading();
+
+            if (!results || results.length === 0) {
+                this.resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <p>${i18nService.translate('noResults')}</p>
+                        <button onclick="window.location.href='index.html'" class="button" data-i18n="newSearch">
+                            ${i18nService.translate('newSearch')}
+                        </button>
+                    </div>
+                `;
+                return;
+            }
 
             // Display search parameters first
             this.displaySearchParams(searchParams);
@@ -82,7 +103,14 @@ class ResultsUI {
         } catch (error) {
             console.error('Results initialization failed:', error);
             this.hideLoading();
-            this.displayError(error.message);
+            this.resultsContainer.innerHTML = `
+                <div class="error-message">
+                    <p>${error.message}</p>
+                    <button onclick="window.location.href='index.html'" class="button" data-i18n="newSearch">
+                        ${i18nService.translate('newSearch')}
+                    </button>
+                </div>
+            `;
         }
     }
 
@@ -98,7 +126,8 @@ class ResultsUI {
             document.getElementById('baseUpg').textContent = upg.name || 'Unknown';
             document.getElementById('country').textContent = upg.country || 'Unknown';
             document.getElementById('location').textContent = `${upg.latitude?.toFixed(2) || 0}, ${upg.longitude?.toFixed(2) || 0}`;
-            document.getElementById('searchRadius').textContent = `${params.radius} ${params.units === 'M' ? 'miles' : 'kilometers'}`;
+            const units = params.units === 'M' ? i18nService.translate('unitsMiles') : i18nService.translate('unitsKm');
+            document.getElementById('searchRadius').textContent = `${params.radius} ${units}`;
             document.getElementById('searchType').textContent = params.type.toUpperCase();
         } catch (error) {
             console.error('Error displaying search parameters:', error);
@@ -204,6 +233,7 @@ class ResultsUI {
 
     // Update displayResults to handle the filter UI
     displayResults(results, storeResults = true) {
+        console.log('Displaying results:', results);
         if (!this.resultsContainer) {
             console.error('Results container not found');
             return;

@@ -4,7 +4,7 @@ import { speechService } from './services/speechService.js';
 import { pronunciationService } from './services/pronunciationService.js';
 import { i18nService } from './i18n.js';
 
-class Top100Page {
+export class Top100Page {
     constructor() {
         this.groups = [];
         this.currentFilter = 'all';
@@ -23,6 +23,8 @@ class Top100Page {
             await this.firebaseService.initialize();
             await this.loadGroups();
             this.updateDisplay();
+            this.setupSortButtons();
+            this.updateSortButtons();
         } catch (error) {
             console.error('Failed to initialize Top 100 page:', error);
             this.showError('Failed to load Top 100 list. Please try again.');
@@ -244,13 +246,11 @@ class Top100Page {
     }
 
     updateSortButtons() {
-        document.querySelectorAll('.sort-controls button').forEach(button => {
-            button.classList.toggle('active', button.dataset.sort === this.currentSort);
-            if (button.dataset.sort === this.currentSort) {
-                button.innerHTML = button.dataset.label + (this.sortDirection === 'asc' ? ' &#9650;' : ' &#9660;');
-            } else {
-                button.innerHTML = button.dataset.label;
-            }
+        const sortButtons = document.querySelectorAll('[data-sort]');
+        sortButtons.forEach(button => {
+            const sortKey = button.getAttribute('data-sort');
+            const translationKey = `sort${sortKey.charAt(0).toUpperCase() + sortKey.slice(1)}`;
+            button.textContent = i18nService.translate(translationKey);
         });
     }
 
@@ -409,6 +409,26 @@ class Top100Page {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
+    }
+
+    setupSortButtons() {
+        const sortButtons = document.querySelectorAll('[data-sort]');
+        sortButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                sortButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Get sort parameters
+                const sortBy = button.getAttribute('data-sort');
+                this.currentSort = sortBy;
+                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                
+                // Update display
+                this.updateDisplay();
+            });
+        });
     }
 }
 

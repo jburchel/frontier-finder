@@ -1351,9 +1351,16 @@ select {
 
 /* Main content layout */
 main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    width: 100%;
+}
+
+/* Main content area */
+.main-content-area {
     display: flex;
     flex-direction: column;
-    width: 100%;
 }
 
 /* Search parameters section */
@@ -1407,6 +1414,7 @@ main {
     }
     position: sticky;
     top: 2rem;
+    height: fit-content;
 }
 
 .definition-box {

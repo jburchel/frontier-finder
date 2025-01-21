@@ -75,7 +75,43 @@ export const translations = {
         exportToCsv: "Export to CSV",
         
         // Footer
-        copyright: "© 2024 Crossover Global. All rights reserved."
+        copyright: "© 2024 Crossover Global. All rights reserved.",
+        
+        // Dropdown Options
+        selectCountryDefault: "Select a Country",
+        selectUPGDefault: "Select a UPG",
+        
+        // Search Types
+        searchTypeBoth: "BOTH",
+        searchTypeFPG: "FPG",
+        searchTypeUUPG: "UUPG",
+        
+        // Units
+        unitsKm: "kilometers",
+        unitsMiles: "miles",
+        
+        // Results Page Labels
+        baseUpg: "Base UPG:",
+        location: "Location:",
+        newSearch: "New Search",
+        viewTop100List: "View Top 100",
+        addToList: "Add to Top 100 List",
+        addSelected: "Add Selected to Top 100",
+        select: "Select",
+        peopleGroup: "People Group",
+        
+        // Sort Buttons
+        sortName: "Name",
+        sortPopulation: "Population",
+        sortCountry: "Country",
+        sortType: "Type",
+        sortAddedAt: "Added At",
+        
+        // Loading Messages
+        loadingResults: "Loading results...",
+        searchingGroups: "Searching for People Groups...",
+        loadingProcessing: "Loading and processing data...",
+        loadingTop100: "Loading Top 100 list..."
     },
     pt: {
         // Header
@@ -153,6 +189,42 @@ export const translations = {
         exportToCsv: "Exportar para CSV",
         
         // Footer
-        copyright: "© 2024 Crossover Global. Todos os direitos reservados."
+        copyright: "© 2024 Crossover Global. Todos os direitos reservados.",
+        
+        // Dropdown Options
+        selectCountryDefault: "Selecione um País",
+        selectUPGDefault: "Selecione um UPG",
+        
+        // Search Types
+        searchTypeBoth: "AMBOS",
+        searchTypeFPG: "FPG",
+        searchTypeUUPG: "UUPG",
+        
+        // Units
+        unitsKm: "quilômetros",
+        unitsMiles: "milhas",
+        
+        // Results Page Labels
+        baseUpg: "UPG Base:",
+        location: "Localização:",
+        newSearch: "Nova Busca",
+        viewTop100List: "Ver Top 100",
+        addToList: "Adicionar à Lista Top 100",
+        addSelected: "Adicionar Selecionados ao Top 100",
+        select: "Selecionar",
+        peopleGroup: "Grupo de Povos",
+        
+        // Sort Buttons
+        sortName: "Nome",
+        sortPopulation: "População",
+        sortCountry: "País",
+        sortType: "Tipo",
+        sortAddedAt: "Adicionado Em",
+        
+        // Loading Messages
+        loadingResults: "Carregando resultados...",
+        searchingGroups: "Procurando Grupos de Povos...",
+        loadingProcessing: "Carregando e processando dados...",
+        loadingTop100: "Carregando lista Top 100..."
     }
 }; 
