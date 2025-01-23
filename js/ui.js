@@ -1,4 +1,6 @@
 import { searchService } from './search.js';
+import app from './main.js';
+import { i18nService } from './i18n.js';
 
 /**
  * UI handling for Frontier Finder
@@ -25,16 +27,23 @@ class UI {
         try {
             console.log('Initializing UI...');
             
-            // Setup event listeners
-            this.setupEventListeners();
+            // Get available countries from search service
+            const countries = await searchService.getAvailableCountries();
+            console.log('Retrieved countries:', countries);
             
-            // Populate initial data
-            await this.populateCountries();
+            if (!countries || countries.length === 0) {
+                throw new Error('No countries available');
+            }
+            
+            // Populate country dropdown
+            app.populateCountryDropdown(countries);
+            
+            // Set up event listeners
+            this.setupEventListeners();
             
             console.log('UI initialization complete');
         } catch (error) {
             console.error('UI initialization failed:', error);
-            this.showError('Failed to initialize application: ' + error.message);
             throw error;
         }
     }
@@ -199,45 +208,7 @@ class UI {
         }
 
         // Create results table
-        const table = document.createElement('table');
-        table.className = 'results-table';
-        
-        // Add table header
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Type</th>
-                    <th>People Group</th>
-                    <th>Population</th>
-                    <th>Country</th>
-                    <th>Religion</th>
-                    <th>Language</th>
-                    <th>Distance (${this.getDistanceUnit()})</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        `;
-
-        // Add results to table
-        const tbody = table.querySelector('tbody');
-        searchResults.results.forEach((result, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>
-                    <input type="checkbox" id="select-${index}" data-result-index="${index}">
-                </td>
-                <td>${result.type || 'Unknown'}</td>
-                <td>${result.name || 'Unknown'}</td>
-                <td>${result.population?.toLocaleString() || 'Unknown'}</td>
-                <td>${result.country || 'Unknown'}</td>
-                <td>${result.religion || 'Unknown'}</td>
-                <td>${result.language || 'Unknown'}</td>
-                <td>${result.distance !== undefined ? result.distance : 'Unknown'}</td>
-            `;
-            tbody.appendChild(row);
-        });
+        const table = this.createResultsTable(searchResults);
 
         // Add table to container
         resultsContainer.appendChild(table);
@@ -250,6 +221,85 @@ class UI {
 
         // Update search parameters display
         this.updateSearchParams(searchResults.baseUPG);
+    }
+
+    /**
+     * Create results table
+     */
+    createResultsTable(searchResults) {
+        const table = document.createElement('table');
+        table.className = 'results-table';
+        
+        // Create header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        // Define headers with translation keys
+        const headers = [
+            { key: 'headerSelect', text: 'Select' },
+            { key: 'headerType', text: 'Type' },
+            { key: 'headerName', text: 'Name' },
+            { key: 'headerPopulation', text: 'Population' },
+            { key: 'headerCountry', text: 'Country' },
+            { key: 'headerReligion', text: 'Religion' },
+            { key: 'headerLanguage', text: 'Language' },
+            { key: 'headerDistance', text: 'Distance' }
+        ];
+        
+        // Create header cells with translations
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.setAttribute('data-i18n', header.key);
+            th.textContent = i18nService.translate(header.key);
+            headerRow.appendChild(th);
+        });
+        
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        
+        // Create table body
+        const tbody = document.createElement('tbody');
+        
+        // Add results rows
+        searchResults.results.forEach((result, index) => {
+            const row = document.createElement('tr');
+            
+            // Create cells with translations where needed
+            const cells = [
+                `<td><input type="checkbox" id="select-${index}" data-result-index="${index}"></td>`,
+                `<td>${result.type || i18nService.translate('unknown')}</td>`,
+                `<td>${result.name || i18nService.translate('unknown')}</td>`,
+                `<td>${result.population?.toLocaleString() || i18nService.translate('unknown')}</td>`,
+                `<td>${this.translateCountry(result.country) || i18nService.translate('unknown')}</td>`,
+                `<td>${result.religion || i18nService.translate('unknown')}</td>`,
+                `<td>${result.language || i18nService.translate('unknown')}</td>`,
+                `<td>${this.formatDistance(result.distance)}</td>`
+            ];
+            
+            row.innerHTML = cells.join('');
+            tbody.appendChild(row);
+        });
+        
+        table.appendChild(tbody);
+        return table;
+    }
+
+    /**
+     * Helper method to translate country names
+     */
+    translateCountry(country) {
+        if (!country) return '';
+        return i18nService.translate(`countries.${country}`) || country;
+    }
+
+    /**
+     * Helper method to format distance with translation
+     */
+    formatDistance(distance) {
+        if (!distance) return i18nService.translate('unknown');
+        const [value, unit] = distance.split(' ');
+        const translatedUnit = i18nService.translate(`units${unit.charAt(0).toUpperCase() + unit.slice(1)}`);
+        return `${value} ${translatedUnit}`;
     }
 
     /**
@@ -297,11 +347,24 @@ class UI {
         const searchParams = document.getElementById('searchParams');
         if (!searchParams) return;
 
-        searchParams.innerHTML = `
-            <p><strong>Base UPG:</strong> ${baseUPG.name}</p>
-            <p><strong>Country:</strong> ${baseUPG.country}</p>
-            <p><strong>Location:</strong> ${baseUPG.latitude.toFixed(2)}, ${baseUPG.longitude.toFixed(2)}</p>
-        `;
+        const params = [
+            {
+                label: i18nService.translate('baseUPGLabel'),
+                value: baseUPG.name
+            },
+            {
+                label: i18nService.translate('country'),
+                value: this.translateCountry(baseUPG.country)
+            },
+            {
+                label: i18nService.translate('location'),
+                value: `${baseUPG.latitude.toFixed(2)}, ${baseUPG.longitude.toFixed(2)}`
+            }
+        ];
+
+        searchParams.innerHTML = params.map(param => 
+            `<p><strong>${param.label}</strong> ${param.value}</p>`
+        ).join('');
     }
 }
 

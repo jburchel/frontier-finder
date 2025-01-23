@@ -250,8 +250,11 @@ class ResultsUI {
             return;
         }
 
-        // Clear existing content first
-        this.resultsContainer.innerHTML = '';
+        // Only clear the results table area, not the entire container
+        const existingTable = this.resultsContainer.querySelector('table');
+        if (existingTable) {
+            existingTable.remove();
+        }
 
         // Create and add the table
         const table = document.createElement('table');
@@ -260,15 +263,15 @@ class ResultsUI {
         table.innerHTML = `
             <thead>
                 <tr>
-                    <th>Select</th>
-                    <th>Type</th>
-                    <th>People Group</th>
-                    <th>Pronunciation</th>
+                    <th data-i18n="headerSelect">${i18nService.translate('headerSelect')}</th>
+                    <th data-i18n="headerType">${i18nService.translate('headerType')}</th>
+                    <th data-i18n="headerName">${i18nService.translate('headerName')}</th>
+                    <th data-i18n="headerPronunciation">${i18nService.translate('headerPronunciation')}</th>
                     <th>Play</th>
-                    <th>Population</th>
-                    <th>Country</th>
-                    <th>Religion</th>
-                    <th>Distance</th>
+                    <th data-i18n="headerPopulation">${i18nService.translate('headerPopulation')}</th>
+                    <th data-i18n="headerCountry">${i18nService.translate('headerCountry')}</th>
+                    <th data-i18n="headerReligion">${i18nService.translate('headerReligion')}</th>
+                    <th data-i18n="headerDistance">${i18nService.translate('headerDistance')}</th>
                 </tr>
             </thead>
             <tbody id="resultsTableBody">
@@ -288,7 +291,7 @@ class ResultsUI {
                         </td>
                         <td>${result.population.toLocaleString()}</td>
                         <td>${result.country}</td>
-                        <td>${result.religion || 'Unknown'}</td>
+                        <td>${result.religion || i18nService.translate('unknown')}</td>
                         <td>${formatDistance(result.distance)}</td>
                     </tr>
                 `).join('')}
@@ -317,16 +320,6 @@ class ResultsUI {
                 this.handleSelectionChange(e.target, index);
             });
         });
-
-        // Add the action buttons after the table
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'actions-container';
-        actionsDiv.innerHTML = `
-            <button onclick="window.location.href='index.html'" class="button secondary">New Search</button>
-            <button onclick="window.location.href='top100.html'" class="button secondary">View Top 100</button>
-            <button id="addToListButton" class="button primary" disabled>Add to Top 100 List</button>
-        `;
-        this.resultsContainer.appendChild(actionsDiv);
 
         // Add click handler for the add to list button
         const addButton = document.getElementById('addToListButton');
@@ -416,7 +409,56 @@ class ResultsUI {
             button.textContent = 'Add to Top 100 List';
         }
     }
+
+    // Add this method to the ResultsUI class
+    updateTableHeaders() {
+        const headers = document.querySelectorAll('th[data-i18n]');
+        headers.forEach(header => {
+            const key = header.getAttribute('data-i18n');
+            header.textContent = i18nService.translate(key);
+        });
+    }
 }
 
 // Initialize results page
 const resultsUI = new ResultsUI(); 
+
+function createResultsTable(results) {
+    const table = document.createElement('table');
+    table.className = 'table';
+    
+    // Create header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    
+    // Define headers with translation keys
+    const headers = [
+        { key: 'headerSelect', defaultText: 'Select' },
+        { key: 'headerName', defaultText: 'People Group' },
+        { key: 'headerPronunciation', defaultText: 'Pronunciation' },
+        { key: 'headerPopulation', defaultText: 'Population' },
+        { key: 'headerCountry', defaultText: 'Country' },
+        { key: 'headerType', defaultText: 'Type' }
+    ];
+    
+    // Create header cells with translations
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.setAttribute('data-i18n', header.key);
+        th.textContent = i18nService.translate(header.key) || header.defaultText;
+        headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Create table body...
+    // ... rest of the function
+} 
+
+// Add this to window so i18n service can call it
+window.updateResultsTable = () => {
+    if (resultsUI) {
+        resultsUI.updateTableHeaders();
+    }
+}; 

@@ -18,8 +18,8 @@
     <div class="container">
         <header>
             <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
-            <h1>Search Results</h1>
-            <a href="index.html" class="back-button">← Back to Search</a>
+            <h1 data-i18n="resultsTitle">Search Results</h1>
+            <a href="index.html" class="back-button" data-i18n="backToSearch">← Back to Search</a>
         </header>
 
         <main>
@@ -53,19 +53,19 @@
                 <div class="results-section">
                     <div id="searchResults" class="search-results">
                         <div class="table-controls">
-                            <button id="addSelectedButton" class="button" disabled>
-                                <i class="fas fa-plus"></i> <span data-i18n="addSelected">Add Selected to Top 100</span>
+                            <button id="addSelectedButton" class="button" disabled data-i18n="buttonAddSelected">
+                                <i class="fas fa-plus"></i> Add Selected to Top 100
                             </button>
                         </div>
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th data-i18n="select">Select</th>
-                                    <th data-i18n="peopleGroup">People Group</th>
-                                    <th data-i18n="pronunciation">Pronunciation</th>
-                                    <th data-i18n="population">Population</th>
-                                    <th data-i18n="country">Country</th>
-                                    <th data-i18n="type">Type</th>
+                                    <th data-i18n="headerSelect">Select</th>
+                                    <th data-i18n="headerName">People Group</th>
+                                    <th data-i18n="headerPronunciation">Pronunciation</th>
+                                    <th data-i18n="headerPopulation">Population</th>
+                                    <th data-i18n="headerCountry">Country</th>
+                                    <th data-i18n="headerType">Type</th>
                                 </tr>
                             </thead>
                             <tbody id="resultsTableBody">
@@ -74,8 +74,8 @@
                         </table>
                     </div>
                     <div class="actions-container">
-                        <button onclick="window.location.href='index.html'" class="button secondary" data-i18n="newSearch">New Search</button>
-                        <button onclick="window.location.href='top100.html'" class="button secondary" data-i18n="viewTop100List">View Top 100</button>
+                        <button onclick="window.location.href='index.html'" class="button secondary" data-i18n="buttonNewSearch">New Search</button>
+                        <button onclick="window.location.href='top100.html'" class="button secondary" data-i18n="buttonViewTop100">View Top 100</button>
                         <button id="addToListButton" class="button primary" disabled data-i18n="addToList">Add to Top 100 List</button>
                     </div>
                 </div>
@@ -107,15 +107,29 @@
         </main>
 
         <footer>
-            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+            <p data-i18n="copyright">&copy; 2024 Crossover Global. All rights reserved.</p>
         </footer>
     </div>
 
-    <script type="module" src="js/config.js"></script>
     <script type="module">
         import { i18nService } from './js/i18n.js';
-        document.addEventListener('DOMContentLoaded', () => {
-            i18nService.initialize();
+        import { searchService } from './js/search.js';
+        import { ui } from './js/ui.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Initialize i18n first
+                await i18nService.initialize();
+                
+                // Translate the page title
+                document.title = i18nService.translate('resultsTitle') + ' - Frontier Finder';
+                
+                // Initialize search service and UI
+                await searchService.initialize();
+                await ui.initializeAsync();
+            } catch (error) {
+                console.error('Failed to initialize results page:', error);
+            }
         });
     </script>
     <script type="module" src="js/services/pronunciationService.js"></script>

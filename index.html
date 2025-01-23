@@ -40,8 +40,9 @@
                 <p class="mission-statement" data-i18n="mission"></p>
             </div>
             <div class="language-switcher">
-                <select id="languageSelect" aria-label="Select language">
+                <select id="languageSelect" class="language-select">
                     <option value="en">English</option>
+                    <option value="es">Español</option>
                     <option value="pt">Português</option>
                 </select>
             </div>
@@ -91,20 +92,22 @@
                                     <label>Search Type:</label>
                                     <div class="radio-group">
                                         <label>
-                                            <input type="radio" name="searchType" value="fpg" checked> FPG
+                                            <input type="radio" name="searchType" value="fpg" checked> <span data-i18n="fpg">FPG</span>
                                         </label>
                                         <label>
-                                            <input type="radio" name="searchType" value="uupg"> UUPG
+                                            <input type="radio" name="searchType" value="uupg"> <span data-i18n="uupg">UUPG</span>
                                         </label>
                                         <label>
-                                            <input type="radio" name="searchType" value="both"> Both
+                                            <input type="radio" name="searchType" value="both"> <span data-i18n="both">Both</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="search-button">Search</button>
+                        <div class="form-group">
+                            <button type="submit" data-i18n="search">Search</button>
+                        </div>
                     </form>
                 </div>
 
@@ -128,7 +131,7 @@
                     <div role="region" aria-label="Search Results">
                         <div class="results-columns">
                             <div role="list" class="results-section column-1">
-                                <h2 id="uupg-heading">Unengaged Unreached People Groups</h2>
+                                <h2 id="uupg-heading" data-i18n="uupg_full">Unengaged Unreached People Groups</h2>
                                 <div id="uupgList" class="results-list" role="list" aria-labelledby="uupg-heading">
                                     <!-- UUPG results will be inserted here -->
                                 </div>
@@ -169,12 +172,12 @@
                     </div>
                     
                     <div class="definition-item">
-                        <h4>Unengaged Unreached People Group (UUPG)</h4>
-                        <h5>Joshua Project Definition:</h5>
-                        <p>A people group with no active church planting methodology underway.</p>
+                        <h4 data-i18n="uupgTitle">Unengaged Unreached People Group (UUPG)</h4>
+                        <h5 data-i18n="jpDefinition">Joshua Project Definition:</h5>
+                        <p data-i18n="uupgJPDef">A people group with no active church planting methodology underway.</p>
                         
-                        <h5>PeopleGroups.org Definition:</h5>
-                        <p>A people group with no known active church planting strategy and less than 2% evangelical.</p>
+                        <h5 data-i18n="pgDefinition">PeopleGroups.org Definition:</h5>
+                        <p data-i18n="uupgPGDef">A people group with no known active church planting strategy and less than 2% evangelical.</p>
                     </div>
                 </div>
             </aside>

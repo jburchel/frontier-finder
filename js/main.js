@@ -2,6 +2,7 @@ import { config } from './config.js';
 import { searchService } from './search.js';
 import { ui } from './ui.js';
 import { i18nService } from './i18n.js';
+import { translations } from './translations.js';
 
 /**
  * Main application initialization and coordination
@@ -18,7 +19,17 @@ class App {
         try {
             console.log('Initializing Frontier Finder...');
             
-            // Initialize search service first
+            // Initialize i18n first
+            await i18nService.initialize();
+            console.log('✓ i18n service initialized');
+            
+            // Register language change handler
+            i18nService.onLanguageChanged(async () => {
+                const countries = await searchService.getAvailableCountries();
+                this.populateCountryDropdown(countries);
+            });
+            
+            // Initialize search service
             await searchService.initialize();
             console.log('✓ Search service initialized');
 
@@ -48,16 +59,49 @@ class App {
     }
 
     populateCountryDropdown(countries) {
-        const countrySelect = document.getElementById('country');
-        if (!countrySelect) return;
+        console.log('populateCountryDropdown called with:', countries);
         
-        countrySelect.innerHTML = `<option value="" data-i18n="selectCountryDefault">${i18nService.translate('selectCountryDefault')}</option>`;
+        const dropdown = document.getElementById('country');
+        if (!dropdown) {
+            console.warn('Country dropdown element not found');
+            return;
+        }
         
+        const currentLanguage = i18nService.getCurrentLanguage();
+        console.log('i18n state:', {
+            currentLanguage,
+            hasTranslations: !!translations[currentLanguage],
+            availableLanguages: Object.keys(translations)
+        });
+        
+        // Fix the default option translation
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.setAttribute('data-i18n', 'selectCountryDefault');
+        defaultOption.textContent = i18nService.translate('selectCountryDefault');
+        
+        // Clear and add default option
+        dropdown.innerHTML = '';
+        dropdown.appendChild(defaultOption);
+        
+        if (!countries || !Array.isArray(countries)) {
+            console.warn('No countries provided to populate dropdown');
+            return;
+        }
+
+        // Add country options with translations
         countries.forEach(country => {
             const option = document.createElement('option');
             option.value = country;
-            option.textContent = country;
-            countrySelect.appendChild(option);
+            const translatedCountry = translations[currentLanguage]?.countries?.[country];
+            console.log(`Country: ${country}, Translation lookup:`, {
+                currentLanguage,
+                hasTranslations: !!translations[currentLanguage],
+                hasCountries: !!translations[currentLanguage]?.countries,
+                translatedValue: translatedCountry
+            });
+            option.textContent = translatedCountry || country;
+            dropdown.appendChild(option);
         });
     }
 
@@ -65,7 +109,15 @@ class App {
         const upgSelect = document.getElementById('upg');
         if (!upgSelect) return;
         
-        upgSelect.innerHTML = `<option value="" data-i18n="selectUPGDefault">${i18nService.translate('selectUPGDefault')}</option>`;
+        // Fix the default option translation
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.setAttribute('data-i18n', 'selectUPGDefault');
+        defaultOption.textContent = i18nService.translate('selectUPGDefault');
+        
+        // Clear and add default option
+        upgSelect.innerHTML = '';
+        upgSelect.appendChild(defaultOption);
         
         upgs.forEach(upg => {
             const option = document.createElement('option');
@@ -79,20 +131,19 @@ class App {
 // Create app instance
 const app = new App();
 
+// Export before event listener setup
+export default app;
+
 // Start initialization when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    app.initialize().catch(error => {
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await app.initialize();
+    } catch (error) {
         console.error('Application failed to start:', error);
-    });
-    // Initialize i18n after app is initialized
-    setTimeout(() => {
-        i18nService.initialize();
-    }, 100);
+    }
 });
 
 // Make app available for debugging in development
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     window.app = app;
-}
-
-export default app; 
+} 

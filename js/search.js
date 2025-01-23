@@ -407,6 +407,22 @@ class SearchService {
         // Generate pronunciation if we don't have one
         return pronunciationService.generatePronunciation(name);
     }
+
+    async getAvailableCountries() {
+        // Wait for data to be loaded if it hasn't been yet
+        if (!this.currentUPGs) {
+            console.log('Loading UPGs before getting countries...');
+            await this.loadCurrentUPGs();
+        }
+
+        // Get unique countries from currentUPGs
+        const countries = [...new Set(this.currentUPGs.map(upg => upg.country))]
+            .filter(Boolean) // Remove any null/undefined values
+            .sort(); // Sort alphabetically
+
+        console.log('Available countries:', countries);
+        return countries;
+    }
 }
 
 // Create and export search service instance

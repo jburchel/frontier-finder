@@ -2,58 +2,91 @@ import { translations } from './translations.js';
 
 class I18nService {
     constructor() {
-        this.currentLanguage = localStorage.getItem('language') || 'en';
-        this.translations = translations;
+        this.currentLanguage = localStorage.getItem('selectedLanguage') || 'en';
+        this.initialized = false;
+        this.onLanguageChange = null; // Callback for language changes
     }
 
-    initialize() {
-        // Only setup language selector if it exists (main page)
-        const selector = document.getElementById('languageSelect');
-        if (selector) {
-            selector.value = this.currentLanguage;
-            selector.addEventListener('change', (e) => {
-                this.updateLanguage(e.target.value);
-            });
-        }
-        // Always update content based on stored language
-        this.updateContent();
-    }
-
-    updateLanguage(lang) {
-        this.currentLanguage = lang;
-        localStorage.setItem('language', lang);
-        this.updateContent();
-    }
-
-    updateContent() {
-        const elements = document.querySelectorAll('[data-i18n]');
-        elements.forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const text = this.translate(key);
-            if (text.includes('{count}')) {
-                // Handle dynamic content
-                const count = element.getAttribute('data-count') || '0';
-                element.textContent = text.replace('{count}', count);
-            } else {
-                element.textContent = text;
+    async initialize() {
+        try {
+            // Get stored language or use browser default
+            const storedLang = localStorage.getItem('selectedLanguage');
+            const browserLang = navigator.language.split('-')[0];
+            this.currentLanguage = storedLang || 
+                (['en', 'es', 'pt'].includes(browserLang) ? browserLang : 'en');
+            
+            // Setup language selector
+            const selector = document.getElementById('languageSelect');
+            if (selector) {
+                selector.value = this.currentLanguage;
+                selector.addEventListener('change', (e) => this.setLanguage(e.target.value));
             }
-        });
-        
-        // Update dynamic dropdowns if they exist
-        const countrySelect = document.getElementById('country');
-        const upgSelect = document.getElementById('upg');
-        
-        if (countrySelect && countrySelect.firstChild) {
-            countrySelect.firstChild.textContent = this.translate('selectCountryDefault');
+            
+            console.log('I18n Service initialized with language:', this.currentLanguage);
+            this.initialized = true;
+            
+            // Initial translation of the page
+            this.translatePage();
+            
+        } catch (error) {
+            console.error('Failed to initialize i18n service:', error);
+            throw error;
         }
+    }
+
+    getCurrentLanguage() {
+        return this.currentLanguage;
+    }
+
+    setLanguage(lang) {
+        if (this.currentLanguage === lang) return;
         
-        if (upgSelect && upgSelect.firstChild) {
-            upgSelect.firstChild.textContent = this.translate('selectUPGDefault');
+        this.currentLanguage = lang;
+        localStorage.setItem('selectedLanguage', lang);
+        this.translatePage();
+        
+        // Notify listeners of language change
+        if (this.onLanguageChange) {
+            this.onLanguageChange(lang);
         }
     }
 
     translate(key) {
-        return this.translations[this.currentLanguage][key] || key;
+        if (!this.initialized) {
+            console.warn('I18n Service not initialized');
+            return key;
+        }
+
+        const translation = translations[this.currentLanguage]?.[key];
+        if (!translation) {
+            console.warn(`No translation found for key: ${key} in language: ${this.currentLanguage}`);
+            return key;
+        }
+
+        return translation;
+    }
+
+    translatePage() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.translate(key);
+            if (translation) {
+                element.textContent = translation;
+            } else {
+                console.warn(`No translation found for key: ${key}`);
+            }
+        });
+        
+        // Force update of dynamic content
+        if (window.updateResultsTable) {
+            window.updateResultsTable();
+        }
+    }
+
+    // Method to register language change callback
+    onLanguageChanged(callback) {
+        this.onLanguageChange = callback;
     }
 }
 
