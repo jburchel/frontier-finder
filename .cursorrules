@@ -1,0 +1,244 @@
+# Cursor Rules for Frontier Finder Project
+
+## Project Context
+
+This is a web application to find Frontier People Groups (FPGs) and Unreached People Groups (UUPGs) within a specified proximity of a selected UPG.
+
+## Project Details
+
+This is a project for Crossover Global.  I'm using the Joshua Project API to get the data.  I'm using the Crossover Global Brand Book to guide the design and branding of the project.
+
+The project is a static website that will be deployed through github pages.  I will go by any recommendations you might have as long as they are simple and easy to implement through github pages.
+
+The project is a siple three page application that will be deployed through github pages.  I will go by any recommendations you might have as long as they are simple and easy to implement through github pages.
+
+The  opening page will have two dropdown menus for the user to select a Country from a the current_upgs.csv file.  Once the country has been selected the user will select a UPG from a dropdown menu of the UPGs in that country.  Once the UPG has been selected the user will select a distance in either miles from the UPG (determined by clicking a Miles/Kilometers radio button).  Once the distance has been selected the user will choose to search FPG (Frontier People Group or FPG's), UUPG's (Unreached Unengaged People Groups), or Both by selecting one of three radio buttons.  If they want to search for FPG's that data will come from the Joshua Project API.  If they want to search for UUPG's that data will come from uupgs.csv file.  The user will then click a button to search for FPGs, UUPGs or both within that distance.  The results will be displayed on the results.html page.  
+
+Once results have been populated, the user will have the option of selecting one or more FPG or UUPG from the list of results by clicking on the checkbox next to the FPG or UUPG.  The user will then click a button to save the selected FPG(s) or UUPG(s) to the list on the top100.html page.  Once they click on Save to TOP 100 List, the user will then be taken to the the list of favorites on the top100.html page.  On the top100.html page the user will see a list of the top 100 UUPG's and/or FPG's which will each have a delete button allowing the user to delete the FPG or UUPG from the list.
+
+## Project Structure
+
+root folder: frontier-finder
+-css/styles.css
+-data/current_upgs.csv
+-data/uupgs.csv
+-images/logo.png
+-images/favicon.png
+-js/... # for any .js files
+-scripts/... # for any scripts
+-index.html
+-README.md
+-.env #for API keys
+-.gitignore #for any files to be ignored by git
+-results.html #for the search results page
+-top100.html #for the list of the top 100 UUPG's and/or FPG's
+
+## Key Terms and Definitions
+
+- **FPG (Frontier People Group)**: Less than 0.1% Christian and no evidence of a self-sustaining gospel movement
+- **UUPG (Unengaged Unreached People Group)**: No active church planting methodology underway
+- **UPG (Unreached People Group)**: Less than 2% Evangelical Christian
+- **JPScale**: Joshua Project Progress Scale (1.1 to 3.2)
+
+## Code Style Guidelines
+
+I'm new to all things coding, so I'm not sure what the best practices are. I'm using the code style guidelines from the Joshua Project.  You can see the docs in Cursor Chat and Composer. You can also feel free to recommend any other code style guidelines.
+
+## Testing Requirements
+
+I'm not sure what the best practices are for testing. I'm using the testing guidelines from the Joshua Project. You can see the docs in Cursor Chat and Composer. You can also feel free to recommend any other testing guidelines.
+
+## Performance Guidelines
+
+I'm not sure what the best practices are for performance. I'm using the performance guidelines from the Joshua Project. You can see the docs in Cursor Chat and Composer. You can also feel free to recommend any other performance guidelines.
+
+## Security Rules
+
+I'm not sure what the best practices are for security. I'm using the security guidelines from the Joshua Project. You can see the docs in Cursor Chat and Composer. You can also feel free to recommend any other security guidelines.  We will have a .env file for API keys.  We might also have a firebaseconfig.js file for firebase. I will go by your recommendations.
+
+## Browser Support
+
+- Chrome (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- Edge (latest version)
+
+## Deployment Process
+
+I'm going to be using a basic static structure and deploying through github pages so simple is best here.  I will go by any recommendations you might have as longn as they are simple and easy to implement through github pages.
+
+## Joshua Project API Documentation
+
+See Docs in Cursor Chat and Composer
+
+## Crossover Global Brand Book
+
+The Crossover Global team is formed by people who come from different cultures and social contexts. Therefore, a special attention
+is required in order to communicate on behalf of our brand with consistency and cohesion. Below are some examples of keywords
+and phrases frequently used by Crossover Global. It is strongly recommended to keep this list in mind when communicating the
+vision and mission of Crossover Global.
+
+### KEYWORDS DNA
+
+- Glorify God
+- Provide Gospel access
+- Lack of Gospel access
+- People groups
+- Unreached People Groups (UPGs)
+- Unengaged Unreached People Groups (UUPGs)
+- Plant multiplying churches
+- House churches
+- Ministry Multiplication Cycle (MMC)
+
+### COMMON PHRASES
+
+“We provide gospel access to unreached people groups.”
+“Spiritual needs are everywhere, but access to the gospel is not.”
+“Multiplying church planters to plant multiplying churches.”
+“We partner with Jesus as He builds His Church.”
+“42% Of the world’s population is unreached with the gospel.”
+“Making Christ’s last command our frst priority.”
+“Crossover Global passionately seeks to glorify God by providing
+Gospel access through the planting of multiplying churches among the
+unreached peoples of the world.”
+
+### Logo
+
+#### PRIMARY
+
+##### MEANINGS
+
+The logo is composed of a symbol and two words.
+The symbol consists of a circle with an arrow through the middle. The group represents the world and Jesus’s commandment as
+described in Matthew 28:19 “Therefore go and make disciples of all nations...” (NIV)
+The word “Crossover” has three meanings. First, as a an organization we want to cross over geographic, linguistic, cultural and
+religious barriers with the gospel which is the message of salvation in Jesus Christ. Second, we seek to elevate and exalt the cross
+of Christ over the nations, over the peoples, so that (third) people may be reconciled with the Lord, when they cross over from the
+darkness into Christ’s wonderful light (1 Peter 2:9).
+The word “Global” refers both to whom and how the organization serves: we are a global team serving peoples around the globe.
+
+#### HORIZONTAL
+
+#### EXECUTIVE LOGO
+
+This logo was created for the specifc use on
+communication pieces from Senior Leadership and
+Executive Directors. This logo is not intended for use
+outside of those parameters.
+
+#### LOGO TYPOGRAPHY
+
+Cronos Pro
+Variations 8
+Exclusive use for titles and
+featured information.
+
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+Crossover Global
+
+0123456789
+!?@#$% ̈&*() Aa
+
+#### SYMBOL
+
+#### Brand Specifications
+
+#### Protection Area
+
+In printing materials, the amount of empty
+space around the logo must be at least the
+letter “G” size.
+In digital materials, the empty space around
+the logo must be at least 0.15 in (15px).
+
+#### Minimum Size
+
+For printing, the primary logo must never be reduced
+to less than 0.89 in x 1.06 in, and the horizontal logo
+must never be reduced to less than 2.11 in x 0.58 in.
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+15 px
+15 px
+
+0.89 in
+
+2.11 in
+
+1.06 in
+
+0.58 in
+
+#### Logo Restrictions
+
+- Do not change the color
+- Do not refect logo
+- Do not change the color order
+- Do not rotate logo
+- Do not distort the logo
+- Do not apply border to the logo
+
+These restrictions apply to the symbol and all logos.
+
+### Colors
+
+#### Backgrounds
+
+PANTONE: 534
+RGB: 24 57 99
+HEX / HTML: 183963
+CMYK: 99 83 35 24
+
+PANTONE: 7739
+RGB: 57 169 73
+HEX / HTML: 39A949
+CMYK: 77 7 100 0
+
+PANTONE: 840 C
+RGB: 127 127 127
+HEX / HTML: 7F7F7F
+CMYK: 49 39 38 20
+
+PANTONE: P 75-1 U
+RGB: 255 255 255
+HEX / HTML: FFFFFF
+CMYK: 0 0 0 0
+
+Pantone : Color type
+RGB: Digital
+Hex/HTML: Web
+CMYK: Print
+
+#### Photography and Video
+
+It is recommended to use images that refect the peoples and cultures in which Crossover Global serves. Below are some examples.
