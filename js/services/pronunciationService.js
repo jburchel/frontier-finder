@@ -24,50 +24,37 @@ class PronunciationService {
     generatePronunciation(name) {
         try {
             if (!name) return null;
-
-            console.log(`Generating pronunciation for: ${name}`);
-
+            
             // Split compound names
             const parts = name.split(/[,\s-]+/);
-            console.log('Parts:', parts);
             
             const pronunciations = parts.map(part => {
                 let pronunciation = part.toLowerCase();
-                console.log('Initial:', pronunciation);
                 
                 // Apply basic rules
                 this.rules.forEach(rule => {
-                    const before = pronunciation;
                     pronunciation = pronunciation.replace(
                         new RegExp(rule.pattern, 'gi'),
                         rule.sound
                     );
-                    if (before !== pronunciation) {
-                        console.log(`Applied rule ${rule.pattern} -> ${rule.sound}`);
-                    }
                 });
-                console.log('After rules:', pronunciation);
 
                 // Simple syllable breaks - just between consonant clusters
                 pronunciation = pronunciation.replace(
                     /([bcdfghjklmnpqrstvwxz])([bcdfghjklmnpqrstvwxz])/gi, 
                     '$1-$2'
                 );
-                console.log('After syllable breaks:', pronunciation);
 
                 // Don't split common sounds
                 pronunciation = pronunciation
                     .replace(/ch-/g, 'ch')
                     .replace(/sh-/g, 'sh')
                     .replace(/th-/g, 'th');
-                console.log('Final:', pronunciation);
 
                 return pronunciation;
             });
 
-            const final = `[${pronunciations.join(' ')}]`;
-            console.log('Final pronunciation:', final);
-            return final;
+            return pronunciations.join(' ');
         } catch (error) {
             console.error('Error generating pronunciation:', error);
             return null;
@@ -97,4 +84,4 @@ class PronunciationService {
 }
 
 export const pronunciationService = new PronunciationService();
-export default pronunciationService; 
+export default pronunciationService;
