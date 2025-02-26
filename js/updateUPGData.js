@@ -35,33 +35,27 @@ class UPGDataUpdater {
         const records = parse(fileContent, { columns: true });
 
         // Process each record
-        const updatedRecords = await Promise.all(records.map(async (record) => {
-            // Skip if record is already complete
-            if (record.latitude && record.longitude && record.population) {
-                return record;
-            }
-
-            try {
-                const jpData = await this.fetchPeopleGroupData(record.name, record.country);
-                if (jpData) {
-                    return {
-                        name: record.name,
-                        country: record.country,
-                        pronunciation: record.pronunciation || '',
-                        latitude: jpData.Latitude || '',
-                        longitude: jpData.Longitude || '',
-                        population: jpData.Population || '',
-                        evangelical: jpData.PercentEvangelical || '',
-                        language: jpData.PrimaryLanguageName || '',
-                        religion: jpData.PrimaryReligion || '',
-                        description: record.description || ''
-                    };
+        const updatedRecords = [];
+        for (const record of records) {
+            // Only update records with missing data
+            if (!record.latitude || !record.longitude || !record.population) {
+                try {
+                    const jpData = await this.fetchPeopleGroupData(record.name, record.country);
+                    if (jpData) {
+                        // Update only missing fields
+                        record.latitude = record.latitude || jpData.Latitude || '';
+                        record.longitude = record.longitude || jpData.Longitude || '';
+                        record.population = record.population || jpData.Population || '';
+                        record.evangelical = record.evangelical || jpData.PercentEvangelical || '';
+                        record.language = record.language || jpData.PrimaryLanguageName || '';
+                        record.religion = record.religion || jpData.PrimaryReligion || '';
+                    }
+                } catch (error) {
+                    console.error(`Error updating ${record.name}: ${error.message}`);
                 }
-            } catch (error) {
-                console.error(`Error updating ${record.name}: ${error.message}`);
             }
-            return record;
-        }));
+            updatedRecords.push(record);
+        }
 
         // Write updated data back to CSV
         const output = stringify(updatedRecords, { header: true });

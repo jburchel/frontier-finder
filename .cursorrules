@@ -69,7 +69,622 @@ I'm going to be using a basic static structure and deploying through github page
 
 ## Joshua Project API Documentation
 
-See Docs in Cursor Chat and Composer
+People Groups Resource
+GET - https://joshuaproject.net/api/v2/people_groups?api_key=yourkey
+Sample
+
+ Connected Data
+Include connected_data(s) by specifying "connected_data=" in your URL: ?connected_data=jplanguages...
+ Fields: If you specify fields to return (see below) this will apply to connected_data also. The fields you specify will be evaluated for the original and each connected_data objects
+
+Value	Description	Response Notes
+jplanguages	Full language data for each people group's primary language	Response: One object for each people group with language data for each people group.
+jpaltnames	Alternate names of people group	Response: An object for each alternate name with 'PeopleID3' and 'AltPeopName'.
+jpcountries	Full country data for each people group	Response: One object for each people group name with all fields from the jpcountries table.
+jpvideos	Full video data if a people group has a video	Response: One object for each people group name with all fields from the jpvideos table.
+ Fields
+By default all fields returned. Set the fields you need with URL parameter: ?fields=fields (add more by separating with a pipe | )'
+ Query Parameters
+Query by any field below. Check the 'Values' column for possible field values. To query by more than one value per field, separate values with a pipe | . For example: ?ROG3=BG|IN|BN
+Custom Comparison Fields
+Comparison Field	Description
+min_population	Minimum population of the people group
+max_population	Max population of the people group
+click to sort
+
+Field	Type	Description	Values (value description)	Notes
+PeopleID3ROG3	varchar(10)	Unique Key - PeopleID3 and ROG3	
+Locate on people group profile
+ROG3	varchar(2)	FIPS-2 country code	
+AN (Andorra)
+Ctry	varchar(50)	Country name	
+Andorra
+CtryShort	varchar(50)	Short country name	
+Locate on people group profile
+CtryLiteracyRate	int(11)	Country literacy rate value	
+Locate on people group profile
+CtryLiteracySource	varchar(50)	Country literacy rate source	
+Locate on people group profile
+PeopleID3	int(11)	People-Group-Across-Countries ID number	
+Locate on people group profile
+PeopNameInCountry	varchar(75)	Name of people group in this country	
+Locate on people group profile
+PeopNameAcrossCountries	varchar(75)	Name of people group across countries of residence	
+Locate on people group profile
+NaturalName	varchar(255)		
+Locate on people group profile
+NaturalPronunciation	varchar(255)		
+Locate on people group profile
+PeopCtryConcatenation	varchar(15)		
+Locate on people group profile
+Population	int(11)	Population in this country	
+Locate on people group profile
+PopulationRange	int(11)		
+Locate on people group profile
+ROG2	varchar(3)	Registry of Geographic Places continent code	
+AFR (Africa)
+Continent	varchar(50)	Continent	
+Africa
+RegionCode	int(11)	Region code for this country	
+1 (Australia and Pacific)
+RegionName	varchar(50)	Region name	
+Locate on people group profile
+10_40Window	varchar(1)	Y = in 10/40 Window	
+'Y' (yes)     'N' (no)
+RLG3PrimaryCtry	int(11)		
+Locate on people group profile
+ReligionPrimaryCtry	varchar(255)		
+Locate on people group profile
+LocationInCountry	longtext	Location of people within the country	
+Locate on people group profile
+PeopleID1	int(11)	Affinity Bloc code	
+10 (Arab World)
+AffinityBloc	varchar(50)	Affinity Bloc for this people group	
+Arab World
+PeopleID2	int(11)	People cluster code	
+100 (Australian Aboriginal)
+PeopleCluster	varchar(50)	People cluster	
+Australian Aboriginal
+JPScalePC	varchar(1)	JPScale, people cluster	
+1 (Unreached)
+
+More Information
+PopulationPGAC	int(11)	Population forthis PeopleGroup-Across-Countries	
+Locate on people group profile
+JPScalePGAC	varchar(1)	JPScale, People-Group-Across-Countries	
+1 (Unreached)
+
+More Information
+JPScale	int(11)	See http://www.joshuaproject.net/definitions.php	
+1 (Unreached)
+
+More Information
+JPScaleTemp	int(11)		
+Locate on people group profile
+LeastReached	varchar(1)	Y = Least Reached / unreached. JPScale < 2.0	
+'Y' (yes)     'N' (no)
+Frontier	varchar(1)	Frontier People Group	
+Locate on people group profile
+WorkersNeeded	int(11)	Estimated workers needed based on 1:50,000	
+Locate on people group profile
+Subgroups	int(11)		
+Locate on people group profile
+PeopleID3General	int(11)		
+Locate on people group profile
+ROP25	int(11)		
+Locate on people group profile
+ROP25Name	varchar(255)		
+Locate on people group profile
+ROP3	int(11)	Registry of Peoples - People Group ID	
+Locate on people group profile
+ROL3	varchar(3)	Ethnologue language code, 17th Edition	
+Locate on people group profile
+PrimaryLanguageName	varchar(50)	Primary language in this country	
+Locate on people group profile
+ROL4	int(11)	Dialect code	
+Locate on people group profile
+PrimaryLanguageDialect	varchar(75)	Primary language dialect in this country	
+Locate on people group profile
+Written	varchar(1)	Y = language is written	
+Locate on people group profile
+BibleStatus	int(11)	Bible status	
+Locate on people group profile
+NumberLanguagesSpoken	int(11)	Number of languages spoken by this people group in this country	
+Locate on people group profile
+RLG3	int(11)	Primary religion code	
+Locate on people group profile
+PrimaryReligion	varchar(50)	Primary religion in this country	
+Christianity
+RLG4	int(11)	Religion subdivision code	
+Locate on people group profile
+ReligionSubdivision	varchar(50)	Subdivision of the primary religion	
+Locate on people group profile
+PercentAdherents	decimal(6,3)	% Christian Adherents for this people group	
+Locate on people group profile
+CountAdherents	int(11)		
+Locate on people group profile
+PercentEvangelical	decimal(6,3)	% Evangelical for this people group	
+Locate on people group profile
+CountEvangelical	int(11)		
+Locate on people group profile
+PCBuddhism	double	Percent Buddhist	
+Locate on people group profile
+PCDblyProfessing	double	Percent Doubly Professing	
+Locate on people group profile
+PCEthnicReligions	double	Percent Ethnic Religions	
+Locate on people group profile
+PCHinduism	double	Percent Hindu	
+Locate on people group profile
+PCIslam	double	Percent Muslim	
+Locate on people group profile
+PCNonReligious	double	Percent Non-religious	
+Locate on people group profile
+PCOtherSmall	double	Percent Other / Small	
+Locate on people group profile
+PCUnknown	double	Percent Unknown	
+Locate on people group profile
+PCAnglican	double	Percent Anglican	
+Locate on people group profile
+PCIndependent	double	Percent Independent	
+Locate on people group profile
+PCProtestant	double	Percent Protestant	
+Locate on people group profile
+PCOrthodox	double	Percent Orthodox	
+Locate on people group profile
+PCOtherChristian	double	Percent Other Christian	
+Locate on people group profile
+PCRomanCatholic	double	Percent Roman Catholic	
+Locate on people group profile
+IndigenousCode	varchar(1)	Is this group indigenous to this country	
+'Y' (yes)     'N' (no)
+CasteClass	varchar(25)		
+Locate on people group profile
+LRofTheDayYear	int(11)		
+Locate on people group profile
+Photo	varchar(1)	Does photo exist	
+Locate on people group profile
+PhotoAddress	varchar(25)	Photo file name	
+Locate on people group profile
+PhotoGood	varchar(1)	High quality photo	
+Locate on people group profile
+PhotoCredits	varchar(255)	Photo source, text for credits display	
+Locate on people group profile
+PhotoCreditURL	varchar(255)	Photo source link, hyperlink for credits display	
+Locate on people group profile
+PhotoCreativeCommons	varchar(1)	Does photo have creative commons licensing	
+'Y' (yes)     'N' (no)
+PhotoCCVersionText	varchar(50)		
+Locate on people group profile
+PhotoCCVersionURL	varchar(255)		
+Locate on people group profile
+PhotoCopyright	varchar(1)	Is photo copyrighted	
+'Y' (yes)     'N' (no)
+PhotoRepresentative	varchar(5)		
+Locate on people group profile
+Map	varchar(1)	Does map exist	
+Locate on people group profile
+MapAddress	varchar(25)	Map file name	
+Locate on people group profile
+MapSource	varchar(255)		
+Locate on people group profile
+MapCredits	varchar(255)	Map source, text for credits display	
+Locate on people group profile
+MapCreditURL	varchar(255)	Map source link, hyperlink for credits display	
+Locate on people group profile
+MapCopyright	varchar(1)	Is map copyrighted	
+'Y' (yes)     'N' (no)
+MapCCVersionText	varchar(50)		
+Locate on people group profile
+MapCCVersionURL	varchar(255)		
+Locate on people group profile
+AudioAddress	varchar(255)		
+Locate on people group profile
+HandoutAddress	varchar(255)		
+Locate on people group profile
+GSEC	varchar(1)	Global Status of Evangelical Christianity, see http://www.joshuaproject.net/definitions.php	
+Locate on people group profile
+JF	varchar(1)	Y = Jesus film exists in this language	
+'Y' (yes)     'N' (no)
+AudioRecordings	varchar(1)	Y = gospel audio recordings exist in this language	
+'Y' (yes)     'N' (no)
+NTOnline	varchar(50)	Y = Bible.is has online NT	
+Locate on people group profile
+GospelRadio	varchar(1)	Y = Gospel radio available in this language	
+Locate on people group profile
+PEID	int(11)		
+Locate on people group profile
+Longitude	double	Longitude value of language polygon or highest density district centroid, for Google maps colored do	
+Locate on people group profile
+Latitude	double	Latitude value of language polygon or highest density district centroid, for Google maps colored dot	
+Locate on people group profile
+Unreached People of The Day Resource
+GET - https://joshuaproject.net/api/v2/upgotd?api_key=yourkey
+       ** Make sure to include paramater 'ROL3Profile' to request only the language you need
+
+
+Sample
+
+ Connected Data
+Include connected_data(s) by specifying "connected_data=" in your URL: ?connected_data=jppeoples...
+ Fields: If you specify fields to return (see below) this will apply to connected_data also. The fields you specify will be evaluated for the original and each connected_data objects
+
+Value	Description	Response Notes
+jppeoples	Full people group data each people	Response: One object for each people group.
+ Fields
+By default all fields returned. Set the fields you need with URL parameter: ?fields=fields (add more by separating with a pipe | )'
+ Query Parameters
+Query by any field below. Check the 'Values' column for possible field values. To query by more than one value per field, separate values with a pipe | . For example: ?ROG3=BG|IN|BN
+Custom Comparison Fields
+Comparison Field	Description
+min_population	Minimum population of the people group
+max_population	Max population of the people group
+click to sort
+
+Field	Type	Description	Values (value description)	Notes
+ROL3Profile	varchar(3)		
+cmn
+PeopleID3	int(11)	People-Group-Across-Countries ID number	
+Locate on people group profile
+ROG3	varchar(2)	FIPS-2 country code	
+AN (Andorra)
+Ctry	varchar(50)	Country name	
+Andorra
+LRofTheDayYear	int(11)		
+Locate on people group profile
+LRofTheDayMonth	int(11)	Unreached People of the Day month 1-12	
+Locate on people group profile
+LRofTheDayDay	int(11)	Unreached People of the Day day 1-31	
+Locate on people group profile
+ROG2	varchar(5)	Registry of Geographic Places continent code	
+AFR (Africa)
+Continent	varchar(50)	Continent	
+Africa
+RegionCode	int(11)	Region code for this country	
+1 (Australia and Pacific)
+RegionName	varchar(75)	Region name	
+Locate on people group profile
+10_40Window	varchar(1)	Y = in 10/40 Window	
+'Y' (yes)     'N' (no)
+PeopleID1	int(11)	Affinity Bloc code	
+10 (Arab World)
+AffinityBloc	varchar(50)	Affinity Bloc for this people group	
+Arab World
+PeopleID2	int(11)	People cluster code	
+100 (Australian Aboriginal)
+PeopleCluster	varchar(50)	People cluster	
+Australian Aboriginal
+PeopNameAcrossCountries	varchar(75)	Name of people group across countries of residence	
+Locate on people group profile
+PeopNameInCountry	varchar(75)	Name of people group in this country	
+Locate on people group profile
+Pronunciation	varchar(100)	People name pronunciation	
+Locate on people group profile
+NaturalName	varchar(255)		
+Locate on people group profile
+NaturalPronunciation	varchar(100)		
+Locate on people group profile
+Population	int(11)	Population in this country	
+Locate on people group profile
+ROL3	varchar(3)	Ethnologue language code, 17th Edition	
+Locate on people group profile
+PrimaryLanguageName	varchar(50)	Primary language in this country	
+Locate on people group profile
+RLG3	int(11)	Primary religion code	
+Locate on people group profile
+PrimaryReligion	varchar(50)	Primary religion in this country	
+Christianity
+LeastReached	varchar(1)	Y = Least Reached / unreached. JPScale < 2.0	
+'Y' (yes)     'N' (no)
+JPScale	varchar(1)	See http://www.joshuaproject.net/definitions.php	
+1 (Unreached)
+
+More Information
+PercentAdherents	double	% Christian Adherents for this people group	
+Locate on people group profile
+PercentEvangelical	double	% Evangelical for this people group	
+Locate on people group profile
+ChristFollowers	varchar(50)		
+Locate on people group profile
+WorldPopulation	double		
+Locate on people group profile
+CountOfCountries	int(11)	Number of countries of residence	
+Locate on people group profile
+LRofTheDaySet	int(11)	Unreached People of the Day set 1 or 2	
+Locate on people group profile
+ScriptureReference	varchar(50)		
+Locate on people group profile
+ScripturePrayer	longtext		
+Locate on people group profile
+ScriptureNbr	int(11)		
+Locate on people group profile
+Latitude	double	Latitude value of language polygon or highest density district centroid, for Google maps colored dot	
+Locate on people group profile
+Longitude	double	Longitude value of language polygon or highest density district centroid, for Google maps colored do	
+Locate on people group profile
+JF	varchar(1)	Y = Jesus film exists in this language	
+'Y' (yes)     'N' (no)
+AudioRecordings	varchar(1)	Y = gospel audio recordings exist in this language	
+'Y' (yes)     'N' (no)
+GospelRadio	varchar(1)	Y = Gospel radio available in this language	
+Locate on people group profile
+PhotoAddress	varchar(25)	Photo file name	
+Locate on people group profile
+PhotoCredits	varchar(100)	Photo source, text for credits display	
+Locate on people group profile
+PhotoCopyright	varchar(1)	Is photo copyrighted	
+'Y' (yes)     'N' (no)
+PhotoCreditURL	varchar(150)	Photo source link, hyperlink for credits display	
+Locate on people group profile
+PhotoCreativeCommons	varchar(1)	Does photo have creative commons licensing	
+'Y' (yes)     'N' (no)
+PhotoCCVersionText	varchar(255)		
+Locate on people group profile
+PhotoCCVersionURL	varchar(255)		
+Locate on people group profile
+PhotoPermission	varchar(1)	Does Joshua Project have permission to use this photo	
+'Y' (yes)     'N' (no)
+PhotoRepresentative	varchar(5)		
+Locate on people group profile
+MapAddress	varchar(25)	Map file name	
+Locate on people group profile
+MapAddressExpanded	varchar(25)	Map file name for large version	
+Locate on people group profile
+MapSource	varchar(100)		
+Locate on people group profile
+MapCredits	varchar(150)	Map source, text for credits display	
+Locate on people group profile
+MapCreditURL	varchar(150)	Map source link, hyperlink for credits display	
+Locate on people group profile
+MapCopyright	varchar(1)	Is map copyrighted	
+'Y' (yes)     'N' (no)
+MapCCVersionText	varchar(255)		
+Locate on people group profile
+MapCCVersionURL	varchar(255)		
+Locate on people group profile
+HandoutAddress	varchar(25)		
+Locate on people group profile
+AudioAddress	varchar(25)		
+Locate on people group profile
+Active	varchar(1)		
+Locate on people group profile
+Progress	varchar(255)		
+Locate on people group profile
+Countries
+GET - https://joshuaproject.net/api/v2/countries?api_key=yourkey
+
+Sample
+
+ Connected Data
+Include connected_data(s) by specifying "connected_data=" in your URL: ?connected_data=jplanguages...
+ Fields: If you specify fields to return (see below) this will apply to connected_data also. The fields you specify will be evaluated for the original and each connected_data objects
+
+Value	Description	Response Notes
+jplanguages	Full language data for country's primary language	Response: One object for each country.
+ Fields
+By default all fields returned. Set the fields you need with URL parameter: ?fields=fields (add more by separating with a pipe | )'
+ Query Parameters
+Query by any field below. Check the 'Values' column for possible field values. To query by more than one value per field, separate values with a pipe | . For example: ?ROG3=BG|IN|BN
+Custom Comparison Fields
+Comparison Field	Description
+min_population	Minimum population of the country
+max_population	Max population of the country
+click to sort
+
+Field	Type	Description	Values (value description)	Notes
+ROG3	varchar(2)	2 digit FIPS code for country: FIPS PUB 10-4	
+AN (Andorra)
+ISO3	varchar(3)	ISO 3 character code for country	
+Locate on country profile
+ISO2	varchar(2)	ISO 2 character code for country	
+Locate on country profile
+OWCountryCode	varchar(4)	Operation World country code	
+Locate on country profile
+ROG2	varchar(3)	Continent code	
+AFR (Africa)
+Continent	varchar(50)	Continent	
+Africa
+RegionCode	int(11)	Ethne Regions	
+1 (Australia and Pacific)
+RegionName	varchar(40)	Region name	
+Locate on country profile
+Ctry	varchar(50)	Country name	
+Andorra
+CtryShort	varchar(255)	Short country name	
+Locate on country profile
+Ctry_es	varchar(50)	Country name Spanish	
+Locate on country profile
+Ctry_de	varchar(50)	Country name German	
+Locate on country profile
+Ctry_pt	varchar(50)	Country name Portuguese	
+Locate on country profile
+Ctry_fr	varchar(50)	Country name French	
+Locate on country profile
+Ctry_id	varchar(50)	Country name Indonesia	
+Locate on country profile
+Ctry_cn	varchar(50)	Country name Chinese	
+Locate on country profile
+Ctry_ko	varchar(50)	Country name Korean	
+Locate on country profile
+Population	int(11)	Populations mostly per latest UN	
+Locate on country profile
+PopulationSource	varchar(35)	Population Source	
+Locate on country profile
+PoplGrowthRate	double	Population Annual Growth Rate	
+Locate on country profile
+10_40Window	varchar(1)	Part of 10/40 Window according to Window International Network (WIN)	
+'Y' (yes)     'N' (no)
+ROL3OfficialLanguage	varchar(3)	Code for official language for this country	
+Locate on country profile
+OfficialLang	varchar(50)	Official language name for this country	
+Locate on country profile
+RLG3Primary	int(11)	Code for primary Religion for this country	
+Locate on country profile
+ReligionPrimary	varchar(50)	Primary Religion for this country	
+Locate on country profile
+RLG4Primary	int(11)	Code for primary Religion sub-division for this country	
+Locate on country profile
+ReligionSubdivision	varchar(50)	Primary Religion sub-division for this country	
+Locate on country profile
+EthnolinguisticMap	varchar(100)	Link to Ethnolinguistic map exist at Univ of Texas map collection website	
+Locate on country profile
+PercentChristianity	double	Percent Christian Adherent from summing people group values	
+Locate on country profile
+PercentEvangelical	double	Percent Evangelical from summing people group values	
+Locate on country profile
+PercentBuddhism	double	Percent Buddhism from summing people group values	
+Locate on country profile
+PercentEthnicReligions	double	Percent Ethnic Religions from summing people group values	
+Locate on country profile
+PercentHinduism	double	Percent Hindu from summing people group values	
+Locate on country profile
+PercentIslam	double	Percent Islam from summing people group values	
+Locate on country profile
+PercentNonReligious	double	Percent Non-religious from summing people group values	
+Locate on country profile
+PercentOtherSmall	double	Percent Other / Small from summing people group values	
+Locate on country profile
+PercentUnknown	double	Percent Unknown from summing people group values	
+Locate on country profile
+PercentAnglican	double	Percent Anglican from summing people group values	
+Locate on country profile
+PercentIndependent	double	Percent Independent from summing people group values	
+Locate on country profile
+PercentProtestant	double	Percent Protestant from summing people group values	
+Locate on country profile
+PercentOrthodox	double	Percent Orthodox from summing people group values	
+Locate on country profile
+PercentOther	double	Percent Other from summing people group values	
+Locate on country profile
+PercentRomanCatholic	double	Percent Roman Catholic from summing people group values	
+Locate on country profile
+CntPeoples	int(11)	Count of people groups	
+Locate on country profile
+PoplPeoples	double	Population of people groups, should be very close to field Population	
+Locate on country profile
+CntPeoplesLR	int(11)	Count of people groups considered unreached	
+Locate on country profile
+PoplPeoplesLR	double	Population of people groups considered unreached	
+Locate on country profile
+CntPeoplesFPG	int(11)		
+Locate on country profile
+PoplPeoplesFPG	int(11)		
+Locate on country profile
+JPScaleCtry	varchar(255)	Joshua Project Progress Scale for overall country	
+Locate on country profile
+JPScaleColor	varchar(10)		
+Locate on country profile
+EthnologueCountryCode	varchar(2)	Ethnologue code for country	
+Locate on country profile
+EthnologueMapExists	varchar(1)	Ethnologue language map exists for this country	
+'Y' (yes)     'N' (no)
+UNMap	varchar(200)	Link to UN Political map in PDF format	
+Locate on country profile
+PersecutionRankingODLink	varchar(255)		
+Locate on country profile
+GodReportsURL	varchar(255)		
+Locate on country profile
+DataReportalURL	varchar(255)		
+Locate on country profile
+VoiceOfMartyrsURL	varchar(255)		
+Locate on country profile
+WorldFactbookURL	varchar(255)		
+Locate on country profile
+BibleSocietyURL	varchar(255)		
+Locate on country profile
+Pray1040URL	varchar(255)		
+Locate on country profile
+OWCountryPage	varchar(255)		
+Locate on country profile
+WorkersNeeded	int(11)	Estimated workers needed based on 1:50,000	
+Locate on country profile
+Adm1Label	varchar(255)		
+Locate on country profile
+WaldnerGuide	varchar(255)		
+Locate on country profile
+CntPrimaryLanguages	int(11)		
+Locate on country profile
+TranslationUnspecified	int(11)		
+Locate on country profile
+TranslationNeeded	int(11)		
+Locate on country profile
+TranslationStarted	int(11)		
+Locate on country profile
+BiblePortions	int(11)		
+Locate on country profile
+BibleNewTestament	int(11)		
+Locate on country profile
+BibleComplete	int(11)		
+Locate on country profile
+Languages
+GET - https://joshuaproject.net/api/v2/languages?api_key=yourkey
+
+Sample
+ Fields
+By default all fields returned. Set the fields you need with URL parameter: ?fields=fields (add more by separating with a pipe | )'
+ Query Parameters
+Query by any field below. Check the 'Values' column for possible field values. To query by more than one value per field, separate values with a pipe | . For example: ?ROG3=BG|IN|BN
+Custom Comparison Fields
+Comparison Field	Description
+min_population	Minimum spearkers of language
+max_population	Max speakers of language
+click to sort
+
+Field	Type	Description	Values (value description)	Notes
+ROL3	varchar(3)	Language Code (ISO and Ethnologue)	
+Locate on language profile
+Language	varchar(50)	Language Name	
+Locate on language profile
+BibleStatus	int(11)	Bible translation status: 0=Questionable translation need; 1=None, definite need; 2=Portions: 3=NT;	
+Locate on language profile
+BibleYear	varchar(50)	Year of complete Bible translation (BibleStatus=4)	
+Locate on language profile
+NTYear	varchar(50)	Year of NT translation (BibleStatus=3)	
+Locate on language profile
+PortionsYear	varchar(50)	Year of portions translation (BibleStatus=2)	
+Locate on language profile
+JF	varchar(1)	Jesus Film available	
+'Y' (yes)     'N' (no)
+JF_URL	varchar(255)	Jesus Film link	
+Locate on language profile
+JF_ID	varchar(50)	Jesus Film ID number	
+Locate on language profile
+Online	varchar(3)	Jesus Film available online	
+Locate on language profile
+GRN_URL	varchar(255)	Global Recordings Network link	
+Locate on language profile
+AudioRecordings	varchar(1)	Global Recordings Network available	
+'Y' (yes)     'N' (no)
+FourLaws	varchar(1)		
+Locate on language profile
+FourLaws_URL	varchar(255)		
+Locate on language profile
+YouVersion_ID	varchar(50)	YouVersion Bible ID	
+Locate on language profile
+YouVersion_URL	varchar(255)	YouVersion Bible link	
+Locate on language profile
+JPScale	varchar(1)	Joshua Project Scale	
+1 (Unreached)
+
+More Information
+PercentAdherents	double	Percent Christian Adherents estimate based on people group data	
+Locate on language profile
+PercentEvangelical	double	Percent Evangelicals estimate based on people group data	
+Locate on language profile
+LeastReached	varchar(1)	Considered Least-reached / unreached based on people group data	
+'Y' (yes)     'N' (no)
+JPPopulation	int(11)	Population of groups speaking this as primary language	
+Locate on language profile
+RLG3	int(11)	Largest religion code based on people groups primary religion	
+Locate on language profile
+PrimaryReligion	varchar(50)	Largest religion name based on people groups primary religion	
+Christianity
+NbrPGICs	int(11)	Number of people groups speaking this as primary language	
+Locate on language profile
+NbrCountries	int(11)	Number of countries this language is spoken in based on people group data	
+Locate on language profile
+  
+Joshua Project logo    Terms of Use   Privacy Policy   Contact Us   Copyright © 2025
+
 
 ## Crossover Global Brand Book
 

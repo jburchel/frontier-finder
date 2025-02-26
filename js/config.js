@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 /**
  * Configuration for Frontier Finder application
  */
@@ -12,7 +15,7 @@ export const config = {
     },
     // Joshua Project API configuration
     joshuaProject: {
-        apiKey: '080e14ad747e',
+        apiKey: process.env.JOSHUA_PROJECT_API_KEY,
         apiUrl: 'https://api.joshuaproject.net'
     },
     
@@ -23,4 +26,4 @@ export const config = {
     }
 };
 
-export default config; 
+export default config;
