@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 100 Priority List - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <h1 data-i18n="top100PageTitle">Top 100 Priority List</h1>
+            <a href="index.html" class="back-button" data-i18n="backToSearch">← Back to Search</a>
+        </header>
+
+        <div id="loadingState" class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" data-i18n="loadingTop100">Loading Top 100 list...</div>
+        </div>
+
+        <main class="top100-page">
+            <div class="controls-section">
+                <div class="filter-controls">
+                    <label for="groupFilter" data-i18n="showLabel">Show:</label>
+                    <select id="groupFilter">
+                        <option value="all" data-i18n="allGroups">All Groups</option>
+                        <option value="FPG" data-i18n="fpgsOnly">FPGs Only</option>
+                        <option value="UUPG" data-i18n="uupgsOnly">UUPGs Only</option>
+                    </select>
+                </div>
+
+                <div class="sort-controls">
+                    <button data-sort="name" class="button" data-i18n="sortName">Name</button>
+                    <button data-sort="population" class="button" data-i18n="sortPopulation">Population</button>
+                    <button data-sort="country" class="button" data-i18n="sortCountry">Country</button>
+                    <button data-sort="type" class="button" data-i18n="sortType">Type</button>
+                    <button data-sort="addedAt" class="button active" data-i18n="sortAddedAt">Added At</button>
+                </div>
+
+                <div class="export-controls">
+                    <button id="exportButton" class="button">
+                        <i class="fas fa-download"></i>
+                        <span data-i18n="exportToCsv">Export to CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="listSummary" class="list-summary">
+                <p>Displaying <span id="groupCount">0</span> items</p>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="name">Name</th>
+                            <th class="pronunciation-cell" data-i18n="pronunciation">Pronunciation</th>
+                            <th class="play-button-cell"></th>
+                            <th data-i18n="population">Population</th>
+                            <th data-i18n="country">Country</th>
+                            <th data-i18n="type">Type</th>
+                            <th data-i18n="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top100TableBody">
+                        <!-- Top 100 list will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p data-i18n="noItemsMessage">No people groups have been added to your Top 100 list yet.</p>
+                <a href="index.html" class="button" data-i18n="startSearching">Start Searching</a>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // Import firebase config
+        import { config } from './js/config.js';
+        import { i18nService } from './js/i18n.js';
+        window.config = config;
+        // Initialize translations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize i18n first
+            i18nService.initialize();
+            // Then initialize the page
+            const top100Page = new Top100Page();
+        });
+    </script>
+</body>
+</html> 
