@@ -30,13 +30,23 @@ class UPGDataUpdater {
     }
 
     async updateUPGData() {
+        console.log('Starting UPG data update...');
+        
         // Read current CSV file
         const fileContent = fs.readFileSync(this.currentUPGsPath, 'utf-8');
-        const records = parse(fileContent, { columns: true });
+        const records = parse(fileContent, {
+            columns: ['name', 'country', 'latitude', 'longitude', 'population', 'evangelical', 'language', 'religion', 'pronunciation'],
+            skip_empty_lines: true,
+            trim: true
+        });
+
+        console.log(`Processing ${records.length} records`);
 
         // Process each record
         const updatedRecords = [];
         for (const record of records) {
+            console.log(`Processing record: ${record.name} (${record.country})`);
+            
             // Only update records with missing data
             if (!record.latitude || !record.longitude || !record.population) {
                 try {
@@ -49,6 +59,8 @@ class UPGDataUpdater {
                         record.evangelical = record.evangelical || jpData.PercentEvangelical || '';
                         record.language = record.language || jpData.PrimaryLanguageName || '';
                         record.religion = record.religion || jpData.PrimaryReligion || '';
+                        // Preserve pronunciation column as-is
+                        record.pronunciation = record.pronunciation || '';
                     }
                 } catch (error) {
                     console.error(`Error updating ${record.name}: ${error.message}`);
