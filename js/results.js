@@ -111,7 +111,6 @@ class ResultsUI {
     displaySearchParams(params) {
         document.getElementById('baseUpg').textContent = params.upg.name;
         document.getElementById('country').textContent = params.upg.country;
-        document.getElementById('location').textContent = `${params.upg.latitude}, ${params.upg.longitude}`;
         document.getElementById('searchRadius').textContent = `${params.radius} ${params.units === 'M' ? 'Miles' : 'Kilometers'}`;
     }
 
@@ -240,6 +239,7 @@ class ResultsUI {
                 <th data-i18n="headerSelect">${i18nService.translate('headerSelect')}</th>
                 <th data-i18n="headerName">${i18nService.translate('headerName')}</th>
                 <th data-i18n="headerPronunciation">${i18nService.translate('headerPronunciation')}</th>
+                <th></th> <!-- Empty header for play buttons -->
                 <th data-i18n="headerPopulation">${i18nService.translate('headerPopulation')}</th>
                 <th data-i18n="headerCountry">${i18nService.translate('headerCountry')}</th>
                 <th data-i18n="headerDistance">${i18nService.translate('headerDistance')}</th>
@@ -268,8 +268,8 @@ class ResultsUI {
                     <input type="checkbox" class="result-checkbox" data-index="${i}">
                 </td>
                 <td>${result.name}</td>
+                <td>${result.pronunciation || ''}</td>
                 <td>
-                    <span class="pronunciation">${result.pronunciation || ''}</span>
                     ${result.pronunciation ? `
                         <button class="speak-button" title="Speak pronunciation">
                             <i class="fas fa-volume-up"></i>

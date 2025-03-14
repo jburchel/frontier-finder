@@ -235,7 +235,9 @@ export class Top100Page {
                 <td>${group.pronunciation || ''}</td>
                 <td>
                     ${group.pronunciation ? 
-                        `<span class="play-button" data-pronunciation="${group.pronunciation}"></span>` : 
+                        `<button class="speak-button" title="Speak pronunciation">
+                            <i class="fas fa-volume-up"></i>
+                        </button>` : 
                         ''}
                 </td>
                 <td>${formattedPopulation}</td>
@@ -253,12 +255,17 @@ export class Top100Page {
             deleteButton.addEventListener('click', () => this.removeFromTop100(group.id));
             
             // Add event listener for pronunciation button
-            const playButton = row.querySelector('.play-button');
-            if (playButton) {
-                playButton.addEventListener('click', () => {
-                    const pronunciation = playButton.getAttribute('data-pronunciation');
-                    if (pronunciation) {
-                        speechService.speak(pronunciation);
+            const speakButton = row.querySelector('.speak-button');
+            if (speakButton) {
+                speakButton.addEventListener('click', () => {
+                    const text = group.pronunciation || group.name;
+                    if (window.responsiveVoice && window.responsiveVoice.voiceSupport()) {
+                        window.responsiveVoice.speak(text);
+                    } else if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        window.speechSynthesis.speak(utterance);
+                    } else {
+                        console.warn('Speech synthesis not supported in this browser');
                     }
                 });
             }

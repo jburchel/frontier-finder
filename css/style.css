@@ -880,28 +880,7 @@ main {
 
 /* Fix for play button icon */
 .play-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: #183963;
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-    margin: 0 auto;
-    transition: all 0.2s ease;
-}
-
-.play-button:hover {
-    background-color: #39A949;
-}
-
-.play-button::before {
-    content: "\f04b";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 0.7rem;
+    display: none;
 }
 
 /* Table styling improvements */
@@ -921,22 +900,6 @@ th {
 td {
     padding: 10px;
     border-bottom: 1px solid #ddd;
-}
-
-/* Delete button styling */
-.delete-button {
-    background-color: #ff3333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.3rem 0.6rem;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.2s ease;
-}
-
-.delete-button:hover {
-    background-color: #d32f2f;
 }
 
 /* Sort controls */
@@ -1071,49 +1034,54 @@ td {
 
 /* Make sure the table is properly styled with separate columns */
 #top100Table {
+    table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
-    table-layout: fixed;
 }
 
 #top100Table th,
 #top100Table td {
     padding: 0.75rem;
-    text-align: left;
     border-bottom: 1px solid #ddd;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Set specific widths for each column */
+/* Top 100 table column widths */
 #top100Table th:nth-child(1), #top100Table td:nth-child(1) { /* Name */
-    width: 25%;
+    width: 20%;
+    text-align: left;
 }
 
 #top100Table th:nth-child(2), #top100Table td:nth-child(2) { /* Pronunciation */
     width: 20%;
+    text-align: left;
 }
 
 #top100Table th:nth-child(3), #top100Table td:nth-child(3) { /* Play button */
-    width: 5%;
+    width: 60px;
     text-align: center;
 }
 
 #top100Table th:nth-child(4), #top100Table td:nth-child(4) { /* Population */
     width: 15%;
+    text-align: right;
 }
 
 #top100Table th:nth-child(5), #top100Table td:nth-child(5) { /* Country */
-    width: 15%;
+    width: 20%;
+    text-align: left;
 }
 
 #top100Table th:nth-child(6), #top100Table td:nth-child(6) { /* Type */
     width: 10%;
+    text-align: center;
 }
 
 #top100Table th:nth-child(7), #top100Table td:nth-child(7) { /* Actions */
-    width: 10%;
+    width: 100px;
     text-align: center;
 }
 
@@ -1126,69 +1094,189 @@ td {
     background-color: #f9f9f9;
 }
 
-/* Style for the play button */
-.play-button {
+/* Style for the speak button */
+.speak-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: #183963;
+    width: 36px;
+    height: 36px;
+    background-color: #39A949;
     color: white;
+    border: none;
     border-radius: 50%;
     cursor: pointer;
     margin: 0 auto;
     transition: all 0.2s ease;
+    padding: 0;
+    min-width: 36px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.play-button:hover {
-    background-color: #39A949;
+.speak-button:hover {
+    background-color: #2c8037;
+    transform: scale(1.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
-.play-button::before {
-    content: "\f04b";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 0.7rem;
+.speak-button:active {
+    transform: scale(0.95);
+}
+
+.speak-button i {
+    font-size: 16px;
+}
+
+/* Remove any legacy play-button styles that might conflict */
+.play-button {
+    display: none;
 }
 
 /* Style for the delete button */
 .delete-button {
-    background-color: #ff3333;
+    background-color: #ff4d4d;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 0.3rem 0.6rem;
+    padding: 6px 12px;
+    font-size: 14px;
     cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
 }
 
 .delete-button:hover {
-    background-color: #d32f2f;
+    background-color: #ff3333;
 }
 
 /* Add styles for the sort container */
 .sort-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin: 1rem 0;
-    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+.list-summary {
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.sort-controls {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Search parameters styling */
+.search-parameters {
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--accent-color);
+}
+
+.search-parameters h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.search-parameters dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.search-parameters dt {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.search-parameters dd {
+    font-size: 1.1rem;
+    margin-left: 0;
+}
+
+/* Table styling for play buttons */
+.table th:nth-child(4), 
+.table td:nth-child(4) {
+    width: 60px;
+    text-align: center;
+}
+
+/* Results table styling */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.results-table th,
+.results-table td {
+    padding: 0.75rem;
+    text-align: left;
     border-bottom: 1px solid #eee;
 }
 
-/* Update the list-summary to work within the sort-container */
-.list-summary {
-    display: inline-block;
-    margin-right: 10px;
-    font-weight: 500;
-    color: #333;
+.results-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results-table tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Table column for play buttons */
+.results-table th:nth-child(4), 
+.results-table td:nth-child(4),
+#top100Table th:nth-child(3),
+#top100Table td:nth-child(3) {
+    width: 60px;
+    text-align: center;
+    padding: 8px;
+}
+
+/* Make sure the speak button is properly displayed in the Top 100 table */
+#top100Table td {
     vertical-align: middle;
 }
 
-/* Update the sort-controls to work within the sort-container */
-.sort-controls {
-    display: inline-block;
-    vertical-align: middle;
-    flex-grow: 1;
+/* Ensure the speak button has enough space */
+#top100Table td:nth-child(3) {
+    padding: 8px 12px;
+}
+
+/* Make sure the remove button has enough space */
+#top100Table td:nth-child(7) {
+    padding: 8px 12px;
+}
+
+/* Ensure the table doesn't overflow on mobile */
+@media (max-width: 768px) {
+    #top100Table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .speak-button, .delete-button {
+        min-width: auto;
+        padding: 6px;
+    }
+    
+    .delete-button {
+        font-size: 12px;
+    }
 }

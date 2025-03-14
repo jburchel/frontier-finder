@@ -61,7 +61,7 @@ class App {
     populateCountryDropdown(countries) {
         console.log('populateCountryDropdown called with:', countries);
         
-        const dropdown = document.getElementById('country');
+        const dropdown = document.getElementById('countrySelect');
         if (!dropdown) {
             console.warn('Country dropdown element not found');
             return;
@@ -119,7 +119,7 @@ class App {
     }
 
     populateUPGDropdown(upgs) {
-        const upgSelect = document.getElementById('upg');
+        const upgSelect = document.getElementById('upgSelect');
         if (!upgSelect) return;
         
         // Fix the default option translation

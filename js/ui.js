@@ -9,10 +9,10 @@ class UI {
     constructor() {
         // Form elements
         this.form = document.getElementById('searchForm');
-        this.countrySelect = document.getElementById('country');
-        this.upgSelect = document.getElementById('upg');
+        this.countrySelect = document.getElementById('countrySelect');
+        this.upgSelect = document.getElementById('upgSelect');
         this.radiusInput = document.getElementById('radius');
-        this.searchButton = document.querySelector('button[type="submit"]');
+        this.searchButton = document.getElementById('searchButton');
         
         // Results elements
         this.resultsSection = document.querySelector('.results-section');
@@ -57,11 +57,19 @@ class UI {
             this.handleCountryChange(e.target.value);
         });
 
-        // Form submission
-        this.form?.addEventListener('submit', async (e) => {
+        // Search button click
+        this.searchButton?.addEventListener('click', async (e) => {
             e.preventDefault();
             await this.handleSearch();
         });
+
+        // Form submission (if form exists)
+        if (this.form) {
+            this.form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleSearch();
+            });
+        }
     }
 
     /**
@@ -106,6 +114,11 @@ class UI {
         this.upgSelect.innerHTML = '<option value="">Select a UPG</option>';
         this.upgSelect.disabled = !country;
 
+        // Disable search button until a UPG is selected
+        if (this.searchButton) {
+            this.searchButton.disabled = true;
+        }
+
         if (country) {
             // Filter UPGs for selected country
             const upgs = searchService.currentUPGs
@@ -119,6 +132,13 @@ class UI {
                 option.textContent = upg.name;
                 this.upgSelect.appendChild(option);
             });
+
+            // Add change event listener to UPG dropdown
+            this.upgSelect.addEventListener('change', () => {
+                if (this.searchButton) {
+                    this.searchButton.disabled = !this.upgSelect.value;
+                }
+            });
         }
     }
 
@@ -130,21 +150,18 @@ class UI {
             this.setLoading(true);
 
             // Get form values
-            const country = this.countrySelect.value;
-            const upgName = this.upgSelect.value;
-            const radius = this.radiusInput.value;
+            const country = this.countrySelect?.value;
+            const upgName = this.upgSelect?.value;
+            const radius = this.radiusInput?.value;
             const unitsEl = document.querySelector('input[name="units"]:checked');
-            const typeEl = document.querySelector('input[name="searchType"]:checked');
-
+            
             // Debug logging
             console.log('Form values:', {
                 country,
                 upgName,
                 radius,
                 units: unitsEl?.value,
-                type: typeEl?.value,
-                unitsElement: unitsEl,
-                typeElement: typeEl
+                type: 'both' // Always search for both FPGs and UUPGs
             });
 
             // Validate inputs with more specific error messages
@@ -152,7 +169,6 @@ class UI {
             if (!upgName) throw new Error('Please select a UPG');
             if (!radius || radius < 1) throw new Error('Please enter a valid search radius');
             if (!unitsEl) throw new Error('Please select a distance unit (Miles or Kilometers)');
-            if (!typeEl) throw new Error('Please select a search type (FPG, UUPG, or Both)');
 
             // Find the selected UPG
             const selectedUPG = searchService.currentUPGs.find(
@@ -168,7 +184,7 @@ class UI {
                 upg: encodeURIComponent(JSON.stringify(selectedUPG)),
                 radius: radius,
                 units: unitsEl.value,
-                type: typeEl.value
+                type: 'both' // Always search for both FPGs and UUPGs
             });
 
             // Navigate to results page with parameters
