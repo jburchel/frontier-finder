@@ -9,7 +9,7 @@ class JoshuaProjectAPI {
             throw new Error('Joshua Project API key is missing from configuration');
         }
         this.apiKey = config.joshuaProject.apiKey;
-        this.apiUrl = config.joshuaProject.apiUrl || 'https://api.joshuaproject.net';
+        this.apiUrl = config.joshuaProject.apiUrl || 'https://joshuaproject.net';
         console.log('JoshuaProjectAPI initialized with:', {
             apiUrl: this.apiUrl,
             hasApiKey: !!this.apiKey
@@ -26,37 +26,29 @@ class JoshuaProjectAPI {
      */
     async searchNearbyFPGs(latitude, longitude, radius, units = 'M') {
         try {
-            // Get all people groups in a single request with a geographic filter
-            const queryParams = new URLSearchParams({
-                api_key: this.apiKey,
-                // Request only the fields we need
-                fields: [
-                    'PeopNameInCountry',
-                    'Population',
-                    'Ctry',
-                    'PrimaryReligion',
-                    'PrimaryLanguageName',
-                    'Latitude',
-                    'Longitude',
-                    'PercentEvangelical',
-                    'JPScale',
-                    'Frontier'
-                ].join(','),
-                // Simpler filter to start with
-                filter: `latitude>${latitude-5} AND latitude<${latitude+5} AND longitude>${longitude-5} AND longitude<${longitude+5}`,
-                limit: '5000'  // Request maximum number of results
-            });
+            // Get all people groups in a single request
+            // Using the exact format from the Joshua Project documentation
+            const fields = [
+                'PeopNameInCountry',
+                'Population',
+                'Ctry',
+                'PrimaryReligion',
+                'PrimaryLanguageName',
+                'Latitude',
+                'Longitude',
+                'PercentEvangelical',
+                'JPScale',
+                'Frontier'
+            ].join('|');
 
-            const url = `${this.apiUrl}/v1/people_groups.json?${queryParams}`;
+            // Build the URL according to the documentation
+            const url = `${this.apiUrl}/api/v2/people_groups?api_key=${this.apiKey}&fields=${fields}&Frontier=Y`;
+            
             console.log('Making JP API request for FPGs:', url);
             console.log('Search parameters:', {
                 center: { lat: latitude, lon: longitude },
                 radius: radius,
-                units: units,
-                boundingBox: {
-                    lat: { min: latitude-5, max: latitude+5 },
-                    lon: { min: longitude-5, max: longitude+5 }
-                }
+                units: units
             });
 
             const response = await fetch(url);
@@ -72,39 +64,63 @@ class JoshuaProjectAPI {
                 throw new Error(`API request failed: ${response.status}`);
             }
 
-            const data = await response.json();
-            console.log('Raw API response length:', data.length);
-            if (data.length > 0) {
-                console.log('Sample response item:', {
-                    first: data[0],
-                    fields: Object.keys(data[0])
-                });
+            // Parse the JSON response
+            const responseText = await response.text();
+            console.log('Raw API response text (first 500 chars):', responseText.substring(0, 500));
+            
+            let responseData;
+            try {
+                responseData = JSON.parse(responseText);
+                console.log('Parsed response type:', typeof responseData);
+                console.log('Response structure:', Object.keys(responseData));
+            } catch (error) {
+                console.error('Failed to parse JSON response:', error);
+                throw new Error('Failed to parse API response');
+            }
+            
+            // Handle different response formats
+            let peopleGroups = [];
+            
+            if (Array.isArray(responseData)) {
+                peopleGroups = responseData;
+            } else if (responseData && typeof responseData === 'object') {
+                // Check if it's a paginated response with a data property
+                if (Array.isArray(responseData.data)) {
+                    peopleGroups = responseData.data;
+                } else {
+                    // If it's a single object, wrap it in an array
+                    peopleGroups = [responseData];
+                }
+            }
+            
+            console.log('People groups extracted:', peopleGroups.length);
+            if (peopleGroups.length > 0) {
+                console.log('Sample people group:', peopleGroups[0]);
             }
 
-            // Filter and process results
-            const filtered = data
+            // Filter results based on geographic proximity
+            const filtered = peopleGroups
                 .filter(pg => {
+                    // Skip entries without coordinates
+                    if (!pg.Latitude || !pg.Longitude) {
+                        console.log('Skipping entry without coordinates:', pg.PeopNameInCountry);
+                        return false;
+                    }
+                    
                     // Calculate distance
                     const distance = this.calculateDistance(
                         latitude,
                         longitude,
-                        pg.Latitude,
-                        pg.Longitude,
+                        parseFloat(pg.Latitude),
+                        parseFloat(pg.Longitude),
                         units
                     );
                     pg.Distance = distance;
 
-                    // Keep only results within radius and that are Frontier People Groups
+                    // Keep only results within radius
                     const withinRadius = distance <= parseFloat(radius);
-                    const isFrontier = pg.Frontier === 'Y';
-
-                    console.log(`Filtering ${pg.PeopNameInCountry}:`, {
-                        distance,
-                        withinRadius,
-                        isFrontier
-                    });
-
-                    return withinRadius && isFrontier;
+                    console.log(`${pg.PeopNameInCountry}: distance=${distance.toFixed(1)}${units}, within radius=${withinRadius}`);
+                    return withinRadius;
                 })
                 .map(pg => ({
                     name: pg.PeopNameInCountry || 'Unknown',
@@ -116,7 +132,8 @@ class JoshuaProjectAPI {
                     jpScale: pg.JPScale || '',
                     Frontier: pg.Frontier,
                     latitude: parseFloat(pg.Latitude) || 0,
-                    longitude: parseFloat(pg.Longitude) || 0
+                    longitude: parseFloat(pg.Longitude) || 0,
+                    distance: parseFloat(pg.Distance.toFixed(1))
                 }));
 
             console.log(`Found ${filtered.length} FPGs within ${radius} ${units}`);

@@ -25,6 +25,7 @@ class SearchService {
             // Add a timestamp to prevent caching
             const url = `${filePath}?t=${Date.now()}`;
             
+            console.log(`Fetching from URL: ${url}`);
             const response = await fetch(url);
             
             if (!response.ok) {
@@ -44,36 +45,92 @@ class SearchService {
             
             console.log(`CSV loaded from ${filePath}:`, {
                 length: csvText.length,
-                preview: csvText.substring(0, 100)
+                preview: csvText.substring(0, 200)
             });
             
             // Parse CSV
             const rows = csvText.split('\n');
-            const headers = rows[0].split(',').map(h => h.trim());
+            console.log(`CSV has ${rows.length} rows`);
             
+            if (rows.length === 0) {
+                throw new Error(`CSV file has no rows`);
+            }
+            
+            const headers = rows[0].split(',').map(h => h.trim());
             console.log(`UPG CSV Headers:`, headers);
             
-            return rows.slice(1) // Skip header row
+            // Debug the first few rows
+            console.log(`First 3 data rows:`);
+            for (let i = 1; i < Math.min(4, rows.length); i++) {
+                console.log(`Row ${i}:`, rows[i]);
+                console.log(`Split values:`, rows[i].split(',').map(v => v.trim()));
+            }
+            
+            // Process rows and handle continuation rows
+            const parsedData = [];
+            let currentEntry = null;
+            
+            rows.slice(1) // Skip header row
                 .filter(row => row.trim()) // Remove empty rows
-                .map((row, index) => {
+                .forEach((row, index) => {
                     const values = row.split(',').map(val => val.trim());
-                    const item = {};
                     
-                    // UPG CSV format (current_upgs.csv)
-                    // Assuming the structure: name,country,pronunciation,latitude,longitude,...
-                    item.name = values[0];
-                    item.country = values[1];
-                    item.pronunciation = values[2];
-                    item.latitude = parseFloat(values[3]) || null;
-                    item.longitude = parseFloat(values[4]) || null;
-                    item.population = values[5] ? parseInt(values[5].replace(/[^\d]/g, '')) || 0 : 0;
-                    item.evangelical = values[6];
-                    item.language = values[7];
-                    item.religion = values[8];
-                    item.description = values[9];
+                    // Check if this is a main entry (has an index number in first column)
+                    const isMainEntry = values[0] && /^\d+$/.test(values[0]);
                     
-                    return item;
+                    if (isMainEntry) {
+                        // If we have a previous entry, add it to the results
+                        if (currentEntry && currentEntry.country) {
+                            parsedData.push(currentEntry);
+                        }
+                        
+                        // Create a new entry
+                        currentEntry = {
+                            name: values[1] || '',
+                            country: values[2] || '',
+                            latitude: parseFloat(values[3]) || null,
+                            longitude: parseFloat(values[4]) || null,
+                            population: values[5] ? parseInt(values[5].replace(/[^\d]/g, '')) || 0 : 0,
+                            evangelical: values[6] || '',
+                            language: values[7] || '',
+                            religion: values[8] || '',
+                            description: values[9] || ''
+                        };
+                    } else if (currentEntry && values[1] && values[2]) {
+                        // This is a continuation row with a name and country
+                        // Create a new entry based on the continuation
+                        const newEntry = {
+                            name: values[1] || currentEntry.name,
+                            country: values[2] || '',
+                            latitude: parseFloat(values[3]) || null,
+                            longitude: parseFloat(values[4]) || null,
+                            population: values[5] ? parseInt(values[5].replace(/[^\d]/g, '')) || 0 : currentEntry.population,
+                            evangelical: values[6] || currentEntry.evangelical,
+                            language: values[7] || currentEntry.language,
+                            religion: values[8] || currentEntry.religion,
+                            description: values[9] || currentEntry.description
+                        };
+                        
+                        // Add the new entry if it has a country
+                        if (newEntry.country) {
+                            parsedData.push(newEntry);
+                        }
+                    }
                 });
+            
+            // Add the last entry if it exists
+            if (currentEntry && currentEntry.country) {
+                parsedData.push(currentEntry);
+            }
+            
+            console.log(`Successfully parsed ${parsedData.length} UPG entries`);
+            console.log(`First 3 parsed entries:`, parsedData.slice(0, 3));
+            
+            // Log unique countries for debugging
+            const countries = [...new Set(parsedData.map(item => item.country))];
+            console.log(`Found ${countries.length} unique countries:`, countries);
+            
+            return parsedData;
         } catch (error) {
             console.error(`Error loading CSV from ${filePath}:`, error);
             throw error;

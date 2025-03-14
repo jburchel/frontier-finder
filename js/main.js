@@ -85,24 +85,37 @@ class App {
         dropdown.appendChild(defaultOption);
         
         if (!countries || !Array.isArray(countries)) {
-            console.warn('No countries provided to populate dropdown');
+            console.warn('No countries provided to populate dropdown:', countries);
             return;
         }
 
+        console.log(`Adding ${countries.length} countries to dropdown`);
+        
         // Add country options with translations
         countries.forEach(country => {
+            if (!country) {
+                console.warn('Skipping empty country value');
+                return;
+            }
+            
             const option = document.createElement('option');
             option.value = country;
+            
+            // Try to get translation, fall back to original country name
             const translatedCountry = translations[currentLanguage]?.countries?.[country];
+            
             console.log(`Country: ${country}, Translation lookup:`, {
                 currentLanguage,
                 hasTranslations: !!translations[currentLanguage],
                 hasCountries: !!translations[currentLanguage]?.countries,
                 translatedValue: translatedCountry
             });
+            
             option.textContent = translatedCountry || country;
             dropdown.appendChild(option);
         });
+        
+        console.log(`Country dropdown populated with ${dropdown.options.length - 1} countries`);
     }
 
     populateUPGDropdown(upgs) {
