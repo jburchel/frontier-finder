@@ -36,133 +36,92 @@
         <header>
             <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
             <div class="header-content">
-                <h1 data-i18n="title">Frontier Finder</h1>
-                <p class="mission-statement" data-i18n="mission"></p>
-            </div>
-            <div class="language-switcher">
-                <select id="languageSelect" class="language-select">
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
-                    <option value="pt">Português</option>
-                </select>
+                <h1>Frontier Finder</h1>
+                <p class="mission-statement">Crossover Global passionately seeks to glorify God by providing Gospel access through the planting of multiplying churches among the unreached peoples of the world.</p>
             </div>
         </header>
 
         <main>
-            <div class="main-content">
-                <div class="search-section">
-                    <h2 data-i18n="searchTitle">Find Frontier People Groups</h2>
-                    <p data-i18n="searchDescription">Search for Frontier People Groups (FPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
+            <div class="main-content-area">
+                <section class="search-section">
+                    <h2>Find Frontier and Unengaged People Groups</h2>
+                    <p>Search for Frontier People Groups (FPGs) and Unreached Unengaged People Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
                     
-                    <form id="searchForm" class="search-form">
-                        <div class="search-grid">
-                            <!-- Column 1 -->
-                            <div>
-                                <div class="input-group">
-                                    <label for="country" data-i18n="selectCountry">Select Country:</label>
-                                    <select id="country" name="country" required>
-                                        <option value="" data-i18n="selectCountry">Select a Country</option>
-                                    </select>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="radius" data-i18n="searchRadius">Search Radius:</label>
-                                    <input type="number" id="radius" name="radius" value="100" min="1" max="1000" required>
-                                    <div class="radio-group">
-                                        <label>
-                                            <input type="radio" name="units" value="M" checked> <span data-i18n="miles">Miles</span>
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="units" value="K"> <span data-i18n="kilometers">Kilometers</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Column 2 -->
-                            <div>
-                                <div class="input-group">
-                                    <label for="upg">Select UPG:</label>
-                                    <select id="upg" name="upg" required disabled>
-                                        <option value="">Select a UPG</option>
-                                    </select>
-                                </div>
-
-                                <div class="input-group">
-                                    <label>Search Type:</label>
-                                    <div class="radio-group">
-                                        <label>
-                                            <input type="radio" name="searchType" value="fpg" checked> <span data-i18n="fpg">FPG</span>
-                                        </label>
-                                    </div>
-                                </div>
+                    <div class="search-grid">
+                        <div class="input-group">
+                            <label for="countrySelect">Select Country:</label>
+                            <select id="countrySelect" required>
+                                <option value="">Select a country...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="upgSelect">Select UPG:</label>
+                            <select id="upgSelect" required disabled>
+                                <option value="">Select a UPG...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="radius">Search Radius:</label>
+                            <input type="number" id="radius" min="1" max="1000" value="100" required>
+                            <div class="radio-group inline">
+                                <label>
+                                    <input type="radio" name="units" value="M" checked> Miles
+                                </label>
+                                <label>
+                                    <input type="radio" name="units" value="K"> Kilometers
+                                </label>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <button type="submit" data-i18n="search">Search</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="results-section" style="display: none;">
-                    <div class="search-summary">
-                        <h2>Search Parameters</h2>
-                        <div id="searchParams" class="search-params">
-                            <!-- Search parameters will be inserted here -->
-                        </div>
-                    </div>
-
-                    <div id="sortOptions" class="sort-options" style="display: none;">
-                        <span>Sort by:</span>
-                        <button class="sort-button" data-sort="distance">Distance</button>
-                        <button class="sort-button" data-sort="country">Country</button>
-                        <button class="sort-button" data-sort="population">Population</button>
-                        <button class="sort-button" data-sort="language">Language</button>
-                        <button class="sort-button" data-sort="religion">Religion</button>
-                    </div>
-
-                    <div role="region" aria-label="Search Results">
-                        <div class="results-columns">
-                            <div class="results-section column-2">
-                                <h2>Frontier People Groups</h2>
-                                <div id="fpgList" class="results-list">
-                                    <!-- FPG results will be inserted here -->
-                                </div>
+                        
+                        <div class="input-group">
+                            <label>Search Type:</label>
+                            <div class="radio-group inline">
+                                <label>
+                                    <input type="radio" name="searchType" value="fpg" checked> FPGs
+                                </label>
+                                <label>
+                                    <input type="radio" name="searchType" value="uupg"> UUPGs
+                                </label>
+                                <label>
+                                    <input type="radio" name="searchType" value="both"> Both
+                                </label>
                             </div>
                         </div>
                     </div>
-
-                    <div id="searchResults" class="search-results">
-                        <!-- Results will be displayed here -->
+                    
+                    <div class="button-group">
+                        <button id="searchButton" class="button primary" disabled>Search</button>
                     </div>
-                </div>
-
-                <div class="top-100-section">
-                    <h2 data-i18n="top100Title">Top 100 Priority List</h2>
-                    <p class="instructions" data-i18n="top100Description">View and manage your Top 100 Priority List.</p>
-                    <a href="top100.html" class="button" data-i18n="viewTop100Button">View Top 100 List</a>
-                </div>
+                </section>
+                
+                <section class="top-100-section">
+                    <h2>Top 100 Priority List</h2>
+                    <p>Create and manage your personalized list of priority people groups for prayer, research, and potential engagement. Track up to 100 FPGs and UUPGs that you want to focus on.</p>
+                    <div class="button-container">
+                        <a href="top100.html" class="button">View Top 100 List</a>
+                    </div>
+                </section>
             </div>
-
+            
             <aside class="definitions-sidebar">
                 <div class="definition-box">
-                    <h3 data-i18n="definitionsTitle">Key Definitions</h3>
-                    
+                    <h3>Key Definitions</h3>
                     <div class="definition-item">
-                        <h4 data-i18n="fpgTitle">Frontier People Group (FPG)</h4>
-                        <h5 data-i18n="jpDefinition">Joshua Project Definition:</h5>
-                        <p data-i18n="fpgJPDef">Less than 0.1% Christian and no evidence of a self-sustaining gospel movement.</p>
+                        <h4>Frontier People Group (FPG)</h4>
+                        <h5>Joshua Project Definition:</h5>
+                        <p>Less than 0.1% Christian and no evidence of a self-sustaining gospel movement.</p>
                         
-                        <h5 data-i18n="pgDefinition">PeopleGroups.org Definition:</h5>
-                        <p data-i18n="fpgPGDef">A people group with less than 0.1% evangelical Christian believers and no sustained Christ-ward movement.</p>
+                        <h5>PeopleGroups.org Definition:</h5>
+                        <p>A people group with less than 0.1% evangelical Christian believers and no sustained Christ-ward movement.</p>
                     </div>
                 </div>
             </aside>
         </main>
 
         <footer>
-            <p data-i18n="copyright">&copy; 2024 Crossover Global. All rights reserved.</p>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
         </footer>
 
         <!-- Application Scripts -->

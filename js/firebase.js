@@ -17,31 +17,74 @@ class FirebaseService {
         this.db = null;
         this.initialized = false;
         this.collectionName = 'top100';
+        this.initializationPromise = null;
     }
 
     // Helper method to get collection reference
     getCollectionRef() {
-        return collection(this.db, 'top100');
+        if (!this.db) {
+            throw new Error('Firebase not initialized. Call initialize() first.');
+        }
+        return collection(this.db, this.collectionName);
     }
 
     // Helper method to get document reference
     getDocRef(docId) {
-        return doc(this.db, 'top100', docId);
+        if (!this.db) {
+            throw new Error('Firebase not initialized. Call initialize() first.');
+        }
+        return doc(this.db, this.collectionName, docId);
     }
 
     async initialize() {
+        // If already initialized, return immediately
         if (this.initialized) return;
-
-        try {
-            console.log('Initializing Firebase...');
-            const app = initializeApp(config.firebase);
-            this.db = getFirestore(app);
-            this.initialized = true;
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            console.error('Firebase initialization failed:', error);
-            throw error;
+        
+        // If initialization is in progress, return the existing promise
+        if (this.initializationPromise) {
+            return this.initializationPromise;
         }
+        
+        // Create a new initialization promise
+        this.initializationPromise = new Promise(async (resolve, reject) => {
+            try {
+                console.log('Initializing Firebase with config:', {
+                    projectId: config.firebase.projectId,
+                    appId: config.firebase.appId ? '(configured)' : '(missing)',
+                    apiKey: config.firebase.apiKey ? '(configured)' : '(missing)'
+                });
+                
+                // Validate Firebase config
+                if (!config.firebase || !config.firebase.apiKey || !config.firebase.projectId) {
+                    throw new Error('Firebase configuration is missing or incomplete. Check config.js file.');
+                }
+                
+                // Initialize Firebase app
+                const app = initializeApp(config.firebase);
+                this.db = getFirestore(app);
+                
+                // Test connection by trying to access the collection
+                try {
+                    const testQuery = query(this.getCollectionRef(), orderBy('addedAt', 'desc'));
+                    await getDocs(testQuery);
+                    console.log('Firebase connection test successful');
+                } catch (connectionError) {
+                    console.error('Firebase connection test failed:', connectionError);
+                    throw new Error(`Firebase connection failed: ${connectionError.message}`);
+                }
+                
+                this.initialized = true;
+                console.log('Firebase initialized successfully');
+                resolve();
+            } catch (error) {
+                console.error('Firebase initialization failed:', error);
+                this.initialized = false;
+                this.initializationPromise = null; // Reset the promise so we can try again
+                reject(error);
+            }
+        });
+        
+        return this.initializationPromise;
     }
 
     async getTop100() {
@@ -53,12 +96,17 @@ class FirebaseService {
             console.log('Fetching Top 100 list...');
             const snapshot = await getDocs(this.getCollectionRef());
             
-            const results = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const results = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    // Convert Firestore timestamp to Date if it exists
+                    dateAdded: data.addedAt ? new Date(data.addedAt) : new Date()
+                };
+            });
             
-            console.log(`Retrieved ${results.length} items from Top 100:`, results);
+            console.log(`Retrieved ${results.length} items from Top 100`);
             return results;
         } catch (error) {
             console.error('Failed to get Top 100:', error);

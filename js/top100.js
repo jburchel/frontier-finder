@@ -3,437 +3,513 @@ import { formatGroupType } from './utils.js';
 import { speechService } from './services/speechService.js';
 import { pronunciationService } from './services/pronunciationService.js';
 import { i18nService } from './i18n.js';
+import { config } from './config.js';
+
+console.log('Top100 module loaded');
 
 export class Top100Page {
     constructor() {
-        this.groups = [];
+        console.log('Top100Page: Initializing...');
+        this.groups = []; // Initialize groups as empty array
+        
+        // DOM elements
+        this.loadingElement = document.getElementById('loadingState');
+        this.errorElement = document.getElementById('errorState');
+        this.errorMessageElement = document.querySelector('.error-message');
+        this.emptyElement = document.getElementById('emptyState');
+        this.tableContainer = document.getElementById('tableContainer');
+        this.tableBody = document.getElementById('top100List');
+        this.filterSelect = document.getElementById('filterSelect');
+        this.searchFilter = document.getElementById('searchFilter');
+        this.exportCSVButton = document.getElementById('exportCSVButton');
+        this.exportPDFButton = document.getElementById('exportPDFButton');
+        
         this.currentFilter = 'all';
-        this.currentSort = 'addedAt';
-        this.sortDirection = 'desc';
-        this.firebaseService = firebaseService;
-        this.initialize().then(() => {
-            this.setupEventListeners();
-            console.log('Event listeners set up');
-        });
+        this.currentSort = 'name';
+        this.sortDirection = 'asc';
+        this.searchTerm = '';
+        
+        this.setupEventListeners();
+        this.initializeFirebase();
     }
 
-    async initialize() {
+    async initializeFirebase() {
         try {
+            console.log('Top100Page: Initializing Firebase...');
             this.showLoading();
-            await this.firebaseService.initialize();
-            await this.loadGroups();
-            this.updateDisplay();
-            this.setupSortButtons();
-            this.updateSortButtons();
-        } catch (error) {
-            console.error('Failed to initialize Top 100 page:', error);
-            this.showError('Failed to load Top 100 list. Please try again.');
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    async loadGroups() {
-        try {
-            console.log('Loading groups...');
-            this.groups = await this.firebaseService.getTop100();
-            console.log('Groups loaded:', this.groups);
-            // Generate missing pronunciations
-            const pronunciationPromises = this.groups
-                .filter(group => !group.pronunciation)
-                .map(async group => {
-                    try {
-                        const pronunciation = await pronunciationService.generatePronunciation(group.name);
-                        group.pronunciation = pronunciation;
-                        // Update in Firebase
-                        await this.firebaseService.updateDocument(group.id, { pronunciation });
-                        console.log(`Generated pronunciation for ${group.name}: ${pronunciation}`);
-                    } catch (error) {
-                        console.error(`Failed to generate pronunciation for ${group.name}:`, error);
-                    }
-                });
             
-            // Wait for all pronunciations to be generated
-            await Promise.all(pronunciationPromises);
-            console.log('All pronunciations generated');
-
-            this.groups = this.groups.filter(group => group && group.name);
-            console.log('Groups filtered:', this.groups);
-            this.updateSortButtons();
+            // Initialize Firebase service
+            await firebaseService.initialize();
+            
+            // Once Firebase is initialized, load the Top 100 list
+            this.loadTop100List();
+            
         } catch (error) {
-            console.error('Failed to load groups:', error);
-            this.showError('Failed to load groups. Please try again.');
+            console.error('Top100Page: Firebase initialization error:', error);
+            this.showError('Failed to connect to the database. Please check your internet connection and try again.');
         }
     }
 
     setupEventListeners() {
-        // Filter change handler
-        const filterSelect = document.getElementById('groupFilter');
-        if (filterSelect) {
-            filterSelect.addEventListener('change', (e) => {
-                console.log('Filter changed:', e.target.value);
-                this.currentFilter = e.target.value;
-                this.updateDisplay();
-            });
-        }
-
-        // Sort button handlers
+        console.log('Top100Page: Setting up event listeners');
+        
+        // Filter change event
+        this.filterSelect.addEventListener('change', () => {
+            this.currentFilter = this.filterSelect.value;
+            this.updateDisplay();
+        });
+        
+        // Search filter input event
+        this.searchFilter.addEventListener('input', () => {
+            this.searchTerm = this.searchFilter.value.toLowerCase();
+            this.updateDisplay();
+        });
+        
+        // Sort button clicks
         document.querySelectorAll('.sort-controls button').forEach(button => {
             button.addEventListener('click', () => {
-                console.log('Sort button clicked:', button.dataset.sort);
-                const sortType = button.dataset.sort;
-                if (this.currentSort === sortType) {
+                const sortBy = button.getAttribute('data-sort');
+                if (this.currentSort === sortBy) {
                     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
                 } else {
-                    this.currentSort = sortType;
-                    this.sortDirection = 'desc';
+                    this.currentSort = sortBy;
+                    this.sortDirection = 'asc';
                 }
                 this.updateSortButtons();
                 this.updateDisplay();
             });
         });
-
-        // Export button handler
-        const exportButton = document.getElementById('exportButton');
-        if (exportButton) {
-            exportButton.addEventListener('click', () => {
-                this.exportToCSV();
+        
+        // Export buttons
+        this.exportCSVButton.addEventListener('click', () => {
+            console.log('Top100Page: Export CSV button clicked');
+            this.exportToCSV();
+        });
+        
+        this.exportPDFButton.addEventListener('click', () => {
+            console.log('Top100Page: Export PDF button clicked');
+            this.exportToPDF();
+        });
+        
+        // Retry button
+        const retryButton = document.getElementById('retryButton');
+        if (retryButton) {
+            retryButton.addEventListener('click', () => {
+                console.log('Top100Page: Retry button clicked');
+                this.retry();
             });
         }
     }
-
+    
+    async loadTop100List() {
+        try {
+            console.log('Top100Page: Loading Top 100 list...');
+            this.showLoading();
+            
+            // Use the firebaseService to get the Top 100 list
+            this.groups = await firebaseService.getTop100();
+            
+            console.log(`Top100Page: Loaded ${this.groups.length} groups`);
+            this.updateDisplay();
+            
+        } catch (error) {
+            console.error('Top100Page: Error loading Top 100 list:', error);
+            this.showError('Failed to load your Top 100 list. Please try again later.');
+        }
+    }
+    
     updateDisplay() {
-        console.log('Updating display...');
-        const tableBody = document.getElementById('top100TableBody');
-        if (!tableBody) {
-            console.error('Table body not found');
-            return;
-        }
-        tableBody.innerHTML = '';
-
-        if (!this.groups || this.groups.length === 0) {
-            console.log('No groups to display');
-            document.querySelector('main').innerHTML = `
-                <div class="empty-state">
-                    <p>Your Top 100 list is empty.</p>
-                    <p>Add items from the search results page.</p>
-                </div>
-            `;
-            return;
-        }
-
-        // First sort the groups
-        this.sortGroups();
-        
-        // Then filter them
         const filteredGroups = this.filterGroups();
+        const sortedGroups = this.sortGroups(filteredGroups);
         
-        // Update the display with filtered and sorted groups
-        filteredGroups.forEach(group => {
-            const row = this.createTableRow(group);
-            tableBody.appendChild(row);
-        });
-        
-        this.updateListSummary();
-        this.updateSortButtons();
-    }
-
-    createTableRow(group) {
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-            <td>${group.name}</td>
-            <td class="pronunciation-cell">[${group.pronunciation || 'pronunciation pending'}]</td>
-            <td class="play-button-cell">
-                <button class="play-button" 
-                        title="Play pronunciation"
-                        aria-label="Play pronunciation of ${group.name}"
-                        data-name="${group.name}"
-                        ${!group.pronunciation ? 'disabled' : ''}>
-                </button>
-            </td>
-            <td>${parseInt(group.population).toLocaleString()}</td>
-            <td>${group.country}</td>
-            <td>${group.type}</td>
-            <td class="actions-cell">
-                <button class="delete-button" data-id="${group.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
-
-        // Add event listeners for play buttons
-        const playButton = row.querySelector('.play-button');
-        playButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const name = e.target.getAttribute('data-name');
-            try {
-                if (!group.pronunciation) {
-                    const pronunciation = await pronunciationService.generatePronunciation(name);
-                    group.pronunciation = pronunciation;
-                    await this.firebaseService.updateDocument(group.id, { pronunciation });
-                    const pronCell = row.querySelector('.pronunciation-cell');
-                    if (pronCell) {
-                        pronCell.textContent = `[${pronunciation}]`;
-                    }
-                    playButton.disabled = false;
-                }
-                await pronunciationService.speakPronunciation(name, group.pronunciation);
-            } catch (error) {
-                console.error('Failed to speak pronunciation:', error);
-            }
-        });
-
-        // Add event listeners for delete buttons
-        row.querySelector('.delete-button').addEventListener('click', () => {
-            const id = row.querySelector('.delete-button').getAttribute('data-id');
-            this.deleteGroup(id);
-        });
-
-        return row;
-    }
-
-    filterGroups() {
-        console.log('Filtering groups with filter:', this.currentFilter);
-        if (this.currentFilter === 'all') {
-            return [...this.groups];
+        if (this.groups.length === 0) {
+            this.showEmptyState();
+        } else if (filteredGroups.length === 0) {
+            this.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="no-results">No groups match your current filters</td>
+                </tr>
+            `;
+            this.hideLoading();
+            this.hideError();
+            this.hideEmptyState();
+            this.tableContainer.style.display = 'block';
+        } else {
+            this.renderGroups(sortedGroups);
+            this.hideLoading();
+            this.hideError();
+            this.hideEmptyState();
+            this.tableContainer.style.display = 'block';
         }
-        // Match the filter value exactly with the group type
-        const filtered = this.groups.filter(group => 
-            group.type.toUpperCase() === this.currentFilter.toUpperCase()
-        );
-        console.log('Filtered groups:', filtered);
+    }
+    
+    filterGroups() {
+        console.log(`Top100Page: Filtering groups with filter: ${this.currentFilter}`);
+        let filtered = [...this.groups];
+        
+        // Filter by type
+        if (this.currentFilter !== 'all') {
+            filtered = filtered.filter(group => group.type === this.currentFilter);
+        }
+        
+        // Filter by search term
+        if (this.searchTerm) {
+            filtered = filtered.filter(group => {
+                return (
+                    (group.name && group.name.toLowerCase().includes(this.searchTerm)) ||
+                    (group.country && group.country.toLowerCase().includes(this.searchTerm)) ||
+                    (group.language && group.language.toLowerCase().includes(this.searchTerm)) ||
+                    (group.religion && group.religion.toLowerCase().includes(this.searchTerm))
+                );
+            });
+        }
+        
+        console.log(`Top100Page: Filtered to ${filtered.length} groups`);
         return filtered;
     }
-
-    sortGroups() {
-        console.log('Sorting groups by:', this.currentSort, 'in direction:', this.sortDirection);
-        this.groups.sort((a, b) => {
-            const aValue = a[this.currentSort];
-            const bValue = b[this.currentSort];
-
-            if (aValue == null && bValue == null) return 0;
-            if (aValue == null) return this.sortDirection === 'asc' ? -1 : 1;
-            if (bValue == null) return this.sortDirection === 'asc' ? 1 : -1;
-
-            // Handle population specially since it's a number
-            if (this.currentSort === 'population') {
-                const aNum = parseInt(aValue) || 0;
-                const bNum = parseInt(bValue) || 0;
-                return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+    
+    sortGroups(groups) {
+        console.log(`Top100Page: Sorting groups by ${this.currentSort} in ${this.sortDirection} order`);
+        
+        return [...groups].sort((a, b) => {
+            let valueA, valueB;
+            
+            switch (this.currentSort) {
+                case 'name':
+                    valueA = a.name || '';
+                    valueB = b.name || '';
+                    break;
+                case 'population':
+                    valueA = parseInt(a.population) || 0;
+                    valueB = parseInt(b.population) || 0;
+                    break;
+                case 'country':
+                    valueA = a.country || '';
+                    valueB = b.country || '';
+                    break;
+                case 'type':
+                    valueA = a.type || '';
+                    valueB = b.type || '';
+                    break;
+                case 'dateAdded':
+                    valueA = a.dateAdded || new Date(0);
+                    valueB = b.dateAdded || new Date(0);
+                    break;
+                default:
+                    valueA = a.name || '';
+                    valueB = b.name || '';
             }
-
-            // Handle string comparisons
-            const aString = String(aValue).toLowerCase();
-            const bString = String(bValue).toLowerCase();
-
-            if (aString < bString) return this.sortDirection === 'asc' ? -1 : 1;
-            if (aString > bString) return this.sortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
-        console.log('Groups after sorting:', this.groups);
-    }
-
-    handleSort(sortBy) {
-        if (this.currentSort === sortBy) {
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.currentSort = sortBy;
-            this.sortDirection = 'asc';
-        }
-        this.updateSortButtons();
-        this.updateDisplay();
-    }
-
-    updateSortButtons() {
-        const sortButtons = document.querySelectorAll('[data-sort]');
-        sortButtons.forEach(button => {
-            const sortKey = button.getAttribute('data-sort');
-            const translationKey = `sort${sortKey.charAt(0).toUpperCase() + sortKey.slice(1)}`;
-            button.textContent = i18nService.translate(translationKey);
+            
+            // For strings, use localeCompare
+            if (typeof valueA === 'string' && typeof valueB === 'string') {
+                return this.sortDirection === 'asc' 
+                    ? valueA.localeCompare(valueB) 
+                    : valueB.localeCompare(valueA);
+            }
+            
+            // For dates
+            if (valueA instanceof Date && valueB instanceof Date) {
+                return this.sortDirection === 'asc' 
+                    ? valueA.getTime() - valueB.getTime() 
+                    : valueB.getTime() - valueA.getTime();
+            }
+            
+            // For numbers
+            return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
         });
     }
-
-    updateSummary(filteredGroups) {
-        const summary = document.getElementById('listSummary');
-        const fpgCount = filteredGroups.filter(g => g.type.toLowerCase() === 'fpg').length;
-        const uupgCount = filteredGroups.filter(g => g.type.toLowerCase() === 'uupg').length;
-
-        summary.innerHTML = `
-            <h3>List Summary</h3>
-            <p>Total Groups: ${filteredGroups.length}</p>
-            <ul>
-                <li>${formatGroupType('FPG')}s: ${fpgCount}</li>
-                <li>${formatGroupType('UUPG')}s: ${uupgCount}</li>
-            </ul>
-        `;
-    }
-
-    renderTable(groups) {
-        const tableBody = document.getElementById('top100TableBody');
-        const emptyState = document.getElementById('emptyState');
-
-        if (groups.length === 0) {
-            if (emptyState) emptyState.style.display = 'block';
-            return;
-        }
-
-        if (emptyState) emptyState.style.display = 'none';
-
-        tableBody.innerHTML = groups.map(group => `
-            <tr>
-                <td>${formatGroupType(group.type)}</td>
-                <td>${group.name}</td>
-                <td class="pronunciation-text">[${group.pronunciation || 'pronunciation pending'}]</td>
-                <td class="play-button-cell">
-                    <button class="play-button" 
-                            title="Play pronunciation"
-                            aria-label="Play pronunciation of ${group.name}"
-                            data-text="${group.name}"
-                            ${!group.pronunciation ? 'disabled' : ''}>
-                    </button>
+    
+    renderGroups(groups) {
+        this.tableBody.innerHTML = '';
+        
+        groups.forEach(group => {
+            const row = document.createElement('tr');
+            
+            // Format population with commas
+            const formattedPopulation = group.population 
+                ? parseInt(group.population).toLocaleString() 
+                : 'Unknown';
+            
+            row.innerHTML = `
+                <td>${group.name || 'Unknown'}</td>
+                <td>${group.pronunciation || ''}</td>
+                <td>
+                    ${group.pronunciation ? 
+                        `<span class="play-button" data-pronunciation="${group.pronunciation}"></span>` : 
+                        ''}
                 </td>
-                <td>${parseInt(group.population).toLocaleString()}</td>
-                <td>${group.country}</td>
-                <td>${group.religion || 'Islam'}</td>
-                <td class="actions-cell">
+                <td>${formattedPopulation}</td>
+                <td>${group.country || 'Unknown'}</td>
+                <td>${group.type || 'Unknown'}</td>
+                <td>
                     <button class="delete-button" data-id="${group.id}">
-                        <i class="fas fa-trash"></i>
+                        Remove
                     </button>
                 </td>
-            </tr>
-        `).join('');
-
-        // Add event listeners for play buttons
-        tableBody.querySelectorAll('.play-button').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const text = button.getAttribute('data-text');
-                await pronunciationService.speakPronunciation(text);
-            });
-        });
-
-        // Add event listeners for delete buttons
-        tableBody.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = button.getAttribute('data-id');
-                this.deleteGroup(id);
-            });
+            `;
+            
+            // Add event listener for delete button
+            const deleteButton = row.querySelector('.delete-button');
+            deleteButton.addEventListener('click', () => this.removeFromTop100(group.id));
+            
+            // Add event listener for pronunciation button
+            const playButton = row.querySelector('.play-button');
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    const pronunciation = playButton.getAttribute('data-pronunciation');
+                    if (pronunciation) {
+                        speechService.speak(pronunciation);
+                    }
+                });
+            }
+            
+            this.tableBody.appendChild(row);
         });
     }
-
-    async deleteGroup(id) {
-        if (!confirm('Are you sure you want to remove this group from your Top 100 list?')) {
-            return;
-        }
-
+    
+    async removeFromTop100(id) {
         try {
+            console.log(`Top100Page: Removing group with ID: ${id}`);
             await firebaseService.removeFromTop100(id);
-            this.groups = this.groups.filter(g => g.id !== id);
+            
+            // Update local data
+            this.groups = this.groups.filter(group => group.id !== id);
             this.updateDisplay();
+            
         } catch (error) {
-            console.error('Failed to delete group:', error);
-            alert('Failed to remove group. Please try again.');
+            console.error('Top100Page: Error removing group:', error);
+            this.showError('Failed to remove group. Please try again.');
         }
     }
-
+    
+    updateSortButtons() {
+        const buttons = document.querySelectorAll('.sort-controls button');
+        buttons.forEach(button => {
+            const sortType = button.getAttribute('data-sort');
+            button.classList.toggle('active', sortType === this.currentSort);
+            
+            // Clear any existing direction indicators
+            button.classList.remove('asc', 'desc');
+            
+            // Add direction indicator to the active button
+            if (sortType === this.currentSort) {
+                button.classList.add(this.sortDirection);
+            }
+        });
+    }
+    
     showLoading() {
-        document.getElementById('loadingState').style.display = 'flex';
-    }
-
-    hideLoading() {
-        document.getElementById('loadingState').style.display = 'none';
-    }
-
-    showError(message) {
-        const errorHtml = `
-            <div class="error-message">
-                <p>${message}</p>
-                <button onclick="window.location.reload()" class="button">Try Again</button>
-            </div>
-        `;
-        document.querySelector('main').innerHTML = errorHtml;
-    }
-
-    updateListSummary() {
-        const summaryElement = document.getElementById('groupCount');
-        if (summaryElement) {
-            const filteredGroups = this.filterGroups();
-            summaryElement.setAttribute('data-count', filteredGroups.length);
-            const text = i18nService.translate('displayingItems');
-            summaryElement.textContent = text.replace('{count}', filteredGroups.length);
+        if (this.loadingElement) {
+            this.loadingElement.style.display = 'flex';
+        }
+        if (this.tableContainer) {
+            this.tableContainer.style.display = 'none';
+        }
+        if (this.emptyElement) {
+            this.emptyElement.style.display = 'none';
+        }
+        if (this.errorElement) {
+            this.errorElement.style.display = 'none';
         }
     }
-
+    
+    hideLoading() {
+        if (this.loadingElement) {
+            this.loadingElement.style.display = 'none';
+        }
+    }
+    
+    showEmptyState() {
+        if (this.emptyElement) {
+            this.emptyElement.style.display = 'block';
+        }
+        if (this.tableContainer) {
+            this.tableContainer.style.display = 'none';
+        }
+        if (this.loadingElement) {
+            this.loadingElement.style.display = 'none';
+        }
+        if (this.errorElement) {
+            this.errorElement.style.display = 'none';
+        }
+    }
+    
+    hideEmptyState() {
+        if (this.emptyElement) {
+            this.emptyElement.style.display = 'none';
+        }
+    }
+    
+    showError(message) {
+        if (this.errorElement) {
+            this.errorElement.style.display = 'block';
+            if (this.errorMessageElement) {
+                this.errorMessageElement.textContent = message;
+            }
+        }
+        if (this.loadingElement) {
+            this.loadingElement.style.display = 'none';
+        }
+        if (this.tableContainer) {
+            this.tableContainer.style.display = 'none';
+        }
+        if (this.emptyElement) {
+            this.emptyElement.style.display = 'none';
+        }
+    }
+    
+    hideError() {
+        if (this.errorElement) {
+            this.errorElement.style.display = 'none';
+        }
+    }
+    
     exportToCSV() {
-        // Get the currently filtered and sorted groups
+        console.log('Top100Page: Exporting to CSV...');
         const filteredGroups = this.filterGroups();
         
-        // Define the CSV headers
-        const headers = [
-            'Name',
-            'Pronunciation',
-            'Population',
-            'Country',
-            'Type'
-        ];
-
-        // Convert groups to CSV rows
-        const csvRows = [
-            headers.join(','), // Header row
-            ...filteredGroups.map(group => [
-                `"${group.name.replace(/"/g, '""')}"`, // Escape quotes in names
-                `"${(group.pronunciation || 'pronunciation pending').replace(/"/g, '""')}"`,
-                group.population,
-                `"${group.country.replace(/"/g, '""')}"`,
-                group.type
-            ].join(','))
-        ];
-
-        // Create the CSV content
-        const csvContent = csvRows.join('\n');
-
-        // Create a Blob with the CSV content
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        
-        // Create a download link
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            // Create a URL for the blob
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `top100_list_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+        if (filteredGroups.length === 0) {
+            alert('No data to export. Please adjust your filters or add groups to your list.');
+            return;
         }
+        
+        // Define CSV headers
+        const headers = ['Name', 'Pronunciation', 'Population', 'Country', 'Type', 'Religion', 'Language'];
+        
+        // Convert data to CSV rows
+        const rows = filteredGroups.map(group => {
+            return [
+                this.escapeCsvValue(group.name || ''),
+                this.escapeCsvValue(group.pronunciation || ''),
+                group.population || '',
+                this.escapeCsvValue(group.country || ''),
+                this.escapeCsvValue(group.type || ''),
+                this.escapeCsvValue(group.religion || ''),
+                this.escapeCsvValue(group.language || '')
+            ];
+        });
+        
+        // Combine headers and rows
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // Get current date for filename
+        const date = new Date().toISOString().split('T')[0];
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', `frontier_finder_top100_${date}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    escapeCsvValue(value) {
+        if (value === null || value === undefined) return '';
+        
+        // If the value contains a comma, quote, or newline, wrap it in quotes
+        const stringValue = String(value);
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            // Double any quotes within the value
+            return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        
+        return stringValue;
+    }
+    
+    exportToPDF() {
+        console.log('Top100Page: Exporting to PDF...');
+        const filteredGroups = this.filterGroups();
+        
+        // Alert user that this feature is coming soon
+        alert('PDF export will be available in a future update. Please use CSV export for now.');
+        
+        // TODO: Implement PDF export using a library like jsPDF
+        /*
+        Example implementation:
+        
+        import { jsPDF } from 'jspdf';
+        import 'jspdf-autotable';
+        
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(18);
+        doc.text('Frontier Finder - Top 100 Priority List', 14, 22);
+        
+        // Add date
+        doc.setFontSize(12);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+        
+        // Create table
+        doc.autoTable({
+            head: [['Name', 'Population', 'Country', 'Type', 'Religion', 'Language']],
+            body: filteredGroups.map(group => [
+                group.name || '',
+                group.population ? parseInt(group.population).toLocaleString() : '',
+                group.country || '',
+                group.type || '',
+                group.religion || '',
+                group.language || ''
+            ]),
+            startY: 40,
+            theme: 'grid',
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [24, 57, 99], textColor: 255 }
+        });
+        
+        // Save PDF
+        const date = new Date().toISOString().split('T')[0];
+        doc.save(`frontier_finder_top100_${date}.pdf`);
+        */
     }
 
-    setupSortButtons() {
-        const sortButtons = document.querySelectorAll('[data-sort]');
-        sortButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active class from all buttons
-                sortButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                button.classList.add('active');
-                
-                // Get sort parameters
-                const sortBy = button.getAttribute('data-sort');
-                this.currentSort = sortBy;
-                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-                
-                // Update display
-                this.updateDisplay();
-            });
-        });
+    // Add a retry method
+    retry() {
+        console.log('Top100Page: Retrying...');
+        this.showLoading();
+        
+        // Reset Firebase initialization
+        firebaseService.initialized = false;
+        firebaseService.initializationPromise = null;
+        
+        // Try to initialize Firebase again
+        this.initializeFirebase();
     }
 }
 
-// Create and expose instance for event handlers
-window.top100Page = new Top100Page();
+// Initialize the page when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        console.log('DOM loaded, initializing Top100Page');
+        const page = new Top100Page();
+    } catch (error) {
+        console.error('Error initializing Top100Page:', error);
+        const errorElement = document.getElementById('errorState');
+        const errorMessageElement = document.querySelector('.error-message');
+        
+        if (errorElement) {
+            errorElement.style.display = 'block';
+        }
+        
+        if (errorMessageElement) {
+            errorMessageElement.textContent = 'Failed to initialize the page. Please refresh and try again.';
+        }
+        
+        const loadingElement = document.getElementById('loadingState');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    }
+});
 
 // Add global play function
 window.playPronunciation = (pronunciation) => {

@@ -18,61 +18,93 @@
     <div class="container">
         <header>
             <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
-            <h1 data-i18n="top100Title">Top 100 Priority List</h1>
-            <a href="index.html" class="back-button" data-i18n="backToSearch">← Back to Search</a>
+            <div class="header-content">
+                <h1>Top 100 Priority List</h1>
+            </div>
+            <a href="index.html" class="back-link">← Back to Search</a>
         </header>
 
         <main>
-            <div class="main-content-area">
-                <div class="top100-intro">
-                    <p data-i18n="top100Intro">This is your personalized list of Frontier People Groups (FPGs) that you've selected as priorities for prayer, research, and potential engagement.</p>
-                </div>
-
+            <div class="top100-container">
+                <p>This is your personalized list of Frontier People Groups (FPGs) that you've selected as priorities for prayer, research, and potential engagement.</p>
+                
                 <div class="top100-controls">
                     <div class="search-filter">
-                        <input type="text" id="searchFilter" placeholder="Search by name, country, or language..." data-i18n-placeholder="searchFilterPlaceholder">
+                        <input type="text" id="searchFilter" placeholder="Search by name, country, language...">
                     </div>
+                    
+                    <div class="filter-controls">
+                        <label for="filterSelect">Filter by:</label>
+                        <select id="filterSelect">
+                            <option value="all">All Groups</option>
+                            <option value="FPG">FPGs Only</option>
+                            <option value="UUPG">UUPGs Only</option>
+                        </select>
+                    </div>
+                    
                     <div class="export-controls">
-                        <button id="exportCSVButton" class="button secondary" data-i18n="exportCSV">
-                            <i class="fas fa-file-csv"></i> Export CSV
-                        </button>
-                        <button id="exportPDFButton" class="button secondary" data-i18n="exportPDF">
-                            <i class="fas fa-file-pdf"></i> Export PDF
-                        </button>
+                        <button id="exportCSVButton" class="button csv">Export CSV</button>
+                        <button id="exportPDFButton" class="button pdf">Export PDF</button>
                     </div>
                 </div>
-
-                <div id="top100List" class="top100-list">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <div class="loading-text" data-i18n="loadingList">Loading your Top 100 list...</div>
+                
+                <div class="sort-container">
+                    <div class="list-summary">Sort by:</div>
+                    <div class="sort-controls">
+                        <button data-sort="name">Name</button>
+                        <button data-sort="population">Population</button>
+                        <button data-sort="country">Country</button>
+                        <button data-sort="type">Type</button>
+                        <button data-sort="dateAdded">Date Added</button>
                     </div>
+                </div>
+                
+                <div id="loadingState" class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>Loading your Top 100 list...</p>
+                </div>
+                
+                <div id="errorState" class="error-container" style="display: none;">
+                    <div class="error-message-box">
+                        <p class="error-message">An error occurred while loading your Top 100 list.</p>
+                        <button id="retryButton" class="button primary">Retry</button>
+                        <a href="index.html" class="button">Back to Search</a>
+                    </div>
+                </div>
+                
+                <div id="emptyState" class="empty-container" style="display: none;">
+                    <p>Your Top 100 list is empty. Search for people groups and add them to your list.</p>
+                    <a href="index.html" class="button primary">Start Searching</a>
+                </div>
+                
+                <div id="tableContainer" style="display: none;">
+                    <table id="top100Table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Pronunciation</th>
+                                <th>Listen</th>
+                                <th>Population</th>
+                                <th>Country</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top100List">
+                            <!-- Table rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <aside class="definitions-sidebar">
-                <div class="definition-box">
-                    <h3 data-i18n="definitionsTitle">Key Definitions</h3>
-                    
-                    <div class="definition-item">
-                        <h4 data-i18n="fpgTitle">Frontier People Group (FPG)</h4>
-                        <h5 data-i18n="jpDefinition">Joshua Project Definition:</h5>
-                        <p data-i18n="fpgJPDef">Less than 0.1% Christian and no evidence of a self-sustaining gospel movement.</p>
-                        
-                        <h5 data-i18n="pgDefinition">PeopleGroups.org Definition:</h5>
-                        <p data-i18n="fpgPGDef">A people group with less than 0.1% evangelical Christian believers and no sustained Christ-ward movement.</p>
-                    </div>
-                </div>
-            </aside>
         </main>
 
         <footer>
-            <p data-i18n="copyright">&copy; 2024 Crossover Global. All rights reserved.</p>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
         </footer>
-
-        <!-- Application Scripts -->
-        <script type="module" src="js/config.js"></script>
-        <script type="module" src="js/top100.js"></script>
     </div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/top100.js"></script>
 </body>
 </html> 
