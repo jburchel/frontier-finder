@@ -17,9 +17,14 @@ class JoshuaProjectAPI {
     }
 
     /**
-     * Search for people groups near a location
+     * Search for Frontier People Groups near a location
+     * @param {number} latitude - Center latitude
+     * @param {number} longitude - Center longitude
+     * @param {number} radius - Search radius
+     * @param {string} units - Units (M for miles, K for kilometers)
+     * @returns {Promise<Array>} - Array of FPGs
      */
-    async searchPeopleGroups(params) {
+    async searchNearbyFPGs(latitude, longitude, radius, units = 'M') {
         try {
             // Get all people groups in a single request with a geographic filter
             const queryParams = new URLSearchParams({
@@ -34,22 +39,23 @@ class JoshuaProjectAPI {
                     'Latitude',
                     'Longitude',
                     'PercentEvangelical',
-                    'JPScale'
+                    'JPScale',
+                    'Frontier'
                 ].join(','),
                 // Simpler filter to start with
-                filter: `latitude>${params.latitude-5} AND latitude<${params.latitude+5} AND longitude>${params.longitude-5} AND longitude<${params.longitude+5}`,
+                filter: `latitude>${latitude-5} AND latitude<${latitude+5} AND longitude>${longitude-5} AND longitude<${longitude+5}`,
                 limit: '5000'  // Request maximum number of results
             });
 
             const url = `${this.apiUrl}/v1/people_groups.json?${queryParams}`;
-            console.log('Making JP API request:', url);
+            console.log('Making JP API request for FPGs:', url);
             console.log('Search parameters:', {
-                center: { lat: params.latitude, lon: params.longitude },
-                radius: params.radius,
-                units: params.units,
+                center: { lat: latitude, lon: longitude },
+                radius: radius,
+                units: units,
                 boundingBox: {
-                    lat: { min: params.latitude-5, max: params.latitude+5 },
-                    lon: { min: params.longitude-5, max: params.longitude+5 }
+                    lat: { min: latitude-5, max: latitude+5 },
+                    lon: { min: longitude-5, max: longitude+5 }
                 }
             });
 
@@ -80,45 +86,40 @@ class JoshuaProjectAPI {
                 .filter(pg => {
                     // Calculate distance
                     const distance = this.calculateDistance(
-                        params.latitude,
-                        params.longitude,
+                        latitude,
+                        longitude,
                         pg.Latitude,
                         pg.Longitude,
-                        params.units
+                        units
                     );
                     pg.Distance = distance;
 
-                    // Keep only results within radius and with low evangelical percentage
-                    const withinRadius = distance <= parseFloat(params.radius);
-                    const evangelical = parseFloat(pg.PercentEvangelical || 0);
-                    const isFrontier = evangelical < 0.1;
+                    // Keep only results within radius and that are Frontier People Groups
+                    const withinRadius = distance <= parseFloat(radius);
+                    const isFrontier = pg.Frontier === 'Y';
 
                     console.log(`Filtering ${pg.PeopNameInCountry}:`, {
                         distance,
                         withinRadius,
-                        evangelical,
                         isFrontier
                     });
 
                     return withinRadius && isFrontier;
                 })
                 .map(pg => ({
-                    type: 'FPG',
                     name: pg.PeopNameInCountry || 'Unknown',
                     population: parseInt(pg.Population) || 0,
                     country: pg.Ctry || 'Unknown',
                     religion: pg.PrimaryReligion || 'Unknown',
                     language: pg.PrimaryLanguageName || 'Unknown',
-                    distance: `${pg.Distance} ${params.units}`,
                     evangelical: parseFloat(pg.PercentEvangelical) || 0,
                     jpScale: pg.JPScale || '',
-                    coordinates: {
-                        latitude: parseFloat(pg.Latitude) || 0,
-                        longitude: parseFloat(pg.Longitude) || 0
-                    }
+                    Frontier: pg.Frontier,
+                    latitude: parseFloat(pg.Latitude) || 0,
+                    longitude: parseFloat(pg.Longitude) || 0
                 }));
 
-            console.log(`Found ${filtered.length} FPGs within ${params.radius} ${params.units}`);
+            console.log(`Found ${filtered.length} FPGs within ${radius} ${units}`);
             return filtered;
 
         } catch (error) {
@@ -127,6 +128,15 @@ class JoshuaProjectAPI {
         }
     }
 
+    /**
+     * Calculate distance between two points
+     * @param {number} lat1 - Latitude of point 1
+     * @param {number} lon1 - Longitude of point 1
+     * @param {number} lat2 - Latitude of point 2
+     * @param {number} lon2 - Longitude of point 2
+     * @param {string} unit - Unit (M for miles, K for kilometers)
+     * @returns {number} - Distance in specified units
+     */
     calculateDistance(lat1, lon1, lat2, lon2, unit = 'M') {
         if ((lat1 === lat2) && (lon1 === lon2)) return 0;
         
@@ -136,11 +146,20 @@ class JoshuaProjectAPI {
         const radtheta = Math.PI * theta/180;
         let dist = Math.sin(radlat1) * Math.sin(radlat2) + 
                    Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-        dist = Math.acos(Math.min(1, Math.max(-1, dist)));
+        
+        if (dist > 1) {
+            dist = 1;
+        }
+        
+        dist = Math.acos(dist);
         dist = dist * 180/Math.PI;
         dist = dist * 60 * 1.1515; // Distance in miles
-        if (unit === "K") dist = dist * 1.609344; // Convert to kilometers
-        return Math.round(dist);
+        
+        if (unit === "K") {
+            dist = dist * 1.609344; // Convert to kilometers
+        }
+        
+        return dist;
     }
 }
 

@@ -43,10 +43,6 @@
                             <dt data-i18n="searchRadius">Search Radius:</dt>
                             <dd id="searchRadius"></dd>
                         </div>
-                        <div>
-                            <dt data-i18n="searchType">Search Type:</dt>
-                            <dd id="searchType"></dd>
-                        </div>
                     </dl>
                 </div>
 
@@ -65,7 +61,7 @@
                                     <th data-i18n="headerPronunciation">Pronunciation</th>
                                     <th data-i18n="headerPopulation">Population</th>
                                     <th data-i18n="headerCountry">Country</th>
-                                    <th data-i18n="headerType">Type</th>
+                                    <th data-i18n="headerDistance">Distance</th>
                                 </tr>
                             </thead>
                             <tbody id="resultsTableBody">
@@ -93,15 +89,6 @@
                         <h5 data-i18n="pgDefinition">PeopleGroups.org Definition:</h5>
                         <p data-i18n="fpgPGDef">A people group with less than 0.1% evangelical Christian believers and no sustained Christ-ward movement.</p>
                     </div>
-                    
-                    <div class="definition-item">
-                        <h4 data-i18n="uupgTitle">Unengaged Unreached People Group (UUPG)</h4>
-                        <h5 data-i18n="jpDefinition">Joshua Project Definition:</h5>
-                        <p data-i18n="uupgJPDef">A people group with no active church planting methodology underway.</p>
-                        
-                        <h5 data-i18n="pgDefinition">PeopleGroups.org Definition:</h5>
-                        <p data-i18n="uupgPGDef">A people group with no known active church planting strategy and less than 2% evangelical.</p>
-                    </div>
                 </div>
             </aside>
         </main>
@@ -109,30 +96,10 @@
         <footer>
             <p data-i18n="copyright">&copy; 2024 Crossover Global. All rights reserved.</p>
         </footer>
+
+        <!-- Application Scripts -->
+        <script type="module" src="js/config.js"></script>
+        <script type="module" src="js/results.js"></script>
     </div>
-
-    <script type="module">
-        import { i18nService } from './js/i18n.js';
-        import { searchService } from './js/search.js';
-        import { ui } from './js/ui.js';
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Initialize i18n first
-                await i18nService.initialize();
-                
-                // Translate the page title
-                document.title = i18nService.translate('resultsTitle') + ' - Frontier Finder';
-                
-                // Initialize search service and UI
-                await searchService.initialize();
-                await ui.initializeAsync();
-            } catch (error) {
-                console.error('Failed to initialize results page:', error);
-            }
-        });
-    </script>
-    <script type="module" src="js/services/pronunciationService.js"></script>
-    <script type="module" src="js/results.js"></script>
 </body>
 </html> 
