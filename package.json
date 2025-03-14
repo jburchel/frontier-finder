@@ -6,7 +6,12 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server -p 8080 -c-1"
+    "start": "http-server -p 8080 -c-1",
+    "update-upg-data": "node js/updateAllUPGData.js",
+    "update-population": "node js/updatePopulationData.js",
+    "update-description": "node js/updateDescriptionData.js",
+    "remove-description": "node js/removeDescriptionColumn.js",
+    "update-location": "node js/updateLocationData.js"
   },
   "repository": {
     "type": "git",
