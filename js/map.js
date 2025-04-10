@@ -11,47 +11,68 @@ class MapManager {
     }
 
     async initialize() {
-        // Initialize the map
-        this.map = L.map('map').setView([20, 0], 2);
-        
-        // Add the OpenStreetMap tiles with English labels
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors',
-            subdomains: 'abc',
-            // Add language parameter for English labels
-            lang: 'en'
-        }).addTo(this.map);
+        try {
+            console.log('Initializing map...');
+            
+            // Initialize the map
+            this.map = L.map('map').setView([20, 0], 2);
+            console.log('Map created');
+            
+            // Add the OpenStreetMap tiles with English labels
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors',
+                subdomains: 'abc',
+                // Add language parameter for English labels
+                lang: 'en'
+            }).addTo(this.map);
+            console.log('Base tile layer added');
 
-        // Add a second layer for English labels
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors, © CARTO',
-            subdomains: 'abcd',
-            pane: 'shadowPane'
-        }).addTo(this.map);
+            // Add a second layer for English labels
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors, © CARTO',
+                subdomains: 'abcd',
+                pane: 'shadowPane'
+            }).addTo(this.map);
+            console.log('Label layer added');
 
-        // Create marker cluster group
-        this.markerClusterGroup = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true
-        });
-        this.map.addLayer(this.markerClusterGroup);
+            // Create marker cluster group
+            this.markerClusterGroup = L.markerClusterGroup({
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true
+            });
+            this.map.addLayer(this.markerClusterGroup);
+            console.log('Marker cluster group created');
 
-        // Add loading indicator
-        this.addLoadingIndicator();
+            // Add loading indicator
+            this.addLoadingIndicator();
+            console.log('Loading indicator added');
 
-        // Initialize search input
-        this.searchInput = document.getElementById('map-search');
-        this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+            // Initialize search input
+            this.searchInput = document.getElementById('map-search');
+            if (this.searchInput) {
+                this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+                console.log('Search input initialized');
+            } else {
+                console.warn('Search input element not found');
+            }
 
-        // Load UPG data
-        await this.loadUPGData();
-        
-        // Add markers for all UPGs
-        this.addMarkers();
+            // Load UPG data
+            console.log('Loading UPG data...');
+            await this.loadUPGData();
+            console.log('UPG data loaded');
+            
+            // Add markers for all UPGs
+            this.addMarkers();
+            console.log('Markers added');
+            
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            this.showError('Failed to initialize map. Please try again later.');
+        }
     }
 
     addLoadingIndicator() {
@@ -69,7 +90,10 @@ class MapManager {
 
     async loadUPGData() {
         try {
-            const response = await fetch('data/current_upgs.csv');
+            // Determine the correct path based on environment
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            const basePath = isGitHubPages ? '/frontier-finder' : '';
+            const response = await fetch(`${basePath}/data/current_upgs.csv`);
             const csvText = await response.text();
             
             // Parse CSV data
