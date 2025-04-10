@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- Add Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <!-- Add MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <!-- Add Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <!-- Add MarkerCluster JavaScript -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script>
+    function speakText(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    }
+    </script>
+    <script type="module">
+        import { firebaseService } from './js/firebase.js';
+        import { mapManager } from './js/map.js';
+        
+        // Initialize Firebase and Map when the page loads
+        window.addEventListener('load', async () => {
+            try {
+                await firebaseService.initialize();
+                await mapManager.initialize();
+            } catch (error) {
+                console.error('Failed to initialize services:', error);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <div class="header-content">
+                <h1>Frontier Finder</h1>
+                <p class="mission-statement">Crossover Global passionately seeks to glorify God by providing Gospel access through the planting of multiplying churches among the unreached peoples of the world.</p>
+            </div>
+        </header>
+
+        <main>
+            <div class="main-content-area">
+                <section class="search-section">
+                    <h2>Find Frontier and Unengaged People Groups</h2>
+                    <p>Search for Unreached Unengaged People Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
+                    
+                    <!-- Add Map Container -->
+                    <div class="map-container">
+                        <div class="map-search-box">
+                            <input type="text" id="map-search" placeholder="Search UPGs...">
+                        </div>
+                        <div id="map"></div>
+                    </div>
+                    
+                    <div class="search-grid">
+                        <div class="input-group">
+                            <label for="countrySelect">Select Country:</label>
+                            <select id="countrySelect" required>
+                                <option value="">Select a country...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="upgSelect">Select UPG:</label>
+                            <select id="upgSelect" required disabled>
+                                <option value="">Select a UPG...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="radius">Search Radius:</label>
+                            <input type="number" id="radius" min="1" max="1000" value="100" required>
+                            <div class="radio-group inline">
+                                <label>
+                                    <input type="radio" name="units" value="M" checked> Miles
+                                </label>
+                                <label>
+                                    <input type="radio" name="units" value="K"> Kilometers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="searchButton" class="button primary" disabled>Search</button>
+                    </div>
+                </section>
+                
+                <section class="top-100-section">
+                    <h2>Top 100 Priority List</h2>
+                    <p>Create and manage your personalized list of priority people groups for prayer, research, and potential engagement. Track up to 100 FPGs and UUPGs that you want to focus on.</p>
+                    <div class="button-container">
+                        <a href="top100.html" class="button">View Top 100 List</a>
+                    </div>
+                </section>
+            </div>
+            
+            <aside class="definitions-sidebar">
+                <div class="definition-box">
+                    <h3>Key Definitions</h3>
+                    <div class="definition-item">
+                        <h4>Frontier People Group (FPG)</h4>
+                        <h5>Joshua Project Definition:</h5>
+                        <p>Less than 0.1% Christian and no evidence of a self-sustaining gospel movement.</p>
+                        
+                        <h5>PeopleGroups.org Definition:</h5>
+                        <p>A people group with less than 0.1% evangelical Christian believers and no sustained Christ-ward movement.</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+
+        <!-- Application Scripts -->
+        <script type="module" src="js/config.js"></script>
+        <script type="module" src="js/main.js"></script>
+
+        <!-- Responsive Voice Search -->
+        <script src="https://code.responsivevoice.org/responsivevoice.js?key=muyxPn8r"></script>
+        
+        <script type="module">
+            // Quick test to verify everything is loading
+            window.addEventListener('load', () => {
+                console.group('App Load Verification');
+                console.log('1. Checking image:', document.querySelector('.logo').complete);
+                console.log('2. Checking scripts:', {
+                    config: typeof window.jpConfig !== 'undefined',
+                    data: typeof window.loadExistingUPGs !== 'undefined'
+                });
+                console.log('3. Checking form:', document.getElementById('searchForm') !== null);
+                console.groupEnd();
+            });
+        </script>
+        
+    </div>
+</body>
+</html>

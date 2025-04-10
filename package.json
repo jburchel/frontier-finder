@@ -1,0 +1,36 @@
+{
+  "name": "frontier-finder",
+  "version": "1.0.0",
+  "description": "A web application for Crossover Global to find Frontier People Groups (FPGs) and Unreached Unengaged People Groups (UUPGs) within a specified proximity of a selected UPG.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server -p 8080 -c-1",
+    "update-upg-data": "node js/updateAllUPGData.js",
+    "update-population": "node js/updatePopulationData.js",
+    "update-description": "node js/updateDescriptionData.js",
+    "remove-description": "node js/removeDescriptionColumn.js",
+    "update-location": "node js/updateLocationData.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jburchel/frontier-finder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jburchel/frontier-finder/issues"
+  },
+  "homepage": "https://github.com/jburchel/frontier-finder#readme",
+  "dependencies": {
+    "csv-parse": "^5.6.0",
+    "csv-stringify": "^6.5.2",
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
