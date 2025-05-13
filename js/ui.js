@@ -134,7 +134,14 @@ class UI {
     setupEventListeners() {
         // Country selection changes
         this.countrySelect?.addEventListener('change', (e) => {
-            this.handleCountryChange(e.target.value);
+            const selectedCountry = e.target.value;
+            this.handleCountryChange(selectedCountry);
+            
+            // If a country is selected, zoom to it on the map
+            if (selectedCountry && window.zoomToCountry) {
+                console.log(`Calling zoomToCountry with ${selectedCountry}`);
+                window.zoomToCountry(selectedCountry);
+            }
         });
 
         // Search button click
@@ -238,8 +245,17 @@ class UI {
             // Add change event listener to UPG dropdown
             this.upgSelect.addEventListener('change', () => {
                 console.log('UPG dropdown changed');
+                const selectedUPG = this.upgSelect.value;
+                
                 if (this.searchButton) {
-                    this.searchButton.disabled = !this.upgSelect.value;
+                    this.searchButton.disabled = !selectedUPG;
+                }
+                
+                // If a UPG is selected, zoom to it on the map
+                if (selectedUPG && window.zoomToUPG) {
+                    const selectedCountry = this.countrySelect.value;
+                    console.log(`Calling zoomToUPG with ${selectedCountry}, ${selectedUPG}`);
+                    window.zoomToUPG(selectedCountry, selectedUPG);
                 }
             });
             
