@@ -18,6 +18,86 @@ class UI {
         this.resultsSection = document.querySelector('.results-section');
         this.uupgList = document.getElementById('uupgList');
         this.fpgList = document.getElementById('fpgList');
+        
+        // Loading indicator
+        this.loadingIndicator = document.querySelector('.loading-indicator');
+    }
+    
+    /**
+     * Set loading state
+     * @param {boolean} isLoading - Whether the UI is in a loading state
+     */
+    setLoading(isLoading) {
+        console.log('SEARCH DEBUG: Setting loading state:', isLoading);
+        
+        // Create loading indicator if it doesn't exist
+        if (!this.loadingIndicator) {
+            this.loadingIndicator = document.createElement('div');
+            this.loadingIndicator.className = 'loading-indicator';
+            this.loadingIndicator.innerHTML = '<div class="loading-spinner"></div><div class="loading-text">Loading...</div>';
+            document.body.appendChild(this.loadingIndicator);
+        }
+        
+        // Show or hide loading indicator
+        if (isLoading) {
+            this.loadingIndicator.style.display = 'flex';
+            if (this.searchButton) {
+                this.searchButton.disabled = true;
+            }
+        } else {
+            this.loadingIndicator.style.display = 'none';
+            if (this.searchButton) {
+                this.searchButton.disabled = false;
+            }
+        }
+    }
+    
+    /**
+     * Show an error message to the user
+     * @param {string} message - Error message to display
+     */
+    showError(message) {
+        console.log('SEARCH DEBUG: Showing error message:', message);
+        
+        // Create error container if it doesn't exist
+        let errorContainer = document.querySelector('.error-container');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.className = 'error-container';
+            document.body.appendChild(errorContainer);
+        }
+        
+        // Create error message
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'error-message';
+        errorMessage.innerHTML = `
+            <div class="error-icon">⚠️</div>
+            <div class="error-text">${message}</div>
+            <button class="error-close">×</button>
+        `;
+        
+        // Add close button functionality
+        const closeButton = errorMessage.querySelector('.error-close');
+        closeButton.addEventListener('click', () => {
+            errorMessage.remove();
+            if (errorContainer.children.length === 0) {
+                errorContainer.style.display = 'none';
+            }
+        });
+        
+        // Add error message to container and show it
+        errorContainer.appendChild(errorMessage);
+        errorContainer.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (errorMessage && errorMessage.parentNode) {
+                errorMessage.remove();
+                if (errorContainer.children.length === 0) {
+                    errorContainer.style.display = 'none';
+                }
+            }
+        }, 5000);
     }
 
     /**
@@ -59,8 +139,14 @@ class UI {
 
         // Search button click
         this.searchButton?.addEventListener('click', async (e) => {
+            console.log('SEARCH DEBUG: Search button clicked');
             e.preventDefault();
-            await this.handleSearch();
+            try {
+                console.log('SEARCH DEBUG: Calling handleSearch method');
+                await this.handleSearch();
+            } catch (error) {
+                console.error('SEARCH DEBUG: Error in search button click handler:', error);
+            }
         });
 
         // Form submission (if form exists)
@@ -108,7 +194,12 @@ class UI {
      * Handle country selection change
      */
     handleCountryChange(country) {
-        if (!this.upgSelect) return;
+        console.log(`handleCountryChange called with country: ${country}`);
+        
+        if (!this.upgSelect) {
+            console.error('UPG select element not found in handleCountryChange');
+            return;
+        }
 
         // Clear current options
         this.upgSelect.innerHTML = '<option value="">Select a UPG</option>';
@@ -120,10 +211,20 @@ class UI {
         }
 
         if (country) {
+            console.log(`Filtering UPGs for country: ${country}`);
+            console.log(`searchService.currentUPGs available: ${!!searchService.currentUPGs}`);
+            
+            if (!searchService.currentUPGs) {
+                console.error('searchService.currentUPGs is null or undefined');
+                return;
+            }
+            
             // Filter UPGs for selected country
             const upgs = searchService.currentUPGs
                 .filter(upg => upg.country === country)
                 .sort((a, b) => a.name.localeCompare(b.name));
+            
+            console.log(`Found ${upgs.length} UPGs for country ${country}`);
 
             // Add options
             upgs.forEach(upg => {
@@ -131,14 +232,18 @@ class UI {
                 option.value = upg.name;
                 option.textContent = upg.name;
                 this.upgSelect.appendChild(option);
+                console.log(`Added UPG option: ${upg.name}`);
             });
 
             // Add change event listener to UPG dropdown
             this.upgSelect.addEventListener('change', () => {
+                console.log('UPG dropdown changed');
                 if (this.searchButton) {
                     this.searchButton.disabled = !this.upgSelect.value;
                 }
             });
+            
+            console.log(`UPG dropdown now has ${this.upgSelect.options.length} options`);
         }
     }
 
@@ -146,7 +251,9 @@ class UI {
      * Handle search form submission
      */
     async handleSearch() {
+        console.log('SEARCH DEBUG: handleSearch method called');
         try {
+            console.log('SEARCH DEBUG: Setting loading state');
             this.setLoading(true);
 
             // Get form values
@@ -154,6 +261,16 @@ class UI {
             const upgName = this.upgSelect?.value;
             const radius = this.radiusInput?.value;
             const unitsEl = document.querySelector('input[name="units"]:checked');
+            const searchTypeEls = document.querySelectorAll('input[name="searchType"]:checked');
+            
+            // Get all selected search types
+            const searchTypes = [];
+            searchTypeEls.forEach(el => searchTypes.push(el.value));
+            
+            // If nothing is selected, default to FPG
+            if (searchTypes.length === 0) {
+                searchTypes.push('fpg');
+            }
             
             // Debug logging
             console.log('Form values:', {
@@ -161,7 +278,7 @@ class UI {
                 upgName,
                 radius,
                 units: unitsEl?.value,
-                type: 'both' // Always search for both FPGs and UUPGs
+                searchTypes: searchTypes
             });
 
             // Validate inputs with more specific error messages
@@ -171,12 +288,48 @@ class UI {
             if (!unitsEl) throw new Error('Please select a distance unit (Miles or Kilometers)');
 
             // Find the selected UPG
-            const selectedUPG = searchService.currentUPGs.find(
-                upg => upg.country === country && upg.name === upgName
-            );
-
+            console.log('Looking for UPG:', { country, upgName });
+            
+            // Try to parse the UPG value as JSON first (in case it's a JSON string)
+            let selectedUPG;
+            try {
+                selectedUPG = JSON.parse(upgName);
+                console.log('Found UPG from JSON:', selectedUPG);
+            } catch (e) {
+                // If it's not JSON, look for the UPG in the searchService
+                console.log('Looking for UPG in searchService');
+                selectedUPG = searchService.currentUPGs.find(
+                    upg => upg.country === country && upg.name === upgName
+                );
+                
+                if (!selectedUPG) {
+                    console.log('UPG not found in searchService, creating a basic UPG object');
+                    // If we still can't find it, create a basic UPG object from the map data
+                    // This is needed when clicking on markers and then searching
+                    selectedUPG = {
+                        name: upgName,
+                        country: country
+                    };
+                    
+                    // Try to find coordinates from the map data
+                    const mapData = window.upgData;
+                    if (mapData && Array.isArray(mapData)) {
+                        const mapUPG = mapData.find(u => u.name === upgName && u.country === country);
+                        if (mapUPG && mapUPG.lat && mapUPG.lng) {
+                            selectedUPG.latitude = mapUPG.lat;
+                            selectedUPG.longitude = mapUPG.lng;
+                        }
+                    }
+                }
+            }
+            
             if (!selectedUPG) {
                 throw new Error('Selected UPG not found');
+            }
+            
+            // Make sure we have coordinates
+            if (!selectedUPG.latitude || !selectedUPG.longitude) {
+                throw new Error('Selected UPG is missing coordinates');
             }
 
             // Encode parameters for URL
@@ -184,15 +337,20 @@ class UI {
                 upg: encodeURIComponent(JSON.stringify(selectedUPG)),
                 radius: radius,
                 units: unitsEl.value,
-                type: 'both' // Always search for both FPGs and UUPGs
+                types: encodeURIComponent(JSON.stringify(searchTypes)) // Pass all selected search types
             });
 
             // Navigate to results page with parameters
             window.location.href = `results.html?${params.toString()}`;
 
         } catch (error) {
-            console.error('Search failed:', error);
-            this.showError(error.message);
+            console.error('SEARCH DEBUG: Search failed:', error);
+            // Add showError method if it doesn't exist
+            if (typeof this.showError === 'function') {
+                this.showError(error.message);
+            } else {
+                alert('Search error: ' + error.message);
+            }
         } finally {
             this.setLoading(false);
         }

@@ -54,7 +54,8 @@ class ResultsUI {
             const searchParams = {
                 upg: JSON.parse(decodeURIComponent(params.get('upg'))),
                 radius: params.get('radius'),
-                units: params.get('units')
+                units: params.get('units'),
+                types: params.get('types') ? JSON.parse(decodeURIComponent(params.get('types'))) : ['fpg'] // Get search types with default to FPG
             };
 
             console.log('Initializing results with params:', searchParams);
@@ -70,18 +71,21 @@ class ResultsUI {
             // Update loading message
             this.showLoading(i18nService.translate('searchingGroups'));
 
+            // Perform search with multiple types
             const results = await searchService.searchNearby(
                 searchParams.upg,
                 searchParams.radius,
-                searchParams.units
+                searchParams.units,
+                searchParams.types
             );
 
-            console.log('Search results:', results);
+            console.log('RESULTS DEBUG: Search results received:', results);
 
             // Hide loading before displaying results
             this.hideLoading();
 
             if (!results || results.length === 0) {
+                console.log('RESULTS DEBUG: No results found, displaying no results message');
                 this.resultsContainer.innerHTML = `
                     <div class="no-results">
                         <p>${i18nService.translate('noResults')}</p>
@@ -93,11 +97,13 @@ class ResultsUI {
                 return;
             }
 
+            console.log('RESULTS DEBUG: Displaying search parameters and results');
+            
             // Display search parameters first
             this.displaySearchParams(searchParams);
             
             // Display results
-            this.displayResults(results);
+            await this.displayResults(results);
             
             // Setup event listeners
             this.setupEventListeners();
@@ -117,82 +123,128 @@ class ResultsUI {
     setupEventListeners() {
         const addToListButton = document.getElementById('addToListButton');
         if (addToListButton) {
-            addToListButton.addEventListener('click', () => this.addToTop100List());
+            addToListButton.addEventListener('click', () => this.addSelectedToList());
         }
-        
-        const addSelectedButton = document.getElementById('addSelectedButton');
-        if (addSelectedButton) {
-            addSelectedButton.addEventListener('click', () => this.addToTop100List());
-        }
-    }
 
-    setupSorting(table) {
-        const headers = table.querySelectorAll('thead th');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => this.toggleSelectAll(e.target.checked));
+        }
+
+        // Add sort listeners to table headers
+        const headers = document.querySelectorAll('.results-table th[data-sort]');
         headers.forEach(header => {
-            // Skip the checkbox column
-            if (header.textContent.trim() === 'Select') return;
-            
-            header.addEventListener('click', () => {
-                const column = header.getAttribute('data-sort') || 
-                               header.textContent.toLowerCase().replace(/\s+/g, '');
-                
-                // Toggle direction if clicking the same column
-                if (this.sortConfig.column === column) {
-                    this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.sortConfig.column = column;
-                    this.sortConfig.direction = 'asc';
-                }
-                
-                // Update UI to show sort direction
-                headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-                header.classList.add(`sort-${this.sortConfig.direction}`);
-                
-                this.sortResults();
-            });
+            header.addEventListener('click', () => this.sortResultsBy(header.dataset.sort));
         });
     }
 
-    sortResults() {
-        const { column, direction } = this.sortConfig;
-        
-        this.currentResults.sort((a, b) => {
-            let valueA = a[column];
-            let valueB = b[column];
-            
-            // Handle special cases
-            if (column === 'population') {
-                valueA = parseInt(valueA) || 0;
-                valueB = parseInt(valueB) || 0;
-            } else if (column === 'distance') {
-                valueA = parseFloat(valueA) || 0;
-                valueB = parseFloat(valueB) || 0;
-            }
-            
-            // Compare values
-            if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-            if (valueA > valueB) return direction === 'asc' ? 1 : -1;
-            return 0;
+    toggleSelectAll(checked) {
+        const checkboxes = document.querySelectorAll('.result-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+            this.toggleResultSelection(checkbox.value, checked);
         });
+    }
+
+    toggleResultSelection(resultId, selected) {
+        if (selected) {
+            this.selectedResults.add(resultId);
+        } else {
+            this.selectedResults.delete(resultId);
+        }
+
+        // Update the add to list button state
+        this.updateAddToListButton();
+    }
+
+    updateAddToListButton() {
+        const addToListButton = document.getElementById('addToListButton');
+        if (addToListButton) {
+            addToListButton.disabled = this.selectedResults.size === 0;
+        }
+    }
+
+    async addSelectedToList() {
+        if (this.selectedResults.size === 0) return;
+
+        try {
+            // Show loading
+            this.showLoading(i18nService.translate('addingToList'));
+
+            // Get the selected results
+            const selectedItems = this.currentResults.filter(result => 
+                this.selectedResults.has(result.id || result.name)
+            );
+
+            console.log('Adding to list:', selectedItems);
+
+            // Add to Firebase
+            const db = firebaseService.getFirestore();
+            const top100Collection = collection(db, 'top100');
+
+            // Add each selected item
+            for (const item of selectedItems) {
+                await addDoc(top100Collection, {
+                    ...item,
+                    addedAt: new Date().toISOString()
+                });
+            }
+
+            // Redirect to top 100 page
+            window.location.href = 'top100.html';
+
+        } catch (error) {
+            console.error('Error adding to list:', error);
+            this.displayError(error.message);
+        }
+    }
+
+    displayError(message) {
+        if (!this.resultsContainer) return;
+
+        this.hideLoading();
         
-        // Re-display sorted results
-        this.displayResults(this.currentResults, false);
+        this.resultsContainer.innerHTML = `
+            <div class="error-container">
+                <div class="error-icon">⚠️</div>
+                <div class="error-message">${message}</div>
+                <button onclick="window.location.href='index.html'" class="button" data-i18n="tryAgain">
+                    ${i18nService.translate('tryAgain')}
+                </button>
+            </div>
+        `;
     }
 
     createFilterControls() {
         const filterContainer = document.createElement('div');
         filterContainer.className = 'filter-container';
         
-        const filterInput = document.createElement('input');
-        filterInput.type = 'text';
-        filterInput.placeholder = i18nService.translate('filterResults');
-        filterInput.className = 'filter-input';
+        filterContainer.innerHTML = `
+            <div class="filter-input-container">
+                <input type="text" id="filterInput" placeholder="${i18nService.translate('filterPlaceholder')}" class="filter-input" />
+                <button id="clearFilterButton" class="clear-filter-button">×</button>
+            </div>
+        `;
         
-        filterInput.addEventListener('input', (e) => {
-            this.filterResults(e.target.value);
-        });
+        // Add event listeners after the DOM is updated
+        setTimeout(() => {
+            const filterInput = document.getElementById('filterInput');
+            const clearFilterButton = document.getElementById('clearFilterButton');
+            
+            if (filterInput) {
+                filterInput.addEventListener('input', (e) => this.filterResults(e.target.value));
+            }
+            
+            if (clearFilterButton) {
+                clearFilterButton.addEventListener('click', () => {
+                    if (filterInput) {
+                        filterInput.value = '';
+                        this.filterResults('');
+                    }
+                });
+            }
+        }, 0);
         
-        filterContainer.appendChild(filterInput);
         return filterContainer;
     }
 
@@ -213,6 +265,13 @@ class ResultsUI {
     }
 
     async displayResults(results, storeResults = true) {
+        console.log('RESULTS DEBUG: displayResults called with', results.length, 'results');
+        
+        // Get the units parameter from the URL
+        const params = new URLSearchParams(window.location.search);
+        const units = params.get('units') || 'M';
+        this.units = units; // Store units for later use
+        
         if (storeResults) {
             this.allResults = [...results];
             this.currentResults = [...results];
@@ -236,13 +295,14 @@ class ResultsUI {
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
-                <th data-i18n="headerSelect">${i18nService.translate('headerSelect')}</th>
-                <th data-i18n="headerName">${i18nService.translate('headerName')}</th>
-                <th data-i18n="headerPronunciation">${i18nService.translate('headerPronunciation')}</th>
+                <th>Select</th>
+                <th>People Group</th>
+                <th>Type</th>
+                <th>Pronunciation</th>
                 <th></th> <!-- Empty header for play buttons -->
-                <th data-i18n="headerPopulation">${i18nService.translate('headerPopulation')}</th>
-                <th data-i18n="headerCountry">${i18nService.translate('headerCountry')}</th>
-                <th data-i18n="headerDistance">${i18nService.translate('headerDistance')}</th>
+                <th>Population</th>
+                <th>Country</th>
+                <th>Distance</th>
             </tr>
         `;
         table.appendChild(thead);
@@ -263,41 +323,52 @@ class ResultsUI {
             }
             
             const row = document.createElement('tr');
+            
+            // Determine the type label and apply styling
+            let typeLabel = result.type || 'UPG';
+            let typeClass = '';
+            
+            if (typeLabel === 'FPG') {
+                typeClass = 'fpg-type';
+            } else if (typeLabel === 'UUPG') {
+                typeClass = 'uupg-type';
+            } else if (typeLabel === 'Zero Scale') {
+                typeClass = 'zero-scale-type';
+            }
+            
             row.innerHTML = `
                 <td>
-                    <input type="checkbox" class="result-checkbox" data-index="${i}">
+                    <input type="checkbox" class="result-checkbox" value="${result.id || result.name}" 
+                           ${this.selectedResults.has(result.id || result.name) ? 'checked' : ''} />
                 </td>
                 <td>${result.name}</td>
+                <td><span class="type-badge ${typeClass}">${typeLabel}</span></td>
                 <td>${result.pronunciation || ''}</td>
                 <td>
                     ${result.pronunciation ? `
-                        <button class="speak-button" title="Speak pronunciation">
-                            <i class="fas fa-volume-up"></i>
+                        <button class="play-button" data-pronunciation="${result.pronunciation}">
+                            <i class="fas fa-volume-up"></i> Play
                         </button>
                     ` : ''}
                 </td>
                 <td>${result.population.toLocaleString()}</td>
                 <td>${result.country}</td>
-                <td>${formatDistance(result.distance, results[0].units || 'M')}</td>
+                <td>${formatDistance(result.distance, this.units)}</td>
             `;
             
-            // Add event listener for checkbox
+            // Add event listener for the checkbox
             const checkbox = row.querySelector('.result-checkbox');
-            checkbox.addEventListener('change', () => {
-                this.handleSelectionChange(checkbox, i);
-            });
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    this.toggleResultSelection(e.target.value, e.target.checked);
+                });
+            }
             
-            // Add event listener for speak button
-            const speakButton = row.querySelector('.speak-button');
-            if (speakButton) {
-                speakButton.addEventListener('click', () => {
-                    const text = result.pronunciation || result.name;
-                    if (window.responsiveVoice && window.responsiveVoice.voiceSupport()) {
-                        window.responsiveVoice.speak(text);
-                    } else if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        window.speechSynthesis.speak(utterance);
-                    }
+            // Add event listener for the play button
+            const playButton = row.querySelector('.play-button');
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    pronunciationService.speak(playButton.dataset.pronunciation);
                 });
             }
             
@@ -307,152 +378,67 @@ class ResultsUI {
         table.appendChild(tbody);
         tableContainer.appendChild(table);
         
-        // Clear previous results and add new table
+        // Add the "Add to Top 100" button
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        buttonContainer.innerHTML = `
+            <button id="addToListButton" class="button" disabled data-i18n="addToList">
+                ${i18nService.translate('addToList')}
+            </button>
+        `;
+        
+        // Clear the container and add the new elements
         this.resultsContainer.innerHTML = '';
         this.resultsContainer.appendChild(tableContainer);
+        this.resultsContainer.appendChild(buttonContainer);
         
-        // Setup sorting
-        this.setupSorting(table);
-        
-        // Update button state
-        this.updateAddToListButton();
+        // Setup event listeners for the newly added elements
+        this.setupEventListeners();
     }
 
-    displayError(message) {
-        if (!this.resultsContainer) return;
-        
-        this.resultsContainer.innerHTML = `
-            <div class="error-container">
-                <div class="error-icon">⚠️</div>
-                <div class="error-message">${message}</div>
-                <button onclick="window.location.href='index.html'" class="button">
-                    ${i18nService.translate('backToSearch')}
-                </button>
-            </div>
-        `;
-    }
-
-    handleSelectionChange(checkbox, resultIndex) {
-        if (checkbox.checked) {
-            this.selectedResults.add(resultIndex);
+    sortResultsBy(column) {
+        // If same column, toggle direction
+        if (this.sortConfig.column === column) {
+            this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
         } else {
-            this.selectedResults.delete(resultIndex);
+            // New column, set default direction
+            this.sortConfig.column = column;
+            this.sortConfig.direction = column === 'distance' ? 'asc' : 'desc';
         }
         
-        this.updateAddToListButton();
+        this.sortResults();
     }
 
-    updateAddToListButton() {
-        const addButton = document.getElementById('addToListButton');
-        const addSelectedButton = document.getElementById('addSelectedButton');
+    sortResults() {
+        const { column, direction } = this.sortConfig;
         
-        if (addButton) {
-            addButton.disabled = this.selectedResults.size === 0;
-        }
+        // Sort the results
+        this.currentResults.sort((a, b) => {
+            let valueA = a[column];
+            let valueB = b[column];
+            
+            // Handle special cases
+            if (column === 'name' || column === 'country') {
+                valueA = valueA.toLowerCase();
+                valueB = valueB.toLowerCase();
+            }
+            
+            // Compare
+            if (valueA < valueB) {
+                return direction === 'asc' ? -1 : 1;
+            }
+            if (valueA > valueB) {
+                return direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
         
-        if (addSelectedButton) {
-            addSelectedButton.disabled = this.selectedResults.size === 0;
-            addSelectedButton.textContent = `${i18nService.translate('buttonAddSelected')} (${this.selectedResults.size})`;
-        }
-    }
-
-    async addToTop100List() {
-        try {
-            if (!firebaseService.isInitialized()) {
-                await firebaseService.initialize();
-            }
-            
-            const db = firebaseService.getFirestore();
-            if (!db) {
-                throw new Error('Firestore not available');
-            }
-            
-            const selectedItems = Array.from(this.selectedResults).map(index => {
-                const item = this.currentResults[index];
-                return {
-                    name: item.name,
-                    country: item.country,
-                    population: item.population,
-                    language: item.language,
-                    religion: item.religion,
-                    pronunciation: item.pronunciation || '',
-                    type: 'FPG',
-                    addedAt: new Date().toISOString()
-                };
-            });
-            
-            if (selectedItems.length === 0) {
-                alert(i18nService.translate('noItemsSelected'));
-                return;
-            }
-            
-            // Show loading
-            this.showLoading(i18nService.translate('savingToList'));
-            
-            // Get existing items to check for duplicates
-            const top100Collection = collection(db, 'top100');
-            const existingSnapshot = await getDocs(top100Collection);
-            const existingItems = existingSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            
-            // Check for duplicates
-            const duplicates = [];
-            const newItems = [];
-            
-            for (const item of selectedItems) {
-                const isDuplicate = existingItems.some(existing => 
-                    existing.name === item.name && 
-                    existing.country === item.country
-                );
-                
-                if (isDuplicate) {
-                    duplicates.push(item.name);
-                } else {
-                    newItems.push(item);
-                }
-            }
-            
-            // Add new items
-            for (const item of newItems) {
-                await addDoc(top100Collection, item);
-            }
-            
-            // Hide loading
-            this.hideLoading();
-            
-            // Show result message
-            let message = '';
-            if (newItems.length > 0) {
-                message += `${i18nService.translate('addedToList')}: ${newItems.length} ${i18nService.translate('items')}. `;
-            }
-            if (duplicates.length > 0) {
-                message += `${i18nService.translate('duplicatesSkipped')}: ${duplicates.join(', ')}`;
-            }
-            
-            alert(message);
-            
-            // Redirect to top100 page
-            window.location.href = 'top100.html';
-            
-        } catch (error) {
-            console.error('Error adding to Top 100 list:', error);
-            this.hideLoading();
-            alert(`${i18nService.translate('errorAddingToList')}: ${error.message}`);
-        }
+        // Re-display the sorted results
+        this.displayResults(this.currentResults, false);
     }
 }
 
-// Initialize the results UI when the DOM is loaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Initialize i18n first
-        await i18nService.initialize();
-        
-        // Create results UI
-        new ResultsUI();
-    } catch (error) {
-        console.error('Failed to initialize results page:', error);
-    }
-}); 
+// Initialize the UI when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new ResultsUI();
+});
