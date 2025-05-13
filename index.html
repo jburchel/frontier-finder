@@ -17,6 +17,10 @@
     <!-- Leaflet MarkerCluster CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+    <!-- Leaflet JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <!-- Leaflet MarkerCluster JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
     <script>
     function speakText(text) {
         const utterance = new SpeechSynthesisUtterance(text);
@@ -25,13 +29,15 @@
     </script>
     <script type="module">
         import { firebaseService } from './js/firebase.js';
+        import { mapManager } from './js/map.js';
         
-        // Initialize Firebase when the page loads
+        // Initialize Firebase and Map when the page loads
         window.addEventListener('load', async () => {
             try {
                 await firebaseService.initialize();
+                await mapManager.initialize();
             } catch (error) {
-                console.error('Failed to initialize Firebase:', error);
+                console.error('Failed to initialize services:', error);
             }
         });
     </script>
@@ -50,7 +56,15 @@
             <div class="main-content-area">
                 <section class="search-section">
                     <h2>Find Frontier and Unengaged People Groups</h2>
-                    <p>Search for Frontier People Groups (FPGs) and Unreached Unengaged People Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
+                    <p>Search for Unreached Unengaged People Groups (UUPGs) within a specified radius of a selected UPG where Crossover Global has a presence.</p>
+                    
+                    <!-- Add Map Container -->
+                    <div class="map-container">
+                        <div class="map-search-box">
+                            <input type="text" id="map-search" placeholder="Search UPGs...">
+                        </div>
+                        <div id="map"></div>
+                    </div>
                     
                     <!-- Map Container -->
                     <div class="map-container"></div>
