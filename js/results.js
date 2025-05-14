@@ -10,11 +10,12 @@ class ResultsUI {
         this.resultsContainer = document.getElementById('searchResults');
         this.currentResults = []; // Store results for sorting
         this.allResults = [];     // Store all results for filtering
+        this.selectedResults = new Set(); // Track selected items
+        this.resultsData = [];
         this.sortConfig = {
             column: 'population',
             direction: 'desc'
         };
-        this.selectedResults = new Set(); // Track selected items
         this.initialize();
     }
 
@@ -124,16 +125,6 @@ class ResultsUI {
         if (addToListButton) {
             addToListButton.addEventListener('click', () => this.addSelectedToList());
         }
-
-        // Add event listeners to play buttons
-        document.querySelectorAll('.play-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const pronunciation = e.currentTarget.dataset.pronunciation;
-                if (pronunciation) {
-                    pronunciationService.speak(pronunciation);
-                }
-            });
-        });
     }
 
     toggleResultSelection(resultId, selected) {
@@ -248,21 +239,39 @@ class ResultsUI {
         table.className = 'results-table';
         table.style.width = '100%'; // Make table wider
         
-        // Create table header
+        // Create table header with sorting functionality
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
                 <th>Select</th>
-                <th>People Group</th>
-                <th>Type</th>
+                <th class="sortable" data-sort="name">People Group <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="type">Type <span class="sort-icon"></span></th>
                 <th>Pronunciation</th>
                 <th></th> <!-- Empty header for play buttons -->
-                <th>Population</th>
-                <th>Country</th>
-                <th>Distance</th>
+                <th class="sortable" data-sort="population">Population <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="country">Country <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="distance">Distance <span class="sort-icon"></span></th>
             </tr>
         `;
         table.appendChild(thead);
+        
+        // Add click event listeners to sortable headers
+        thead.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.sort;
+                this.sortResultsBy(column);
+                
+                // Update sort icons
+                thead.querySelectorAll('.sort-icon').forEach(icon => {
+                    icon.textContent = '';
+                });
+                
+                const sortIcon = header.querySelector('.sort-icon');
+                if (this.sortConfig.column === column) {
+                    sortIcon.textContent = this.sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+                }
+            });
+        });
         
         // Create table body
         const tbody = document.createElement('tbody');
@@ -325,12 +334,16 @@ class ResultsUI {
                 // Add event listener to play button
                 const playButton = row.querySelector('.play-button');
                 if (playButton) {
-                    playButton.addEventListener('click', (e) => {
-                        const pronunciation = e.currentTarget.dataset.pronunciation;
-                        if (pronunciation) {
-                            pronunciationService.speak(pronunciation);
-                        }
-                    });
+                    // Add a data attribute to track if we've already added an event listener
+                    if (!playButton.dataset.hasListener) {
+                        playButton.dataset.hasListener = 'true';
+                        playButton.addEventListener('click', (e) => {
+                            const pronunciation = e.currentTarget.dataset.pronunciation;
+                            if (pronunciation) {
+                                pronunciationService.speak(pronunciation);
+                            }
+                        });
+                    }
                 }
             }, 0);
             
@@ -353,14 +366,31 @@ class ResultsUI {
     }
 
     sortResultsBy(column) {
+        console.log(`Sorting by ${column}`);
+        
         // If same column, toggle direction
         if (this.sortConfig.column === column) {
             this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
         } else {
             // New column, set default direction
             this.sortConfig.column = column;
+            // For distance, default to ascending (closest first)
+            // For population, default to descending (largest first)
             this.sortConfig.direction = column === 'distance' ? 'asc' : 'desc';
         }
+        
+        // Update sort icons in the UI
+        const headers = document.querySelectorAll('.sortable');
+        headers.forEach(header => {
+            const sortIcon = header.querySelector('.sort-icon');
+            if (sortIcon) {
+                if (header.dataset.sort === column) {
+                    sortIcon.textContent = this.sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+                } else {
+                    sortIcon.textContent = '';
+                }
+            }
+        });
         
         this.sortResults();
     }
@@ -375,8 +405,14 @@ class ResultsUI {
             
             // Handle special cases
             if (column === 'name' || column === 'country') {
-                valueA = valueA.toLowerCase();
-                valueB = valueB.toLowerCase();
+                valueA = (valueA || '').toLowerCase();
+                valueB = (valueB || '').toLowerCase();
+            } else if (column === 'population') {
+                valueA = parseInt(valueA) || 0;
+                valueB = parseInt(valueB) || 0;
+            } else if (column === 'distance') {
+                valueA = parseFloat(valueA) || 0;
+                valueB = parseFloat(valueB) || 0;
             }
             
             // Compare
