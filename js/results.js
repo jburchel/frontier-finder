@@ -3,6 +3,7 @@ import { firebaseService } from './firebase.js';
 import { collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { formatDistance } from './utils.js';
 import { pronunciationService } from './services/pronunciationService.js';
+import { speechService } from './services/speechService.js';
 import { i18nService } from './i18n.js';
 
 class ResultsUI {
@@ -310,11 +311,9 @@ class ResultsUI {
                 <td>${result.name}</td>
                 <td><span class="type-badge ${typeClass}">${typeLabel}</span></td>
                 <td>
-                    ${result.pronunciation ? `
-                        <button class="play-button" data-pronunciation="${result.pronunciation}">
-                            <i class="fas fa-volume-up"></i>
-                        </button>
-                    ` : ''}
+                    <button class="play-button" data-name="${result.name}">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
                 </td>
                 <td>${parseInt(result.population).toLocaleString()}</td>
                 <td>${result.country}</td>
@@ -337,9 +336,14 @@ class ResultsUI {
                     if (!playButton.dataset.hasListener) {
                         playButton.dataset.hasListener = 'true';
                         playButton.addEventListener('click', (e) => {
-                            const pronunciation = e.currentTarget.dataset.pronunciation;
-                            if (pronunciation) {
-                                pronunciationService.speak(pronunciation);
+                            const name = e.currentTarget.dataset.name;
+                            if (name) {
+                                // Use the speechService directly for better pronunciation
+                                speechService.speak(name, {
+                                    rate: 0.8,
+                                    pitch: 1,
+                                    volume: 1
+                                });
                             }
                         });
                     }
