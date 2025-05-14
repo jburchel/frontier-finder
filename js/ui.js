@@ -7,8 +7,8 @@ import { i18nService } from './i18n.js';
  */
 class UI {
     constructor() {
-        // Form elements
-        this.form = document.getElementById('searchForm');
+        // Form elements - Note: searchForm doesn't exist in the HTML, so we'll use the search section instead
+        this.form = document.querySelector('.search-section');
         this.countrySelect = document.getElementById('countrySelect');
         this.upgSelect = document.getElementById('upgSelect');
         this.radiusInput = document.getElementById('radius');
@@ -236,28 +236,36 @@ class UI {
             // Add options
             upgs.forEach(upg => {
                 const option = document.createElement('option');
-                option.value = upg.name;
+                option.value = JSON.stringify(upg);
                 option.textContent = upg.name;
                 this.upgSelect.appendChild(option);
                 console.log(`Added UPG option: ${upg.name}`);
             });
 
-            // Add change event listener to UPG dropdown
-            this.upgSelect.addEventListener('change', () => {
-                console.log('UPG dropdown changed');
-                const selectedUPG = this.upgSelect.value;
-                
-                if (this.searchButton) {
-                    this.searchButton.disabled = !selectedUPG;
-                }
-                
-                // If a UPG is selected, zoom to it on the map
-                if (selectedUPG && window.zoomToUPG) {
-                    const selectedCountry = this.countrySelect.value;
-                    console.log(`Calling zoomToUPG with ${selectedCountry}, ${selectedUPG}`);
-                    window.zoomToUPG(selectedCountry, selectedUPG);
-                }
-            });
+            // Add change event listener to UPG dropdown - using one-time setup to avoid duplicate listeners
+            if (!this.upgSelect.hasChangeListener) {
+                this.upgSelect.hasChangeListener = true;
+                this.upgSelect.addEventListener('change', () => {
+                    console.log('UPG dropdown changed');
+                    const selectedUPGValue = this.upgSelect.value;
+                    
+                    if (this.searchButton) {
+                        this.searchButton.disabled = !selectedUPGValue;
+                    }
+                    
+                    // If a UPG is selected, zoom to it on the map
+                    if (selectedUPGValue && window.zoomToUPG) {
+                        try {
+                            const selectedUPG = JSON.parse(selectedUPGValue);
+                            const selectedCountry = this.countrySelect.value;
+                            console.log(`Calling zoomToUPG with ${selectedCountry}, ${selectedUPG.name}`);
+                            window.zoomToUPG(selectedCountry, selectedUPG.name);
+                        } catch (e) {
+                            console.error('Error parsing UPG JSON:', e);
+                        }
+                    }
+                });
+            }
             
             console.log(`UPG dropdown now has ${this.upgSelect.options.length} options`);
         }
