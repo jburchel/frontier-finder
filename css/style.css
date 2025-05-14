@@ -28,7 +28,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -555,7 +555,7 @@ input[type="number"]#radius {
     height: 40px;
     line-height: 20px;
     vertical-align: middle;
-    text-align: center;
+    text-align: left;
 }
 
 .results-table tr:nth-child(even) {
@@ -838,11 +838,12 @@ main {
 
 .main-content-area {
     flex: 1;
-    min-width: 300px;
+    min-width: 800px;
+    width: 75%;
 }
 
 .definitions-sidebar {
-    width: 300px;
+    width: 250px;
 }
 
 @media (max-width: 768px) {

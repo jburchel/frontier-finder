@@ -303,22 +303,22 @@ class ResultsUI {
             }
             
             row.innerHTML = `
-                <td style="text-align: center;">
+                <td>
                     <input type="checkbox" class="result-checkbox" value="${result.id || result.name}" 
                            ${this.selectedResults.has(result.id || result.name) ? 'checked' : ''} />
                 </td>
                 <td>${result.name}</td>
-                <td style="text-align: center;"><span class="type-badge ${typeClass}">${typeLabel}</span></td>
-                <td style="text-align: center;">
+                <td><span class="type-badge ${typeClass}">${typeLabel}</span></td>
+                <td>
                     ${result.pronunciation ? `
                         <button class="play-button" data-pronunciation="${result.pronunciation}">
                             <i class="fas fa-volume-up"></i>
                         </button>
                     ` : ''}
                 </td>
-                <td style="text-align: right;">${parseInt(result.population).toLocaleString()}</td>
+                <td>${parseInt(result.population).toLocaleString()}</td>
                 <td>${result.country}</td>
-                <td style="text-align: right;">${formatDistance(result.distance, this.units)}</td>
+                <td>${formatDistance(result.distance, this.units)}</td>
             `;
             
             // Add event listener to checkbox
