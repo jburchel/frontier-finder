@@ -238,19 +238,19 @@ class ResultsUI {
         const table = document.createElement('table');
         table.className = 'results-table';
         table.style.width = '100%'; // Make table wider
+        tableContainer.style.maxWidth = '100%'; // Ensure container is full width too
         
         // Create table header with sorting functionality
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
-                <th>Select</th>
-                <th class="sortable" data-sort="name">People Group <span class="sort-icon"></span></th>
-                <th class="sortable" data-sort="type">Type <span class="sort-icon"></span></th>
-                <th>Pronunciation</th>
-                <th></th> <!-- Empty header for play buttons -->
-                <th class="sortable" data-sort="population">Population <span class="sort-icon"></span></th>
-                <th class="sortable" data-sort="country">Country <span class="sort-icon"></span></th>
-                <th class="sortable" data-sort="distance">Distance <span class="sort-icon"></span></th>
+                <th style="width: 50px;">Select</th>
+                <th class="sortable" data-sort="name" style="width: 20%;">People Group <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="type" style="width: 10%;">Type <span class="sort-icon"></span></th>
+                <th style="width: 60px;"></th> <!-- Header for play buttons -->
+                <th class="sortable" data-sort="population" style="width: 15%;">Population <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="country" style="width: 15%;">Country <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="distance" style="width: 10%;">Distance <span class="sort-icon"></span></th>
             </tr>
         `;
         table.appendChild(thead);
@@ -303,23 +303,22 @@ class ResultsUI {
             }
             
             row.innerHTML = `
-                <td>
+                <td style="text-align: center;">
                     <input type="checkbox" class="result-checkbox" value="${result.id || result.name}" 
                            ${this.selectedResults.has(result.id || result.name) ? 'checked' : ''} />
                 </td>
                 <td>${result.name}</td>
-                <td><span class="type-badge ${typeClass}">${typeLabel}</span></td>
-                <td>${result.pronunciation || ''}</td>
-                <td>
+                <td style="text-align: center;"><span class="type-badge ${typeClass}">${typeLabel}</span></td>
+                <td style="text-align: center;">
                     ${result.pronunciation ? `
                         <button class="play-button" data-pronunciation="${result.pronunciation}">
-                            <i class="fas fa-volume-up"></i> Play
+                            <i class="fas fa-volume-up"></i>
                         </button>
                     ` : ''}
                 </td>
-                <td>${parseInt(result.population).toLocaleString()}</td>
+                <td style="text-align: right;">${parseInt(result.population).toLocaleString()}</td>
                 <td>${result.country}</td>
-                <td>${formatDistance(result.distance, this.units)}</td>
+                <td style="text-align: right;">${formatDistance(result.distance, this.units)}</td>
             `;
             
             // Add event listener to checkbox
