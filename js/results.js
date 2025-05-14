@@ -51,18 +51,35 @@ class ResultsUI {
             this.showLoading(i18nService.translate('loadingProcessing'));
             
             // Get search parameters
-            const upgName = params.get('upg');
-            const country = params.get('country');
+            const upgParam = params.get('upg');
             const radius = parseFloat(params.get('radius') || '100');
             const units = params.get('units') || 'M';
-            const searchTypes = params.getAll('type') || ['fpg'];
+            const typesParam = params.get('types');
             
-            if (!upgName || !country) {
+            if (!upgParam) {
                 throw new Error(i18nService.translate('missingParameters'));
             }
             
-            // Get the base UPG
-            const upg = await searchService.getUPGByName(upgName, country);
+            // Parse the UPG JSON
+            let upg;
+            try {
+                upg = JSON.parse(decodeURIComponent(upgParam));
+            } catch (e) {
+                console.error('Failed to parse UPG JSON:', e);
+                throw new Error(i18nService.translate('invalidUPGFormat'));
+            }
+            
+            // Parse search types
+            let searchTypes = ['fpg'];
+            if (typesParam) {
+                try {
+                    searchTypes = JSON.parse(decodeURIComponent(typesParam));
+                } catch (e) {
+                    console.error('Failed to parse search types:', e);
+                    // Use default if parsing fails
+                    searchTypes = ['fpg'];
+                }
+            }
             
             if (!upg) {
                 throw new Error(i18nService.translate('upgNotFound'));
@@ -78,6 +95,7 @@ class ResultsUI {
                 searchTypes
             };
             
+            console.log('Searching with params:', searchParams);
             const results = await searchService.searchNearby(upg, radius, units, searchTypes);
             
             // Display search parameters first
