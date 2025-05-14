@@ -50,54 +50,35 @@ class ResultsUI {
             // Show loading immediately
             this.showLoading(i18nService.translate('loadingProcessing'));
             
-            // Get and parse parameters
-            const searchParams = {
-                upg: JSON.parse(decodeURIComponent(params.get('upg'))),
-                radius: params.get('radius'),
-                units: params.get('units'),
-                types: params.get('types') ? JSON.parse(decodeURIComponent(params.get('types'))) : ['fpg'] // Get search types with default to FPG
-            };
-
-            console.log('Initializing results with params:', searchParams);
+            // Get search parameters
+            const upgName = params.get('upg');
+            const country = params.get('country');
+            const radius = parseFloat(params.get('radius') || '100');
+            const units = params.get('units') || 'M';
+            const searchTypes = params.getAll('type') || ['fpg'];
             
-            // Validate required parameters
-            if (!searchParams.upg || !searchParams.radius || !searchParams.units) {
-                throw new Error('Missing required search parameters');
+            if (!upgName || !country) {
+                throw new Error(i18nService.translate('missingParameters'));
             }
-
-            // Initialize search service if needed
-            await searchService.initialize();
-
-            // Update loading message
+            
+            // Get the base UPG
+            const upg = await searchService.getUPGByName(upgName, country);
+            
+            if (!upg) {
+                throw new Error(i18nService.translate('upgNotFound'));
+            }
+            
+            // Search for nearby UPGs
             this.showLoading(i18nService.translate('searchingGroups'));
-
-            // Perform search with multiple types
-            const results = await searchService.searchNearby(
-                searchParams.upg,
-                searchParams.radius,
-                searchParams.units,
-                searchParams.types
-            );
-
-            console.log('RESULTS DEBUG: Search results received:', results);
-
-            // Hide loading before displaying results
-            this.hideLoading();
-
-            if (!results || results.length === 0) {
-                console.log('RESULTS DEBUG: No results found, displaying no results message');
-                this.resultsContainer.innerHTML = `
-                    <div class="no-results">
-                        <p>${i18nService.translate('noResults')}</p>
-                        <button onclick="window.location.href='index.html'" class="button" data-i18n="newSearch">
-                            ${i18nService.translate('newSearch')}
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            console.log('RESULTS DEBUG: Displaying search parameters and results');
+            
+            const searchParams = {
+                upg,
+                radius,
+                units,
+                searchTypes
+            };
+            
+            const results = await searchService.searchNearby(upg, radius, units, searchTypes);
             
             // Display search parameters first
             this.displaySearchParams(searchParams);
@@ -126,23 +107,14 @@ class ResultsUI {
             addToListButton.addEventListener('click', () => this.addSelectedToList());
         }
 
-        const selectAllCheckbox = document.getElementById('selectAll');
-        if (selectAllCheckbox) {
-            selectAllCheckbox.addEventListener('change', (e) => this.toggleSelectAll(e.target.checked));
-        }
-
-        // Add sort listeners to table headers
-        const headers = document.querySelectorAll('.results-table th[data-sort]');
-        headers.forEach(header => {
-            header.addEventListener('click', () => this.sortResultsBy(header.dataset.sort));
-        });
-    }
-
-    toggleSelectAll(checked) {
-        const checkboxes = document.querySelectorAll('.result-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = checked;
-            this.toggleResultSelection(checkbox.value, checked);
+        // Add event listeners to play buttons
+        document.querySelectorAll('.play-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const pronunciation = e.currentTarget.dataset.pronunciation;
+                if (pronunciation) {
+                    pronunciationService.speak(pronunciation);
+                }
+            });
         });
     }
 
@@ -152,47 +124,57 @@ class ResultsUI {
         } else {
             this.selectedResults.delete(resultId);
         }
-
-        // Update the add to list button state
-        this.updateAddToListButton();
-    }
-
-    updateAddToListButton() {
+        
+        // Update the Add to List button state
         const addToListButton = document.getElementById('addToListButton');
         if (addToListButton) {
             addToListButton.disabled = this.selectedResults.size === 0;
+        }
+        
+        // Update the Add Selected button state
+        const addSelectedButton = document.getElementById('addSelectedButton');
+        if (addSelectedButton) {
+            addSelectedButton.disabled = this.selectedResults.size === 0;
         }
     }
 
     async addSelectedToList() {
         if (this.selectedResults.size === 0) return;
-
+        
         try {
-            // Show loading
-            this.showLoading(i18nService.translate('addingToList'));
-
-            // Get the selected results
             const selectedItems = this.currentResults.filter(result => 
                 this.selectedResults.has(result.id || result.name)
             );
-
-            console.log('Adding to list:', selectedItems);
-
-            // Add to Firebase
+            
+            if (selectedItems.length === 0) return;
+            
+            // Show loading state
+            this.showLoading(i18nService.translate('savingToList'));
+            
+            // Save to Firestore
             const db = firebaseService.getFirestore();
             const top100Collection = collection(db, 'top100');
-
-            // Add each selected item
+            
+            // Get existing items
+            const existingSnapshot = await getDocs(top100Collection);
+            const existingItems = existingSnapshot.docs.map(doc => doc.data().name);
+            
+            // Add each selected item if not already in the list
             for (const item of selectedItems) {
-                await addDoc(top100Collection, {
-                    ...item,
-                    addedAt: new Date().toISOString()
-                });
+                if (!existingItems.includes(item.name)) {
+                    await addDoc(top100Collection, {
+                        name: item.name,
+                        country: item.country,
+                        population: item.population,
+                        type: item.type || 'UPG',
+                        added: new Date().toISOString()
+                    });
+                }
             }
-
-            // Redirect to top 100 page
+            
+            // Navigate to the Top 100 page
             window.location.href = 'top100.html';
-
+            
         } catch (error) {
             console.error('Error adding to list:', error);
             this.displayError(error.message);
@@ -215,81 +197,38 @@ class ResultsUI {
         `;
     }
 
-    createFilterControls() {
-        const filterContainer = document.createElement('div');
-        filterContainer.className = 'filter-container';
-        
-        filterContainer.innerHTML = `
-            <div class="filter-input-container">
-                <input type="text" id="filterInput" placeholder="${i18nService.translate('filterPlaceholder')}" class="filter-input" />
-                <button id="clearFilterButton" class="clear-filter-button">×</button>
-            </div>
-        `;
-        
-        // Add event listeners after the DOM is updated
-        setTimeout(() => {
-            const filterInput = document.getElementById('filterInput');
-            const clearFilterButton = document.getElementById('clearFilterButton');
-            
-            if (filterInput) {
-                filterInput.addEventListener('input', (e) => this.filterResults(e.target.value));
-            }
-            
-            if (clearFilterButton) {
-                clearFilterButton.addEventListener('click', () => {
-                    if (filterInput) {
-                        filterInput.value = '';
-                        this.filterResults('');
-                    }
-                });
-            }
-        }, 0);
-        
-        return filterContainer;
-    }
-
-    filterResults(filterValue) {
-        if (!filterValue) {
-            this.displayResults(this.allResults, false);
-            return;
-        }
-        
-        const filtered = this.allResults.filter(result => 
-            result.name.toLowerCase().includes(filterValue.toLowerCase()) ||
-            result.country.toLowerCase().includes(filterValue.toLowerCase()) ||
-            result.language.toLowerCase().includes(filterValue.toLowerCase()) ||
-            result.religion.toLowerCase().includes(filterValue.toLowerCase())
-        );
-        
-        this.displayResults(filtered, false);
-    }
-
     async displayResults(results, storeResults = true) {
-        console.log('RESULTS DEBUG: displayResults called with', results.length, 'results');
+        if (!this.resultsContainer) return;
         
-        // Get the units parameter from the URL
-        const params = new URLSearchParams(window.location.search);
-        const units = params.get('units') || 'M';
-        this.units = units; // Store units for later use
+        this.hideLoading();
         
         if (storeResults) {
+            this.currentResults = results;
             this.allResults = [...results];
-            this.currentResults = [...results];
         }
         
-        if (!this.resultsContainer) return;
+        if (!results || results.length === 0) {
+            this.resultsContainer.innerHTML = `
+                <div class="no-results">
+                    <div class="no-results-icon">🔍</div>
+                    <div class="no-results-text">${i18nService.translate('noResultsFound')}</div>
+                    <button onclick="window.location.href='index.html'" class="button">
+                        ${i18nService.translate('newSearch')}
+                    </button>
+                </div>
+            `;
+            return;
+        }
         
         // Create table structure
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-container';
-        
-        // Add filter controls
-        const filterControls = this.createFilterControls();
-        tableContainer.appendChild(filterControls);
+        tableContainer.style.width = '100%'; // Make table wider
         
         // Create table
         const table = document.createElement('table');
         table.className = 'results-table';
+        table.style.width = '100%'; // Make table wider
         
         // Create table header
         const thead = document.createElement('thead');
@@ -351,26 +290,31 @@ class ResultsUI {
                         </button>
                     ` : ''}
                 </td>
-                <td>${result.population.toLocaleString()}</td>
+                <td>${parseInt(result.population).toLocaleString()}</td>
                 <td>${result.country}</td>
                 <td>${formatDistance(result.distance, this.units)}</td>
             `;
             
-            // Add event listener for the checkbox
-            const checkbox = row.querySelector('.result-checkbox');
-            if (checkbox) {
-                checkbox.addEventListener('change', (e) => {
-                    this.toggleResultSelection(e.target.value, e.target.checked);
-                });
-            }
-            
-            // Add event listener for the play button
-            const playButton = row.querySelector('.play-button');
-            if (playButton) {
-                playButton.addEventListener('click', () => {
-                    pronunciationService.speak(playButton.dataset.pronunciation);
-                });
-            }
+            // Add event listener to checkbox
+            setTimeout(() => {
+                const checkbox = row.querySelector('.result-checkbox');
+                if (checkbox) {
+                    checkbox.addEventListener('change', (e) => {
+                        this.toggleResultSelection(e.target.value, e.target.checked);
+                    });
+                }
+                
+                // Add event listener to play button
+                const playButton = row.querySelector('.play-button');
+                if (playButton) {
+                    playButton.addEventListener('click', (e) => {
+                        const pronunciation = e.currentTarget.dataset.pronunciation;
+                        if (pronunciation) {
+                            pronunciationService.speak(pronunciation);
+                        }
+                    });
+                }
+            }, 0);
             
             tbody.appendChild(row);
         }
@@ -378,19 +322,13 @@ class ResultsUI {
         table.appendChild(tbody);
         tableContainer.appendChild(table);
         
-        // Add the "Add to Top 100" button
+        // Create button container for Add to List button
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'button-container';
-        buttonContainer.innerHTML = `
-            <button id="addToListButton" class="button" disabled data-i18n="addToList">
-                ${i18nService.translate('addToList')}
-            </button>
-        `;
         
         // Clear the container and add the new elements
         this.resultsContainer.innerHTML = '';
         this.resultsContainer.appendChild(tableContainer);
-        this.resultsContainer.appendChild(buttonContainer);
         
         // Setup event listeners for the newly added elements
         this.setupEventListeners();
