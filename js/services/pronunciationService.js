@@ -61,13 +61,15 @@ class PronunciationService {
         }
     }
 
-    async speakPronunciation(text) {
+    async speakPronunciation(name) {
         try {
+            // Get the pronunciation
+            const text = this.generatePronunciation(name);
+            if (!text) return false;
+            
+            // Find an English voice if available
             const voices = await speechService.getVoices();
-            // Prefer an English voice
-            const englishVoice = voices.find(voice => 
-                voice.lang.startsWith('en-')
-            );
+            const englishVoice = voices.find(v => v.lang.includes('en')) || null;
             
             await speechService.speak(text, {
                 voice: englishVoice,
@@ -79,6 +81,21 @@ class PronunciationService {
         } catch (error) {
             console.error('Speech synthesis error:', error);
             return false;
+        }
+    }
+    
+    speak(pronunciation) {
+        console.log('PronunciationService: Speaking pronunciation:', pronunciation);
+        try {
+            // Use the speechService to speak the text
+            return speechService.speak(pronunciation, {
+                rate: 0.8, // Slightly slower for clarity
+                pitch: 1,
+                volume: 1
+            });
+        } catch (error) {
+            console.error('Error speaking pronunciation:', error);
+            return Promise.reject(error);
         }
     }
 }
