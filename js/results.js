@@ -246,8 +246,8 @@ class ResultsUI {
             <tr>
                 <th style="width: 50px;">Select</th>
                 <th class="sortable" data-sort="name" style="width: 20%;">People Group <span class="sort-icon"></span></th>
-                <th class="sortable" data-sort="type" style="width: 10%;">Type <span class="sort-icon"></span></th>
-                <th style="width: 60px;"></th> <!-- Header for play buttons -->
+                <th class="sortable" data-sort="type" style="width: 15%;">Type <span class="sort-icon"></span></th>
+                <th style="width: 40px;"></th> <!-- Header for play buttons -->
                 <th class="sortable" data-sort="population" style="width: 15%;">Population <span class="sort-icon"></span></th>
                 <th class="sortable" data-sort="country" style="width: 15%;">Country <span class="sort-icon"></span></th>
                 <th class="sortable" data-sort="distance" style="width: 10%;">Distance <span class="sort-icon"></span></th>
