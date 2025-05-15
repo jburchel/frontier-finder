@@ -869,6 +869,10 @@ main {
     margin-top: 0;
 }
 
+.definition-item {
+    margin-bottom: 1.5rem;
+}
+
 .definition-item h4 {
     color: #39A949;
     margin-bottom: 0.5rem;
