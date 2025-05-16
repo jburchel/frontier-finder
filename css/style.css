@@ -110,6 +110,13 @@ h1 {
     margin-bottom: 0.75rem;
 }
 
+.search-filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
 .instructions {
     margin-bottom: 1.5rem;
     color: var(--neutral-gray);
@@ -288,13 +295,12 @@ button:hover {
 }
 
 /* Search button */
-#searchButton {
+#searchButton, #jpSearchButton {
     display: block;
     width: auto;
-    margin: 1rem auto 0;
-    min-width: 200px;
+    min-width: 120px;
     height: 36px;
-    padding: 0 2rem;
+    padding: 0 1.5rem;
 }
 
 /* Responsive design */
@@ -415,11 +421,21 @@ button:hover {
 }
 
 /* Search form grid layout */
-.search-grid {
+.search-grid, .jp-search-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     margin-bottom: 1rem;
+}
+
+/* Section headings */
+.search-section h3 {
+    color: var(--primary-color);
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    font-size: 1.4rem;
 }
 
 .input-group {
@@ -505,7 +521,7 @@ input[type="number"]#radius {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .search-grid {
+    .search-grid, .jp-search-grid {
         grid-template-columns: 1fr;
     }
 
