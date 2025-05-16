@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPG Map - Frontier Finder</title>
+    <!-- Use a different CDN for Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css"> <!-- Optional: Include base styles if desired -->
+    <style>
+        /* Basic styling for the map container */
+        #map-container {
+            width: 100%;
+            height: 80vh; /* Adjust height as needed */
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>UPG Map Visualization</h1>
+        <p><a href="index.html">Back to Search</a></p>
+    </header>
+
+    <main>
+        <div id="map-container">
+            <!-- Map will be rendered here by JavaScript -->
+            Loading map...
+        </div>
+    </main>
+
+    <footer>
+        <!-- Footer content if needed -->
+    </footer>
+
+    <!-- Leaflet and related libraries (load these first) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    
+    <!-- Map script -->
+    <script src="js/map.js"></script>
+</body>
+</html>
