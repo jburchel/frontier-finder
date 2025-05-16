@@ -4,13 +4,18 @@
  */
 
 // Configuration with API key
-import { jpConfig } from './config.js';
+import { config } from './config.js';
+
+// Get the Joshua Project config
+const jpConfig = config.joshuaProject;
 
 const jpSearch = {
     /**
      * Initialize the Joshua Project search functionality
      */
     initialize: function() {
+        console.log('JP Search initialize called');
+        
         // Get form elements
         this.pgNameInput = document.getElementById('pgNameSearch');
         this.countrySelect = document.getElementById('jpCountrySearch');
@@ -18,12 +23,27 @@ const jpSearch = {
         this.religionSelect = document.getElementById('religionSearch');
         this.searchButton = document.getElementById('jpSearchButton');
         
+        console.log('Form elements:', {
+            pgNameInput: this.pgNameInput,
+            countrySelect: this.countrySelect,
+            jpScaleSelect: this.jpScaleSelect,
+            religionSelect: this.religionSelect,
+            searchButton: this.searchButton
+        });
+        
         // Populate country dropdown
         this.loadCountries();
         
         // Add event listeners
         if (this.searchButton) {
-            this.searchButton.addEventListener('click', this.performSearch.bind(this));
+            console.log('Adding click event listener to search button');
+            this.searchButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Search button clicked');
+                this.performSearch();
+            });
+        } else {
+            console.error('Search button not found');
         }
     },
     
@@ -31,7 +51,14 @@ const jpSearch = {
      * Load countries from Joshua Project API
      */
     loadCountries: async function() {
+        console.log('loadCountries called');
         try {
+            if (!this.countrySelect) {
+                console.error('Country select element not found');
+                return;
+            }
+            console.log('Country select element found:', this.countrySelect);
+            
             // List of countries with ISO codes
             const countries = [
                 { code: 'AF', name: 'Afghanistan' },
@@ -278,6 +305,13 @@ const jpSearch = {
             // Sort countries alphabetically
             countries.sort((a, b) => a.name.localeCompare(b.name));
             
+            console.log(`Adding ${countries.length} countries to dropdown`);
+            
+            // Clear existing options except the first one
+            while (this.countrySelect.options.length > 1) {
+                this.countrySelect.remove(1);
+            }
+            
             // Add countries to dropdown
             countries.forEach(country => {
                 const option = document.createElement('option');
@@ -285,6 +319,8 @@ const jpSearch = {
                 option.textContent = country.name;
                 this.countrySelect.appendChild(option);
             });
+            
+            console.log(`Country dropdown now has ${this.countrySelect.options.length} options`);
         } catch (error) {
             console.error('Error loading countries:', error);
         }
@@ -294,6 +330,7 @@ const jpSearch = {
      * Perform search against Joshua Project API
      */
     performSearch: async function() {
+        console.log('performSearch called');
         try {
             // Show loading indicator
             this.searchButton.disabled = true;
@@ -303,37 +340,62 @@ const jpSearch = {
             const params = new URLSearchParams();
             params.append('api_key', jpConfig.apiKey);
             
+            console.log('Using JP API key:', jpConfig.apiKey);
+            
             // Add search criteria if provided
-            if (this.pgNameInput.value) {
+            if (this.pgNameInput && this.pgNameInput.value) {
                 params.append('name', this.pgNameInput.value);
+                console.log('Searching by name:', this.pgNameInput.value);
             }
             
-            if (this.countrySelect.value) {
+            if (this.countrySelect && this.countrySelect.value) {
                 params.append('countries', this.countrySelect.value);
+                console.log('Searching by country:', this.countrySelect.value);
             }
             
-            if (this.jpScaleSelect.value) {
+            if (this.jpScaleSelect && this.jpScaleSelect.value) {
                 params.append('progress_scale', this.jpScaleSelect.value);
+                console.log('Searching by JP Scale:', this.jpScaleSelect.value);
             }
             
-            if (this.religionSelect.value) {
+            if (this.religionSelect && this.religionSelect.value) {
                 params.append('primary_religion', this.religionSelect.value);
+                console.log('Searching by religion:', this.religionSelect.value);
+            }
+            
+            // If no search criteria provided, search for unreached people groups
+            if (!this.pgNameInput?.value && !this.countrySelect?.value && 
+                !this.jpScaleSelect?.value && !this.religionSelect?.value) {
+                // Default to searching for unreached people groups (JPScale 1.1-2.1)
+                params.append('progress_scale', '1.1,1.2,2.1');
+                console.log('No criteria provided, defaulting to unreached people groups');
             }
             
             // Make API request
-            const response = await fetch(`https://api.joshuaproject.net/v1/people_groups.json?${params.toString()}`);
-            if (!response.ok) throw new Error('Failed to fetch people groups');
+            const apiUrl = `https://api.joshuaproject.net/v1/people_groups.json?${params.toString()}`;
+            console.log('Making API request to:', apiUrl);
+            
+            const response = await fetch(apiUrl);
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API error response:', errorText);
+                throw new Error(`Failed to fetch people groups: ${response.status} ${response.statusText}`);
+            }
             
             const peopleGroups = await response.json();
+            console.log(`Received ${peopleGroups.length} results from Joshua Project API`);
             
             // Store results in session storage
             sessionStorage.setItem('jpSearchResults', JSON.stringify(peopleGroups));
             
             // Redirect to results page
+            console.log('Redirecting to results page');
             window.location.href = 'results.html?source=jp';
         } catch (error) {
             console.error('Error performing search:', error);
-            alert('An error occurred while searching. Please try again.');
+            alert(`An error occurred while searching: ${error.message}. Please try again.`);
         } finally {
             // Reset button
             this.searchButton.disabled = false;
@@ -344,7 +406,11 @@ const jpSearch = {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing JP Search module');
     jpSearch.initialize();
 });
+
+// For debugging
+console.log('JP Search module loaded');
 
 export { jpSearch };
