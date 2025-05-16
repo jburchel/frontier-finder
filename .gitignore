@@ -14,6 +14,8 @@ node_modules/
 .idea/
 *.swp
 *.swo
+.voidrules
+.windsurfrules
 
 # OS files
 .DS_Store
@@ -28,3 +30,22 @@ yarn-error.log*
 # Build output
 dist/
 build/
+
+# Python cache
+scripts/__pycache__/
+*.pyc
+
+# Backup files
+*.bak
+temp_backup/
+
+# Test and debug files
+*-test.html
+*-debug.*
+leaflet-test.html
+map-test.html
+map-debug.html
+
+# Raw data directories
+data/people_groups_org_data/
+mcp-browser-use/
