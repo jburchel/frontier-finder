@@ -122,10 +122,8 @@ class ResultsUI {
     }
 
     setupEventListeners() {
-        const addToListButton = document.getElementById('addToListButton');
-        if (addToListButton) {
-            addToListButton.addEventListener('click', () => this.addSelectedToList());
-        }
+        // We now add event listeners directly when creating the buttons
+        // This method is kept for potential future use
     }
 
     toggleResultSelection(resultId, selected) {
@@ -389,8 +387,10 @@ class ResultsUI {
         addToListButton.className = 'button primary';
         addToListButton.disabled = this.selectedResults.size === 0;
         addToListButton.innerHTML = '<i class="fas fa-plus"></i> Add to Top 100 List';
-        addToListButton.addEventListener('click', () => this.addSelectedToList());
-        actionsContainer.appendChild(addToListButton);
+        // Remove any existing event listeners by cloning the button
+        const newAddToListButton = addToListButton.cloneNode(true);
+        newAddToListButton.addEventListener('click', () => this.addSelectedToList());
+        actionsContainer.appendChild(newAddToListButton);
         
         // Add View Top 100 List button
         const viewTop100Button = document.createElement('button');
@@ -399,8 +399,7 @@ class ResultsUI {
         viewTop100Button.onclick = () => window.location.href = 'top100.html';
         actionsContainer.appendChild(viewTop100Button);
         
-        // Setup event listeners for the newly added elements
-        this.setupEventListeners();
+        // No need to call setupEventListeners() as we're adding listeners directly
     }
 
     sortResultsBy(column) {
