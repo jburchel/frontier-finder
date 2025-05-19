@@ -379,23 +379,23 @@ class ResultsUI {
         // Add New Search button
         const newSearchButton = document.createElement('button');
         newSearchButton.className = 'button secondary';
-        newSearchButton.innerHTML = i18nService.translate('buttonNewSearch', 'New Search');
+        newSearchButton.innerHTML = 'New Search';
         newSearchButton.onclick = () => window.location.href = 'index.html';
         actionsContainer.appendChild(newSearchButton);
         
-        // Add the 'Add to Top 100' button
+        // Add the 'Add to Top 100 List' button
         const addToListButton = document.createElement('button');
         addToListButton.id = 'addToListButton';
         addToListButton.className = 'button primary';
         addToListButton.disabled = this.selectedResults.size === 0;
-        addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add To Top 100');
+        addToListButton.innerHTML = '<i class="fas fa-plus"></i> Add to Top 100 List';
         addToListButton.addEventListener('click', () => this.addSelectedToList());
         actionsContainer.appendChild(addToListButton);
         
-        // Add View Top 100 button
+        // Add View Top 100 List button
         const viewTop100Button = document.createElement('button');
         viewTop100Button.className = 'button secondary';
-        viewTop100Button.innerHTML = i18nService.translate('buttonViewTop100', 'View Top 100');
+        viewTop100Button.innerHTML = 'View Top 100 List';
         viewTop100Button.onclick = () => window.location.href = 'top100.html';
         actionsContainer.appendChild(viewTop100Button);
         
