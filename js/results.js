@@ -161,8 +161,11 @@ class ResultsUI {
             // Show loading state
             this.showLoading(i18nService.translate('savingToList'));
             
+            // Initialize Firebase if needed
+            await firebaseService.initialize();
+            
             // Save to Firestore
-            const db = firebaseService.getFirestore();
+            const db = firebaseService.db;
             const top100Collection = collection(db, 'top100');
             
             // Get existing items
@@ -356,35 +359,45 @@ class ResultsUI {
         table.appendChild(tbody);
         tableContainer.appendChild(table);
         
-        // Find the existing button container or create a new one if it doesn't exist
-        let tableControls = document.querySelector('.table-controls');
-        let addToListButton = document.getElementById('addToListButton');
+        // We'll no longer add the button here, as it will be in the actions container
         
-        if (!tableControls) {
-            // Create button container for Add to List button
-            tableControls = document.createElement('div');
-            tableControls.className = 'table-controls';
-            
-            // Create the 'Add to Top 100 List' button if it doesn't exist
-            if (!addToListButton) {
-                addToListButton = document.createElement('button');
-                addToListButton.id = 'addToListButton';
-                addToListButton.className = 'button primary';
-                addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add Selected to Top 100');
-                addToListButton.addEventListener('click', () => this.addSelectedToList());
-                tableControls.appendChild(addToListButton);
-            }
-        }
-        
-        // Update button state based on selections
-        if (addToListButton) {
-            addToListButton.disabled = this.selectedResults.size === 0;
-        }
-        
-        // Clear the container and add the elements in the correct order
+        // Clear the container and add the table
         this.resultsContainer.innerHTML = '';
-        this.resultsContainer.appendChild(tableControls);
         this.resultsContainer.appendChild(tableContainer);
+        
+        // Find or create the actions container
+        let actionsContainer = document.querySelector('.actions-container');
+        if (!actionsContainer) {
+            actionsContainer = document.createElement('div');
+            actionsContainer.className = 'actions-container';
+            this.resultsContainer.parentNode.appendChild(actionsContainer);
+        } else {
+            // Clear existing buttons
+            actionsContainer.innerHTML = '';
+        }
+        
+        // Add New Search button
+        const newSearchButton = document.createElement('button');
+        newSearchButton.className = 'button secondary';
+        newSearchButton.innerHTML = i18nService.translate('buttonNewSearch', 'New Search');
+        newSearchButton.onclick = () => window.location.href = 'index.html';
+        actionsContainer.appendChild(newSearchButton);
+        
+        // Add the 'Add to Top 100' button
+        const addToListButton = document.createElement('button');
+        addToListButton.id = 'addToListButton';
+        addToListButton.className = 'button primary';
+        addToListButton.disabled = this.selectedResults.size === 0;
+        addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add To Top 100');
+        addToListButton.addEventListener('click', () => this.addSelectedToList());
+        actionsContainer.appendChild(addToListButton);
+        
+        // Add View Top 100 button
+        const viewTop100Button = document.createElement('button');
+        viewTop100Button.className = 'button secondary';
+        viewTop100Button.innerHTML = i18nService.translate('buttonViewTop100', 'View Top 100');
+        viewTop100Button.onclick = () => window.location.href = 'top100.html';
+        actionsContainer.appendChild(viewTop100Button);
         
         // Setup event listeners for the newly added elements
         this.setupEventListeners();
