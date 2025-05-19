@@ -356,22 +356,34 @@ class ResultsUI {
         table.appendChild(tbody);
         tableContainer.appendChild(table);
         
-        // Create button container for Add to List button
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container table-controls';
+        // Find the existing button container or create a new one if it doesn't exist
+        let tableControls = document.querySelector('.table-controls');
+        let addToListButton = document.getElementById('addToListButton');
         
-        // Add the 'Add to Top 100 List' button
-        const addToListButton = document.createElement('button');
-        addToListButton.id = 'addToListButton';
-        addToListButton.className = 'button primary';
-        addToListButton.disabled = this.selectedResults.size === 0;
-        addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add Selected to Top 100');
-        addToListButton.addEventListener('click', () => this.addSelectedToList());
-        buttonContainer.appendChild(addToListButton);
+        if (!tableControls) {
+            // Create button container for Add to List button
+            tableControls = document.createElement('div');
+            tableControls.className = 'table-controls';
+            
+            // Create the 'Add to Top 100 List' button if it doesn't exist
+            if (!addToListButton) {
+                addToListButton = document.createElement('button');
+                addToListButton.id = 'addToListButton';
+                addToListButton.className = 'button primary';
+                addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add Selected to Top 100');
+                addToListButton.addEventListener('click', () => this.addSelectedToList());
+                tableControls.appendChild(addToListButton);
+            }
+        }
         
-        // Clear the container and add the new elements
+        // Update button state based on selections
+        if (addToListButton) {
+            addToListButton.disabled = this.selectedResults.size === 0;
+        }
+        
+        // Clear the container and add the elements in the correct order
         this.resultsContainer.innerHTML = '';
-        this.resultsContainer.appendChild(buttonContainer);
+        this.resultsContainer.appendChild(tableControls);
         this.resultsContainer.appendChild(tableContainer);
         
         // Setup event listeners for the newly added elements
