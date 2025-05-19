@@ -358,10 +358,20 @@ class ResultsUI {
         
         // Create button container for Add to List button
         const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container';
+        buttonContainer.className = 'button-container table-controls';
+        
+        // Add the 'Add to Top 100 List' button
+        const addToListButton = document.createElement('button');
+        addToListButton.id = 'addToListButton';
+        addToListButton.className = 'button primary';
+        addToListButton.disabled = this.selectedResults.size === 0;
+        addToListButton.innerHTML = '<i class="fas fa-plus"></i> ' + i18nService.translate('addToList', 'Add Selected to Top 100');
+        addToListButton.addEventListener('click', () => this.addSelectedToList());
+        buttonContainer.appendChild(addToListButton);
         
         // Clear the container and add the new elements
         this.resultsContainer.innerHTML = '';
+        this.resultsContainer.appendChild(buttonContainer);
         this.resultsContainer.appendChild(tableContainer);
         
         // Setup event listeners for the newly added elements
