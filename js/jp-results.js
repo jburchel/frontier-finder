@@ -29,14 +29,42 @@ class JPResultsUI {
             i18nService.translate('loadingResults') :
             message === 'Processing Joshua Project data...' ?
             i18nService.translate('processingJPData') :
+            message === 'Saving to list...' ?
+            i18nService.translate('savingToList') :
             i18nService.translate('loadingProcessing');
         
-        this.resultsContainer.innerHTML = `
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">${translatedMessage}</div>
-            </div>
-        `;
+        // If we're saving to the list, add a redirect button
+        if (message === 'Saving to list...') {
+            this.resultsContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${translatedMessage}</div>
+                    <div class="redirect-button-container" style="margin-top: 20px;">
+                        <button id="manualRedirectButton" class="button primary" style="display: none;">
+                            Go to Top 100 List
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Show the button after a short delay
+            setTimeout(() => {
+                const redirectButton = document.getElementById('manualRedirectButton');
+                if (redirectButton) {
+                    redirectButton.style.display = 'block';
+                    redirectButton.addEventListener('click', () => {
+                        window.location.href = 'top100.html';
+                    });
+                }
+            }, 2000); // Show after 2 seconds if automatic redirect doesn't work
+        } else {
+            this.resultsContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${translatedMessage}</div>
+                </div>
+            `;
+        }
     }
 
     hideLoading() {
@@ -79,67 +107,202 @@ class JPResultsUI {
     }
 
     setupEventListeners() {
-        const addToListButton = document.getElementById('addToListButton');
-        if (addToListButton) {
-            addToListButton.addEventListener('click', () => this.addSelectedToList());
+        console.log('Setting up event listeners');
+        
+        // Add to List button at the bottom of the page
+        const addToListButtonBottom = document.getElementById('addToListButtonBottom');
+        if (addToListButtonBottom) {
+            console.log('Adding click listener to Add to List button');
+            addToListButtonBottom.addEventListener('click', () => {
+                console.log('Add to List button clicked');
+                this.addSelectedToList();
+            });
+        } else {
+            console.warn('Add to List button not found in the DOM');
         }
+        
+        // Also set up checkbox listeners again to be sure
+        this.setupCheckboxListeners();
+    }
+    
+    setupCheckboxListeners() {
+        console.log('Setting up checkbox listeners');
+        const checkboxes = document.querySelectorAll('.result-checkbox');
+        console.log(`Found ${checkboxes.length} checkboxes`);
+        
+        checkboxes.forEach((checkbox, index) => {
+            const id = Number(checkbox.value);
+            console.log(`Setting up listener for checkbox ${index + 1}, ID: ${id} (${typeof id})`);
+            
+            checkbox.addEventListener('change', (e) => {
+                const targetId = Number(e.target.value);
+                console.log(`Checkbox ${index + 1} changed, checked: ${e.target.checked}, ID: ${targetId} (${typeof targetId})`);
+                this.toggleResultSelection(targetId, e.target.checked);
+            });
+        });
     }
 
     toggleResultSelection(resultId, selected) {
+        // Convert the ID to a number for consistent comparison
+        const id = Number(resultId);
+        console.log(`Toggling selection for ID: ${id} (original: ${resultId}), selected: ${selected}`);
+        
         if (selected) {
-            this.selectedResults.add(resultId);
+            this.selectedResults.add(id);
         } else {
-            this.selectedResults.delete(resultId);
+            this.selectedResults.delete(id);
         }
         
+        console.log('Current selected IDs:', Array.from(this.selectedResults));
+        
         // Update the Add to List button state
-        const addToListButton = document.getElementById('addToListButton');
-        if (addToListButton) {
-            addToListButton.disabled = this.selectedResults.size === 0;
+        const addToListButtonBottom = document.getElementById('addToListButtonBottom');
+        if (addToListButtonBottom) {
+            addToListButtonBottom.disabled = this.selectedResults.size === 0;
         }
     }
 
     async addSelectedToList() {
-        if (this.selectedResults.size === 0) return;
+        console.log('=== START addSelectedToList ===');
+        console.log('Selected results size:', this.selectedResults.size);
+        console.log('Current results length:', this.currentResults.length);
+        
+        if (this.selectedResults.size === 0) {
+            console.log('No items selected, returning early');
+            return;
+        }
         
         try {
-            const selectedItems = this.currentResults.filter(result => 
-                this.selectedResults.has(result.ID || result.PeopleID3)
-            );
-            
-            if (selectedItems.length === 0) return;
-            
             // Show loading state
-            this.showLoading(i18nService.translate('savingToList'));
+            this.showLoading('Saving to list...');
             
-            // Save to Firestore
-            const db = firebaseService.getFirestore();
+            // Log all selected IDs with types
+            const selectedIdsArray = Array.from(this.selectedResults);
+            console.log('=== SELECTED ITEMS ===');
+            selectedIdsArray.forEach((id, index) => {
+                console.log(`[${index}] ID: ${id}, Type: ${typeof id}, Value: ${id}`);
+            });
+            
+            // Log all current results with their IDs
+            console.log('=== CURRENT RESULTS ===');
+            this.currentResults.forEach((result, index) => {
+                const id = result.ID || result.PeopleID3;
+                console.log(`[${index}] ID: ${id}, Type: ${typeof id}, Name: ${result.PeopNameInCountry || result.PeopName}`);
+            });
+            
+            // Find selected items by matching with PeopleID3 or ID
+            const selectedItems = [];
+            
+            for (const [index, result] of this.currentResults.entries()) {
+                const id = result.ID || result.PeopleID3;
+                const name = result.PeopNameInCountry || result.PeopName;
+                
+                console.log(`\n=== CHECKING ITEM ${index} ===`);
+                console.log(`Result ID: ${id} (${typeof id})`);
+                console.log(`Result Name: ${name}`);
+                
+                // Check if this result's ID is in our selected set
+                const isSelected = this.selectedResults.has(Number(id));
+                
+                console.log('Is selected?', isSelected);
+                console.log('Selected IDs being checked:', Array.from(this.selectedResults));
+                
+                if (isSelected) {
+                    console.log(`✓ ADDING TO SELECTED: ${name} (ID: ${id})`);
+                    selectedItems.push(result);
+                }
+            }
+            
+            console.log('Filtered selected items count:', selectedItems.length);
+            console.log('Selected items details:', selectedItems.map(item => ({
+                id: item.PeopleID3 || item.ID,
+                name: item.PeopNameInCountry || item.PeopName
+            })));
+            
+            if (selectedItems.length === 0) {
+                // Try one more time with type conversion
+                const selectedAsNumbers = new Set(Array.from(this.selectedResults).map(id => Number(id)));
+                selectedItems.push(...this.currentResults.filter(result => {
+                    const resultId = result.ID || result.PeopleID3;
+                    return selectedAsNumbers.has(Number(resultId));
+                }));
+                
+                if (selectedItems.length === 0) {
+                    const errorDetails = {
+                        selectedIds: Array.from(this.selectedResults),
+                        availableIds: this.currentResults.map(r => r.PeopleID3 || r.ID),
+                        idTypes: {
+                            selected: Array.from(this.selectedResults).map(id => typeof id),
+                            available: this.currentResults.map(r => typeof (r.PeopleID3 || r.ID))
+                        },
+                        selectedAsNumbers: Array.from(selectedAsNumbers)
+                    };
+                    console.error('No matching items found after type conversion. Debug info:', errorDetails);
+                    throw new Error('No matching items found. Check console for details.');
+                }
+            }
+            
+            // Initialize Firebase
+            await firebaseService.initialize();
+            const db = firebaseService.db;
+            
+            if (!db) {
+                throw new Error('Firestore database not available');
+            }
+            
+            // Get collection reference
             const top100Collection = collection(db, 'top100');
             
-            // Get existing items
+            // Get existing items to avoid duplicates
             const existingSnapshot = await getDocs(top100Collection);
             const existingItems = existingSnapshot.docs.map(doc => doc.data().name);
             
             // Add each selected item if not already in the list
             for (const item of selectedItems) {
                 const name = item.PeopNameInCountry || item.PeopName;
+                
                 if (!existingItems.includes(name)) {
                     await addDoc(top100Collection, {
                         name: name,
                         country: item.Ctry,
-                        population: item.Population,
+                        population: parseInt(item.Population) || 0,
                         type: this.determineType(item),
                         added: new Date().toISOString()
                     });
+                    console.log(`Added item to Firestore: ${name}`);
                 }
             }
+            
+            // Store a flag to show success message on the Top 100 page
+            sessionStorage.setItem('justAddedToTop100', 'true');
             
             // Navigate to the Top 100 page
             window.location.href = 'top100.html';
             
         } catch (error) {
-            console.error('Error adding to list:', error);
-            this.displayError(error.message);
+            console.error('Error in addSelectedToList:', error);
+            this.hideLoading();
+            
+            // Show error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.padding = '15px';
+            errorDiv.style.margin = '15px 0';
+            errorDiv.style.backgroundColor = '#f8d7da';
+            errorDiv.style.color = '#721c24';
+            errorDiv.style.borderRadius = '4px';
+            
+            errorDiv.innerHTML = `
+                <div>Error: ${error.message || 'Failed to add items to your list'}</div>
+                <div style="margin-top: 10px;">
+                    <button onclick="window.location.reload()" class="button primary">
+                        Try Again
+                    </button>
+                </div>
+            `;
+            
+            this.resultsContainer.innerHTML = '';
+            this.resultsContainer.appendChild(errorDiv);
         }
     }
     
@@ -201,6 +364,12 @@ class JPResultsUI {
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-container';
         tableContainer.style.width = '100%';
+        
+        // Add a controls div but without the 'Add to List' button
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'table-controls';
+        // No button here - we'll use the one at the bottom of the page
+        tableContainer.appendChild(controlsDiv);
         
         // Create table
         const table = document.createElement('table');
@@ -265,10 +434,13 @@ class JPResultsUI {
             const country = result.Ctry;
             const population = parseInt(result.Population || 0);
             const jpScale = result.JPScale || 'Unknown';
+            // Ensure we have a consistent ID format (always use number for comparison)
+            const resultId = Number(result.ID || result.PeopleID3);
             
+            // Store the ID in both value and data attribute
             row.innerHTML = `
                 <td>
-                    <input type="checkbox" class="result-checkbox" value="${result.ID || result.PeopleID3}" />
+                    <input type="checkbox" class="result-checkbox" value="${resultId}" data-id="${resultId}" />
                 </td>
                 <td>${name}</td>
                 <td><span class="type-badge ${typeClass}">${type}</span></td>
@@ -282,34 +454,6 @@ class JPResultsUI {
                 <td>${jpScale}</td>
             `;
             
-            // Add event listener to checkbox
-            setTimeout(() => {
-                const checkbox = row.querySelector('.result-checkbox');
-                if (checkbox) {
-                    checkbox.addEventListener('change', (e) => {
-                        this.toggleResultSelection(e.target.value, e.target.checked);
-                    });
-                }
-                
-                // Add event listener to play button
-                const playButton = row.querySelector('.play-button');
-                if (playButton) {
-                    if (!playButton.dataset.hasListener) {
-                        playButton.dataset.hasListener = 'true';
-                        playButton.addEventListener('click', (e) => {
-                            const name = e.currentTarget.dataset.name;
-                            if (name) {
-                                speechService.speak(name, {
-                                    rate: 0.8,
-                                    pitch: 1,
-                                    volume: 1
-                                });
-                            }
-                        });
-                    }
-                }
-            }, 0);
-            
             tbody.appendChild(row);
         }
         
@@ -321,7 +465,30 @@ class JPResultsUI {
         this.resultsContainer.appendChild(tableContainer);
         
         // Setup event listeners for the newly added elements
-        this.setupEventListeners();
+        console.log('Setting up event listeners after rendering results');
+        this.setupEventListeners(); // This now includes setupCheckboxListeners()
+        
+        // Add event listeners to play buttons
+        console.log('Setting up play button listeners');
+        const playButtons = this.resultsContainer.querySelectorAll('.play-button');
+        console.log(`Found ${playButtons.length} play buttons`);
+        
+        playButtons.forEach((button, index) => {
+            button.addEventListener('click', (e) => {
+                const name = e.currentTarget.dataset.name;
+                console.log(`Play button ${index + 1} clicked for: ${name}`);
+                if (name) {
+                    speechService.speak(name, {
+                        rate: 0.8,
+                        pitch: 1,
+                        volume: 1
+                    });
+                }
+            });
+        });
+        
+        // Log the current state of selected results
+        console.log('Current selected results:', Array.from(this.selectedResults));
     }
 
     sortResultsBy(column) {

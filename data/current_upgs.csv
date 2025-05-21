@@ -1,296 +1,297 @@
-,Name,Country,Latitude,Longitude,Population,% Evangelical,Language,Religion
-1,Abdul,India,25.05131172,84.22023723,43000,0.00%,"Bengli,Urdu",
-,Abdul,Bangladesh,22.99644425,89.83624592,44000,,,
-4,Ahar,India,28.83035932,79.66381356,1682300,0.00%,Hindi,Hindu
-,Ahmadi,Pakistan,31.37338677,74.37529497,102000,,,
-5,Ahmadi,India,28.32409064,79.93469751,189200,0.00%,"Western Punjabi,Urdu",
-7,Albanians,Albania,41.10981496,20.08186067,5418500,0.44%,"Gheg,Albanian",
-8,Algerians (Arab),Algeria,35.99742458,5.389438574,35854000,0.02%,Algerian Arabic,Muslim
-9,Amazigh,Morocco,32.6087,-4.0699,4708200,0.07%,Central Atlas Tamazight,Muslim
-,Amazigh,Algeria,33.563667,-0.2859299998,,,,
-10,"Amhara,Wollo",Ethiopia,11.14157322,39.63304795,6049000,0.20%,Amharic,
-11,Ansari,India,29.67262187,78.91067316,17228500,0.00%,Urdu,Muslim
-,Ansari,Pakistan,31.3810636101365,74.3774509369802,5019000,,,
-12,Ansari (Dagi),India,29.67262187,78.91067316,158000,0.00%,Hindi,Hindu
-,Arab Bedouin,Jordan,31.87743637,36.82711587,,,,
-,Arab Bedouin,Saudia Arabia,,,,,,
-14,Arab Moroccan,Morocco,33.57417682,-7.591613936,29809500,0.08%,Spoken Moroccan Arabic,Muslim
-15,Arabe Nor (Chad) - Baggara Shuwa Arab,Chad,12.12585153,15.08650856,4021000,0.33%,Spoken Chadian Arabic,Muslim
-16,Archi,Russia,42.32581,46.82881,2100,0.19%,Archi,Muslim
-19,Avar (Dagestani),Russia,44.22168,41.88952,893700,0.01%,Avar,Muslim
-20,Azeris,Azerbaijan,39.94044,46.62271,10046000,0.20%,North Azerbaijani,Muslim
-21,Badhai (Sharma),India,25.05131172,84.22023723,7554000,Unknown,Hindi,Hindu
-,Badhi,India,32.59975279,76.73760545,,,,
-22,Badhi,Nepal,28.67356742,82.04978661,91000,0.00%,"Hindi,Nepali",Hindu
-23,Bagdi,India,23.32316237,72.62463824,3542000,0.00%,Bengali,Hindu
-24,Bairagi,India,25.05131172,84.22023723,4583000,0.00%,Hindi,Hindu
-25,Balinese,Indonesia,-8.35714,115.07496,4188000,0.15%,Bali,Hindu
-26,Balmiki,India,25.05131172,84.22023723,5653600,0.00%,Hindi,Hindu
-27,Bangali,India,25.05131172,84.22023723,86000,0.00%,"Hindi,Maithili",
-,Bengali,Nepal,28.34462757,82.46513378,,,,
-28,Bania Barnwal (Gupta),India,,,16702000,0.00%,Hindi,Hindu
-29,Banjara,India,25.05131172,84.22023723,7242600,0.15%,Lambadi,Hindu
-31,Bansphor (Bansphod),India,25.05131172,84.22023723,173000,0.00%,Hindi,Hindu
-33,Baranwal Bania (Barnwal),India,25.05131172,84.22023723,60000,0.00%,Hindi,Hindu
-34,Barhai,India,25.05131172,84.22023723,7554000,0.00%,Hindi,Hindu
-35,Bari,India,25.05131172,84.22023723,763000,0.00%,Hindi,Hindu
-36,Barma,Chad,11.1608,16.22059,142000,0.01%,Bagirmi,Muslim
-37,Bashkhirs (Central Asia),Russia,44.22168,41.88952,1711200,1.08%,Bashkort,Muslim
-38,Basor (Baskar),India,25.05131172,84.22023723,1037000,0.00%,Hindi,Hindu
-39,Batwal (Barwala),India,25.05131172,84.22023723,98000,0.00%,Dogri,Hindu
-40,Beldar,India,25.05131172,84.22023723,1956600,0.00%,Kannada,Hindu
-43,Berabish Bedouin (Bidan),Mauritania,16.24590067,-8.161375848,130000,0.00%,Hassaniya,Muslim
-44,Berbers (North Africa) - Kabyle?,Algeria,35.99742458,5.389438574,7254400,0.24%,Amazigh,Muslim
-45,Bharati,India,25.05131172,84.22023723,1386300,0.00%,Hindi,Hindu
-46,Bhat,India,25.05131172,84.22023723,1590000,0.00%,Hindi,Hindu
-47,Bhil,India,25.05131172,84.22023723,14193000,0.00%,Hindi,Hindu
-48,Bhuiya,India,25.05131172,84.22023723,1726000,0.06%,Hindi,Hindu
-49,Bhumihar Brahmin,India,25.05131172,84.22023723,3221700,0.00%,Hindi,Hindu
-67,Bhutanese-Nepali (Drukpa),Bhutan,27.474116,89.635157,232700,0.00%,Dzonghz,Buddhist
-50,Bhutia,India,25.05131172,84.22023723,132000,Unknown,Nepali,Buddhist
-51,Bind (Bin),India,25.05131172,84.22023723,1233000,0.00%,Bhojpuri,Hindu
-52,Bishnoi (Bishow),India,25.05131172,84.22023723,749700,Unknown,Hindi,Hindu
-56,Bolaang  (Kaidipang Bolaang),Indonesia,,,11000,0.45%,Kaidipang,Muslim
-58,Bouyei (Buyi),China,25.050209,105.736669,3369700,0.16%,Bouyei,Animist
-61,Brahmin,India,25.05131172,84.22023723,35267500,0.00%,Hindi,Hindu
-62,Brahmin Maithili,India,25.05131172,84.22023723,28900,0.00%,Hindi,Hindu
-64,Budug,Azerbaijan,41.24139,48.33895,2100,3.49%,Budukh,Muslim
-65,Bugis,Indonesia,-8.31078,124.59376,5914000,0.05%,Bugis,Muslim
-66,Buol,Indonesia,-8.31078,124.59376,114000,0.00%,Buol,Muslim
-68,Chakma,India,25.05131172,84.22023723,816000,3.55%,Chakma,Buddhist
-,Chakma,Bangladesh,22.86659967,92.32805677,540000,,,
-69,Chamar,India,25.05131172,84.22023723,55553000,0.00%,Hindi,Hindu
-71,Chechenians,Russia,44.22168,41.88952,1727800,0.01%,Chechen,Muslim
+,Name,Country,Latitude,Longitude,Population,% Evangelical,Language,Religion,,,,,,,
+1,Abdul,India,25.05131172,84.22023723,43000,0.00%,"Bengli,Urdu",,,,,,,,
+,Abdul,Bangladesh,22.99644425,89.83624592,44000,,,,,,,,,,
+4,Ahar,India,28.83035932,79.66381356,1682300,0.00%,Hindi,Hindu,,,,,,,
+,Ahmadi,Pakistan,31.37338677,74.37529497,102000,,,,,,,,,,
+5,Ahmadi,India,28.32409064,79.93469751,189200,0.00%,"Western Punjabi,Urdu",,,,,,,,
+7,Albanians,Albania,41.10981496,20.08186067,5418500,0.44%,"Gheg,Albanian",,,,,,,,
+8,Algerians (Arab),Algeria,35.99742458,5.389438574,35854000,0.02%,Algerian Arabic,Muslim,,,,,,,
+9,Amazigh,Morocco,32.6087,-4.0699,4708200,0.07%,Central Atlas Tamazight,Muslim,,,,,,,
+,Amazigh,Algeria,33.563667,-0.28593,,,,,,,,,,,
+10,"Amhara,Wollo",Ethiopia,11.14157322,39.63304795,6049000,0.20%,Amharic,,,,,,,,
+11,Ansari,India,29.67262187,78.91067316,17228500,0.00%,Urdu,Muslim,,,,,,,
+,Ansari,Pakistan,31.38106361,74.37745094,5019000,,,,,,,,,,
+12,Ansari (Dagi),India,29.67262187,78.91067316,158000,0.00%,Hindi,Hindu,,,,,,,
+,Arab Bedouin,Jordan,31.87743637,36.82711587,,,,,,,,,,,
+,Arab Bedouin,Saudia Arabia,,,,,,,,,,,,,
+14,Arab Moroccan,Morocco,33.57417682,-7.591613936,29809500,0.08%,Spoken Moroccan Arabic,Muslim,,,,,,,
+15,Arabe Nor (Chad) - Baggara Shuwa Arab,Chad,12.12585153,15.08650856,4021000,0.33%,Spoken Chadian Arabic,Muslim,,,,,,,
+16,Archi,Russia,42.32581,46.82881,2100,0.19%,Archi,Muslim,,,,,,,
+19,Avar (Dagestani),Russia,44.22168,41.88952,893700,0.01%,Avar,Muslim,,,,,,,
+20,Azeris,Azerbaijan,39.94044,46.62271,10046000,0.20%,North Azerbaijani,Muslim,,,,,,,
+21,Badhai (Sharma),India,25.05131172,84.22023723,7554000,Unknown,Hindi,Hindu,,,,,,,
+,Badhi,India,32.59975279,76.73760545,,,,,,,,,,,
+22,Badhi,Nepal,28.67356742,82.04978661,91000,0.00%,"Hindi,Nepali",Hindu,,,,,,,
+23,Bagdi,India,23.32316237,72.62463824,3542000,0.00%,Bengali,Hindu,,,,,,,
+24,Bairagi,India,25.05131172,84.22023723,4583000,0.00%,Hindi,Hindu,,,,,,,
+25,Balinese,Indonesia,-8.35714,115.07496,4188000,0.15%,Bali,Hindu,,,,,,,
+26,Balmiki,India,25.05131172,84.22023723,5653600,0.00%,Hindi,Hindu,,,,,,,
+27,Bangali,India,25.05131172,84.22023723,86000,0.00%,"Hindi,Maithili",,,,,,,,
+,Bengali,Nepal,28.34462757,82.46513378,,,,,,,,,,,
+28,Bania Barnwal (Gupta),India,,,16702000,0.00%,Hindi,Hindu,,,,,,,
+29,Banjara,India,25.05131172,84.22023723,7242600,0.15%,Lambadi,Hindu,,,,,,,
+31,Bansphor (Bansphod),India,25.05131172,84.22023723,173000,0.00%,Hindi,Hindu,,,,,,,
+33,Baranwal Bania (Barnwal),India,25.05131172,84.22023723,60000,0.00%,Hindi,Hindu,,,,,,,
+34,Barhai,India,25.05131172,84.22023723,7554000,0.00%,Hindi,Hindu,,,,,,,
+35,Bari,India,25.05131172,84.22023723,763000,0.00%,Hindi,Hindu,,,,,,,
+36,Barma,Chad,11.1608,16.22059,142000,0.01%,Bagirmi,Muslim,,,,,,,
+37,Bashkhirs (Central Asia),Russia,44.22168,41.88952,1711200,1.08%,Bashkort,Muslim,,,,,,,
+38,Basor (Baskar),India,25.05131172,84.22023723,1037000,0.00%,Hindi,Hindu,,,,,,,
+39,Batwal (Barwala),India,25.05131172,84.22023723,98000,0.00%,Dogri,Hindu,,,,,,,
+40,Beldar,India,25.05131172,84.22023723,1956600,0.00%,Kannada,Hindu,,,,,,,
+43,Berabish Bedouin (Bidan),Mauritania,16.24590067,-8.161375848,130000,0.00%,Hassaniya,Muslim,,,,,,,
+44,Berbers (North Africa) - Kabyle?,Algeria,35.99742458,5.389438574,7254400,0.24%,Amazigh,Muslim,,,,,,,
+45,Bharati,India,25.05131172,84.22023723,1386300,0.00%,Hindi,Hindu,,,,,,,
+46,Bhat,India,25.05131172,84.22023723,1590000,0.00%,Hindi,Hindu,,,,,,,
+47,Bhil,India,25.05131172,84.22023723,14193000,0.00%,Hindi,Hindu,,,,,,,
+48,Bhuiya,India,25.05131172,84.22023723,1726000,0.06%,Hindi,Hindu,,,,,,,
+49,Bhumihar Brahmin,India,25.05131172,84.22023723,3221700,0.00%,Hindi,Hindu,,,,,,,
+67,Bhutanese-Nepali (Drukpa),Bhutan,27.474116,89.635157,232700,0.00%,Dzonghz,Buddhist,,,,,,,
+50,Bhutia,India,25.05131172,84.22023723,132000,Unknown,Nepali,Buddhist,,,,,,,
+51,Bind (Bin),India,25.05131172,84.22023723,1233000,0.00%,Bhojpuri,Hindu,,,,,,,
+52,Bishnoi (Bishow),India,25.05131172,84.22023723,749700,Unknown,Hindi,Hindu,,,,,,,
+56,Bolaang  (Kaidipang Bolaang),Indonesia,,,11000,0.45%,Kaidipang,Muslim,,,,,,,
+58,Bouyei (Buyi),China,25.050209,105.736669,3369700,0.16%,Bouyei,Animist,,,,,,,
+61,Brahmin,India,25.05131172,84.22023723,35267500,0.00%,Hindi,Hindu,,,,,,,
+62,Brahmin Maithili,India,25.05131172,84.22023723,28900,0.00%,Hindi,Hindu,,,,,,,
+64,Budug,Azerbaijan,41.24139,48.33895,2100,3.49%,Budukh,Muslim,,,,,,,
+65,Bugis,Indonesia,-8.31078,124.59376,5914000,0.05%,Bugis,Muslim,,,,,,,
+66,Buol,Indonesia,-8.31078,124.59376,114000,0.00%,Buol,Muslim,,,,,,,
+68,Chakma,India,25.05131172,84.22023723,816000,3.55%,Chakma,Buddhist,,,,,,,
+,Chakma,Bangladesh,22.86659967,92.32805677,540000,,,,,,,,,,
+69,Chamar,India,25.05131172,84.22023723,55553000,0.00%,Hindi,Hindu,,,,,,,
+71,Chechenians,Russia,44.22168,41.88952,1727800,0.01%,Chechen,Muslim,,,,,,,
 72,Chepang (Praja),Nepal,28.44244306,82.17540409,80300,Unknown,Chepang,"Animist,
 73,Chhantyal,Nepal,29.22994213,83.92310506,14000,Unknown,Nepali,Hindu
 74,Chhetri,Nepal,27.591395,85.544145,5277300,0.13%,Nepali,Hindu
-75,"Chikwa,Chik",India,25.05131172,84.22023723,4100,0.00%,Urdu,
-76,Chodhara,India,25.05131172,84.22023723,12300,0.05%,Chodri,Hindu
-77,Cumbalacu,Indonesia,-8.31078,124.59376,2100,0.00%,Cumbalacu,Muslim
-78,Da'a Kaili Unde,Indonesia,-8.31078,124.59376,68000,0.50%,Da'a Kaili,Muslim
-80,Damai  (Silpkar),India,25.05131172,84.22023723,1137000,0.16%,Kumsani,Hindu
-81,Danjee,Nepal,28.44244306,82.17540409,582900,1.06%,Nepali,Hindu
-82,"Danuwer,Rai",Nepal,28.44244306,82.17540409,97000,Unknown,Danuwer,
-83,Dargin,Russia,42.43729965,47.32739672,456800,0.01%,Dargwa,Muslim
-85,Darzi (Darji),India,25.05131172,84.22023723,1646000,0.00%,Hindi,Muslim
-86,Deaf - Azerbaijan,Azerbaijan,40.39880754,49.81226449,78000,Unknown,Unknown,Muslim
-87,Deng (De-Ang),China,24.68311,101.97421,11000,0.12%,"""Digaco,Mishmi""",
-88,Dhangar Oraon (Uraon),India,26.79483968,95.05254889,5519000,Unknown,Kurux,Hindu
-89,Dhanuk,India,25.05131172,84.22023723,5107800,0.00%,Hindi,Hindu
-91,Dharua,India,25.05131172,84.22023723,22000,0.00%,Duruwa,Hindu
-92,Dhobi (Sharma) (Dhoba),India,,,12618100,0.01%,Hindi,Hindu
-94,Digor,Russia,44.218571,42.996474,104000,0.03%,Ossetic,Muslim
-95,Dom,India,25.05131172,84.22023723,2535500,0.09%,Odia,Hindu
-97,Dungans,Kazakhstan,42.94339,75.2485,153800,0.06%,Dungan,Muslim
-,Dungans,Kyrgystan,,,,,,
-98,Dusadh,India,25.05131172,84.22023723,6729000,0.01%,Hindi,Hindu
+75,Chikwa","Chik""",India,25.05131172,84.22023723,4100,0.00%,Urdu
+76,Chodhara,India,25.05131172,84.22023723,12300,0.05%,Chodri,Hindu,,,,,,,
+77,Cumbalacu,Indonesia,-8.31078,124.59376,2100,0.00%,Cumbalacu,Muslim,,,,,,,
+78,Da'a Kaili Unde,Indonesia,-8.31078,124.59376,68000,0.50%,Da'a Kaili,Muslim,,,,,,,
+80,Damai  (Silpkar),India,25.05131172,84.22023723,1137000,0.16%,Kumsani,Hindu,,,,,,,
+81,Danjee,Nepal,28.44244306,82.17540409,582900,1.06%,Nepali,Hindu,,,,,,,
+82,"Danuwer,Rai",Nepal,28.44244306,82.17540409,97000,Unknown,Danuwer,,,,,,,,
+83,Dargin,Russia,42.43729965,47.32739672,456800,0.01%,Dargwa,Muslim,,,,,,,
+85,Darzi (Darji),India,25.05131172,84.22023723,1646000,0.00%,Hindi,Muslim,,,,,,,
+86,Deaf - Azerbaijan,Azerbaijan,40.39880754,49.81226449,78000,Unknown,Unknown,Muslim,,,,,,,
+87,Deng (De-Ang),China,24.68311,101.97421,11000,0.12%,"""Digaco,Mishmi""",,,,,,,,
+88,Dhangar Oraon (Uraon),India,26.79483968,95.05254889,5519000,Unknown,Kurux,Hindu,,,,,,,
+89,Dhanuk,India,25.05131172,84.22023723,5107800,0.00%,Hindi,Hindu,,,,,,,
+91,Dharua,India,25.05131172,84.22023723,22000,0.00%,Duruwa,Hindu,,,,,,,
+92,Dhobi (Sharma) (Dhoba),India,,,12618100,0.01%,Hindi,Hindu,,,,,,,
+94,Digor,Russia,44.218571,42.996474,104000,0.03%,Ossetic,Muslim,,,,,,,
+95,Dom,India,25.05131172,84.22023723,2535500,0.09%,Odia,Hindu,,,,,,,
+97,Dungans,Kazakhstan,42.94339,75.2485,153800,0.06%,Dungan,Muslim,,,,,,,
+,Dungans,Kyrgystan,,,,,,,,,,,,,
+98,Dusadh,India,25.05131172,84.22023723,6729000,0.01%,Hindi,Hindu,,,,,,,
 99,Fedicca-Mohas Nubian,Sudan,11.98,28.96,1127000,0.00%,Nobiin,"Muslim,
 ,Fedicca-Mohas Nubian,Egypt,30.492752,31.567505,,,,
-100,Fulani  Adamawa,Nigeria,6.29706,8.63775,5131000,0.05%,"Adamawa,Fulfulde",
-,Fulani  Adamawa,Cameroon,4.37822,9.64981,,,,
-,Fulani Adamawa,Chad,11.76458,18.30663,,,,
-101,Fulani Pulaar (Mauritania),Mauritania,16.24590067,-8.161375848,303000,0.21%,Pulaar,Muslim
-102,Fur,Sudan,11.44493,28.99758,1365000,0.68%,Fur,Muslim
-,Fur,Chad,11.41937425,22.56625173,,,,
-103,Gadaria (Gaderi),India,25.05131172,84.22023723,4681700,0.00%,Hindi,Hindu
-105,Ganda,India,25.05131172,84.22023723,1481000,0.00%,Odia,Hindu
-106,Gauda (Gonda),India,25.05131172,84.22023723,2350000,0.00%,Odia,Hindu
-108,Gautam,India,25.05131172,84.22023723,445000,0.00%,Hindi,Hindu
-110,Gharti,India,25.05131172,84.22023723,136000,1.36%,"Nepali,Bengali",
-,Gharti,Nepal,29.65402468,82.81157583,,,,
-111,Ghasiya,India,25.05131172,84.22023723,515500,0.14%,Hindi,Muslim
-112,Ginukh,Russia,42.4506,45.80932,600,0.32%,Ginukh,Muslim
-115,Gorontalo,Indonesia,-8.31078,124.59376,1167000,0.04%,Gorontalo,Muslim
-116,Gosain (Goswani),India,25.05131172,84.22023723,1571300,0.00%,Hindi,Hindu
-117,Gujjar,India,25.05131172,84.22023723,70000,0.00%,Gujari,Hindu
-119,Gypsy,Uzbekistan,40.26116,65.38644,23000,0.13%,Tajik,Muslim
-120,Hajam (Naye),India,25.05131172,84.22023723,5298000,0.00%,"Urdu,Western Punjabi",
-,Hajam (Naye),Pakistan,33.70589958,70.31291043,,,,
-121,Halwai,India,25.05131172,84.22023723,1167000,0.00%,Hindi,Hindu
-122,Han Chinese,China,24.68311,101.97421,931685100,8.30%,Mandarin Chinese,Atheist
-123,Hani,China,24.5198,103.72997,784800,0.29%,Hani,Animist
-124,Harratine,Morocco,33.21826697,-6.950070982,57000,0.00%,Moroccan Spoken Arabic,Muslim
-126,Hindu Valmiki (Walmiki),India,25.05131172,84.22023723,5653600,0.00%,Hindi,Hindu
-127,Imragen,Mauritania,16.24590067,-8.161375848,23000,0.00%,Hassaniyya Arabic,Muslim
-128,Inghiloi,Azerbaijan,41.36546,46.82747,38500,0.33%,Georgian,Muslim
-129,Ingush (Caucasus),Russia,43.4052,44.8203,447800,0.01%,Ingush,Muslim
-130,Iranians,Iran,31.043472,61.493783,42531300,0.44%,Iranian Persian,Muslim
-131,Jaiswal Bania,India,25.05131172,84.22023723,135000,0.00%,Hindi,Hindu
-133,Japanese,Japan,35.35084,136.46904,122406300,0.35%,Japanese,Buddhist
-134,Jat (Muslim),Pakistan,33.70589958,70.31291043,14074800,0.00%,West Punjabi,Muslim
-135,Jat (Sikh),India,25.05131172,84.22023723,15795600,0.02%,Hindi,Hindu
-136,Java Banyumassan,Indonesia,-0.74768,131.73212,9350000,1.18%,Javanese,Muslim
-137,Jordanians (Arab),Jordan,32.30991,36.30381,4458600,0.33%,South Levintine Spoken Arabic,Muslim
-138,Joshi,India,25.05131172,84.22023723,438400,0.00%,Hindi,Hindu
-139,Julaha,India,25.05131172,84.22023723,933000,0.00%,Hindi,Hindu
-140,Kabardian,Russia,43.50166402,43.61599925,2005400,0.01%,Kabardian,Muslim
-,Kabardian,Turkey,,,,,,
-141,Kahar,India,28.83035932,79.66381356,9565000,0.00%,Hindi,Hindu
-166,Kahar (Kohar),India,28.83035932,79.66381356,"9,900,00",Unknown,Hindu,
-142,Kahar Kamkar,India,28.83035932,79.66381356,240000,0.00%,Hindi,Hindu
-143,Kaili Ledo (Central Sulawesi),Indonesia,-8.31078,124.59376,396000,0.01%,Ledo Kaili,Muslim
-144,Kalmyk-Oirat,Mongolia,48.59894,96.12626,654200,0.21%,Kalmyk-Oirat,Buddhist
-,Kalmyk-Oirat,Russia,46.63953,45.44453,,,,
-,Kalmyk-Oirat,China,24.68311,101.97421,,,,
-145,Kami (Biswakarma),Nepal,28.44244306,82.17540409,1511800,1.48%,Nepali,Hindu
-146,Kandh Kui,India,19.91671431,77.90433836,1567900,0.00%,Odia,Hindu
-147,Kandu (Kanu),India,25.05131172,84.22023723,2877000,0.00%,Hindi,Hindu
-148,"Kanuri,Yerwa",Nigeria,6.29706,8.63775,8318000,0.00%,Yerwa Kanuri,
-,"Kanuri,Yerwa",Niger,13.56385,12.79467,,,,
-,"Kanuri,Yerwa",Chad,11.24528,15.26321,,,,
-149,Karachay-Cherie's,Russia,43.76855755,41.91318527,250000,0.02%,Karachay - Balkar,Muslim
-150,Karakalpaks,Uzbekistan,43.05521,59.83532,885400,0.00%,Karakalpak,Muslim
-152,Karmakar,India,27.83279027,92.93115946,372700,0.00%,Hindi,Hindu
-,Kayastha,India,,,,,,
-155,Kayastha,Bangladesh,,,8712600,0.01%,Hindi,Hindu
-156,Kazak,Kazakhstan,48.28745,68.99411,17574100,0.03%,Kazakh,Muslim
-,Kazak,China,24.68311,101.97421,,,,
-157,Kera,Chad,9.7663,15.18154,155000,5.27%,Kera,Animist
-,Kera,Cameroon,4.37822,9.64981,,,,
-158,Kewat,India,25.05131172,84.22023723,353200,0.00%,Hindi,Hindu
-160,Khan,India,25.05131172,84.22023723,9054000,0.00%,"Kashmiri,Northern Hindko",
-,Khan,Pakistan,33.70589958,70.31291043,,,,
-163,"Khatik (Cikwa,Kuala,Kulal)",India,25.05131172,84.22023723,39700,0.00%,Muslim,
-164,Khatri - Duplicate - (Seth),India,25.05131172,84.22023723,2747000,0.00%,Hindi,Hindu
-165,Khatwa,India,25.05131172,84.22023723,319000,0.00%     0.00%,"Hindi,Maithili",
-,Khatwa,Nepal,28.44244306,82.17540409,,,,
-167,Koiri  (Kushwaha),India,25.05131172,84.22023723,9751700,0.01%,Hindi,Hindu
-168,Kolta (Kuta),India,25.05131172,84.22023723,807000,Unknown,Odia,Hindu
-169,Kotoko,Chad,11.56754,15.14521,36000,0.10%,Lagwan,Muslim
-170,Kubachi,Russia,42.169198,47.43763,6900,0.70%,Kubachi,Muslim
-,Kuchbandia (Kuchbadhia),India,25.05131172,84.22023723,36000,0.00%,Hindi,Hindu
-,Kumal,Nepal,28.44244306,82.17540409,143800,0.00%,Nepali,Hindu
-173,Kumhar,India,25.05131172,84.22023723,19041300,0.00%,Hindi,Hindu
-174,Kunjra,India,25.05131172,84.22023723,7200,0.00%,Bengali,Hindu
-,Kunjra,Bangladesh,22.99644425,89.83624592,,,,
-175,Kurds,Iraq,34.36674,45.01019,36145000,0.10%,Kurdish Languages,Muslim
-,Kurds,Turkey,,,,,,
-,Kurds,Syria,33.533734,36.333564,,,,
-176,Kurmi,India,25.05131172,84.22023723,22265300,0.00%,Hindi,Hindu
-177,Kyrgyz,Kyrgystan,,,5800600,0.11%,Kyrgyz,Muslim
-179,Lak,Russia,44.3745,46.14648,176200,0.05%,Lak,Muslim
-180,Lama (Bodha),India,25.05131172,84.22023723,131000,Unknown,Ladakhi,Buddhist
-181,Lezgins,Russia,44.22168,41.88952,665200,0.04%,Lezgi,Muslim
-,Lezgins,Azerbaijan,41.47999,48.34479,,,,
-182,Lodha (Lodhi) (Lodh),India,25.05131172,84.22023723,7023000,Unknown,Hindi,Hindu
-183,Lohar,India,25.05131172,84.22023723,11504900,0.00%,Hindi,Hindu
-184,Lunia (Nonia),India,25.05131172,84.22023723,3921000,0.00%,Hindi,Hindu
-185,Magar,Nepal,28.44244306,82.17540409,2552200,2.18%,Nepali,Hindu
-186,Mahara,India,28.83035932,79.66381356,22600,0.00%,Sylheti,Hindu
-187,Majhi,India,25.05131172,84.22023723,241000,0.00%,Hindi,Hindu
-188,Mali (Malakar),India,27.83279027,92.93115946,12230000,0.00%,Hindi,Hindu
-189,"Mallah (Mandal,Mai)",India,25.05131172,84.22023723,3220000,0.02%,Hindi,
-190,Mandar,Indonesia,-8.31078,124.59376,553000,0.00%,Mandar,Muslim
-193,Masna,Mauritania,18.389208,-9.457121,2800,0.00%,Hassanyya,Muslim
-,Mijar,India,25.05131172,84.22023723,239000,Unknown,Eastern Punjabi,Hindu
-,Mirasi (Sheikh),Pakistan,33.70589958,70.31291043,2182000,0.00%,Northern Punjabi,Muslim
-198,Mochi,India,25.05131172,84.22023723,2328000,0.00%,Bengali,Hindu
-201,Moors - Bithan (North Africa),Mauritania,16.53466931,-15.80615831,4616500,0.09%,Hassaniyya,Muslim
-151,Muna,Indonesia,-8.31078,124.59376,348000,0.06%,Muna,Muslim
-152,Munda,India,25.05131172,84.22023723,4316000,7.25%,Mundari,Hindu
-153,Mundang,Chad,14.03813464,21.75803615,486000,4.30%,Mundang,Animist
-,Mundand,Cameroon,4.37822,9.64981,,,,
-154,Musahar (Musher),India,28.83035932,79.66381356,3964000,0.29%,Hindi,Hindu
-155,Nai (Napit)(Naiya),India,25.05131172,84.22023723,13952000,0.00%,Hindi,Hindu
-156,Nat,India,12.64999269,76.66210297,591400,0.02%,Hindi,Hindu
-158,Newar,Nepal,28.44244306,82.17540409,1665900,0.88%,Newar,Hindu
-160,Noliya,India,25.05131172,84.22023723,4500,Unknown,Odia,Hindu
-162,"Nubian,Fedicca-Mohas",Sudan,11.98,28.96,1027000,0.00%,Nobiin,
-,"Nubian,Fedicca-Mohas",Egypt,24.48006536,32.95521007,,,,
-163,Nut,India,25.05131172,84.22023723,591400,0.02%,Hindi,Hindu
-164,"Oromo,Hararghe ????",Ethiopia,8.72457,41.4741,7214000,0.50%,Eastern Oromo,
-165,Ossetian,Russia,44.22168,41.88952,621500,0.98%,Ossetic,Atheist
-,Pamir (Shughni),Afghanistan,37.59163,71.37385,143000,0.00%,Shughni,Muslim
-,Pamir (Shughni),Tajikistan,38.59,68.78,,,,
-,Pardhan (Pradhan),India,25.05131172,84.22023723,358000,Unkown,Pardhan,Hindu
-167,Pasi,India,28.62712318,95.78077828,5734000,0.00%,Hindi,Hindu
-168,Paswan    Dusadh,India,25.05131172,84.22023723,6729000,0.01%,Hindi,Hindu
-169,Patel    Kunbi,India,25.05131172,84.22023723,15610500,0.02%,Gujarati,Hindu
-,Patwa,India,25.05131172,84.22023723,293000,0.00%,Hindi,Hindu
-,Persian (Turkmenistan),Turkmenistan,38.0518181,58.20082386,18000,0.05%,Iranian Persian,Muslim
-,Pinjara (Behna),India,25.05131172,84.22023723,4005000,0.00%,Urdu,Muslim
-173,Rajbanshi,India,25.05131172,84.22023723,6598700,Unknown,Bengali,Hindu
-,Rajbanshi,Bangladesh,22.99644425,89.83624592,,,,
-,Rajbhar,Nepal,,,,,,
-174,Rajbhar,India,,,99800,0.12%,Hindi,Hindu
-175,Rajput,India,25.05131172,84.22023723,26988700,0.01%,Hindi,Hindu
-,Rajwar,India,25.05131172,84.22023723,686000,Unknown,Hindi,Hindu
-,Ravidas Chamar,India,25.05131172,84.22023723,1583000,0.00%,Hindi,Hindu
-177,Rawat,India,25.05131172,84.22023723,900000,0.00%,Hindi,Hindu
-,Rongkup (Lap-Cha) (Lapche),India,25.05131172,84.22023723,,,,Buddhist
-178,Russian,Russia,52.13835,107.92173,135461300,1.50%,Russian,Christian
-179,Rutul,Russia,44.22168,41.88952,52000,0.13%,Rutul,Muslim
-,Rutul,Azerbaijan,41.07969,46.74134,,,,
-,Sada,India,25.05131172,84.22023723,9600,0.00%,Kannada,Jainism
-,Sahariya (Sahri),India,28.83035932,79.66381356,982000,Unknown,Hindi,Hindu
-181,Santhal,India,25.05131172,84.22023723,9078300,0.00%,Santhali,Hindu
-,Sarki,Nepal,28.44244306,82.17540409,465700,2.02%,Nepali,Hindu
-184,Sasak,Indonesia,-0.74768,131.73212,3383000,0.02%,Sasa,Muslim
-,Sayyid (Sayyad),India,25.05131172,84.22023723,17731000,0.00%,"Urdu,Sindhi",
-,Sayyid (Sayyad),Pakistan,33.70589958,70.31291043,,,,
-186,Shah,India,25.05131172,84.22023723,7200,0.00%,Kumaoni,Hindu
-187,Shahseven (Ilsavan),Iran,35.71941909,51.45625497,102000,0.18%,Southern Azerbaijani,Muslim
-188,Shaikh,Bangladesh,23.79566,90.26357,219883000,0.00%,Bengali,Muslim
-,Shaikh Qureshi,India,25.05131172,84.22023723,10378000,0.00%,"Urdu,Sindhi",
-,Shaikh Qureshi,Pakistan,33.70589958,70.31291043,,,,
-189,Shankhsaz,India,25.05131172,84.22023723,3200,0.00%,Kashmiri,Muslim
-192,Shawiya Berber (Shawi),Algeria,35.99742458,5.389438574,2685600,0.00%,Tachawit,Muslim
-193,Sheikh,Pakistan,33.70589958,70.31291043,2083000,0.00%,Western Punjabi,Muslim
-194,Sherpa,India,25.05131172,84.22023723,184000,4.23%,"""Sherpa,Nepali""",
-,Sherpa,Nepal,28.44244306,82.17540409,,,,
-195,Shui,China,24.68311,101.97421,334000,0.25%,Sui,Ethnic Religion
-196,Singiwala (Singh),India,25.05131172,84.22023723,22000,0.00%,Marwari,Hindu
-198,Somali,Somalia,5.25933,47.04801,24163200,0.03%,Somali,Muslim
-,Somali,Kenya,0.09897813263,40.32072477,,,,
-,Somali,Ethiopia,5.93414,36.55906,,,,
-200,Sonar,India,25.05131172,84.22023723,8184300,0.00%,Hindi,Hindu
-,Soria,India,25.05131172,84.22023723,1400,1.71%,Hindi,Hindu
-204,Sunda,Indonesia,-8.31078,124.59376,38495000,0.06%,Sunda,Muslim
-,Sunuwar (Mukhiya),India,25.05131172,84.22023723,95000,Unknown,"Nepali,Sunwar",
-,Sunuwar (Mukhiya),Nepal,28.44244306,82.17540409,,,,
-205,Suri,India,25.05131172,84.22023723,1148000,0.08%,"Bengali,Maithili",
-,Suri,Bangladesh,22.99644425,89.83624592,,,,
-,Suri,Nepal,28.44244306,82.17540409,,,,
-,Syangtan - (Gurung Ghaleg),India,25.05131172,84.22023723,747000,4.86%,Gurung,Buddhist
-,Syangtan - (Gurung Ghaleg),Nepal,28.229396,84.873367,,,,
-206,Tajiks,Tajikistan,38.56749,69.81948,10231800,0.05%,Tajik,Muslim
-,Tajiks,Uzbekistan,39.07513,67.29038,,,,
-,Talish,Iran,,,,,,
-207,Talish,Azerbaijan,,,236000,0.00%,Talysh,Muslim
-208,Tamang,Nepal,28.44244306,82.17540409,1985000,0.00%,Eastern Tamang,Buddhist
-,Tamboli (Chourasia),India,,,,,,Hindu
-210,Tanti,India,25.05131172,84.22023723,5827900,0.01%,Bengali,Hindu
-211,Tat,Azerbaijan,41.37913,48.48932,36700,0.82%,Muslim Tat,Muslim
-212,Tatar,Russia,55.361251,78.35814,6364200,0.43%,Tatar,Muslim
-213,Teli,India,25.05131172,84.22023723,22467500,Unknown,Hindi,Hindu
-215,Thapa     -    Magar,Nepal,28.44244306,82.17540409,2505400,2.19%,Nepali,Hindu
-216,Tharu,Nepal,28.44244306,82.17540409,2226000,0.00%,Dangaura Tharu,Hindu
-217,Tibetans,China,24.68311,101.97421,1128700,0.04%,Cental Tibetan,Hindu
-,Tibetans,India,25.05131172,84.22023723,,,,
-,Tigre,Eritrea,16.768941,38.26193,1030000,0.06%,Tigre,Muslim
-218,Tolaki,Indonesia,-8.31078,124.59376,184000,0.98%,Tolaki,Muslim
-219,Tsakhur,Azerbaijan,41.55684,46.86823,44000,0.10%,Tsakhur,Muslim
-220,Tuareg (Tahaggart),Algeria,35.99742458,5.389438574,74000,0.00%,Tuareg (Tahaggart),Muslim
-,Tuareg (Tahaggart),Lybia,,,,,,
-,Tuareg (Tahaggart),Nigeria,6.29706,8.63775,,,,
-221,Tudu,India,25.05131172,84.22023723,4230000,0.02%,Telugu,Hindu
-222,Tujia,China,24.68311,101.97421,9699000,1.00%,Mandarin Chinese,Animist
-223,Tunisians (Arab),Tunisia,36.66512,8.684009,11456200,0.00%,Spoken Tunisian Arabic,Muslim
-,Turaiha (Turha),India,25.05131172,84.22023723,412000,0.00%,Bhojpuri,Hindu
-224,Turcomens,Turkministan,,,8073500,0.00%,Turkmen,Muslim
-,Turcomens,Afghanistan,31.15621,62.14612,,,,
-225,Turks,Turkey,,,65256300,0.00%,Turkish,Muslim
-,Turks,Germany,51.48800021,7.043515165,,,,
-226,Turku (Arabs),Chad,14.03813464,21.75803615,57900,0.00%,Juba Arabic,Muslim
-,Turku (Arabs),Cameroon,4.37822,9.64981,,,,
-227,Uighurs,China,24.68311,101.97421,12453000,0.01%,Uighur,Muslim
-228,Uzbeks,Uzbekistan,40.26116,65.38644,35868000,0.03%,Uzbek,Muslim
-,Uzbeks,Azerbaijan,39.94044,46.62271,,,,
-,Uzbeks,Tajikstan,,,,,,
-230,Viswakarma,India,27.83279027,92.93115946,7423300,0.00%,Telugu,Hindu
-231,Wolof,Senegal,14.72586101,-17.47296172,6331500,0.01%,Wolof,Muslim
-232,Yadav (Ahir) (Rai),India,25.05131172,84.22023723,41011200,0.00%,"Hindi,Maithili",
-,Yadav (Ahir) (Rai),Nepal,28.44244306,82.17540409,,,,
-233,"Yakthumba,Limbu",Nepal,28.44244306,82.17540409,590800,0.00%,Limbu,
-171,,,,,,,,
-172,,,,,,,,
+100,Fulani  Adamawa,Nigeria,6.29706,8.63775,5131000,0.05%,Adamawa","Fulfulde""",,,,,,
+,Fulani  Adamawa,Cameroon,4.37822,9.64981,,,,,,,,,,,
+,Fulani Adamawa,Chad,11.76458,18.30663,,,,,,,,,,,
+101,Fulani Pulaar (Mauritania),Mauritania,16.24590067,-8.161375848,303000,0.21%,Pulaar,Muslim,,,,,,,
+102,Fur,Sudan,11.44493,28.99758,1365000,0.68%,Fur,Muslim,,,,,,,
+,Fur,Chad,11.41937425,22.56625173,,,,,,,,,,,
+103,Gadaria (Gaderi),India,25.05131172,84.22023723,4681700,0.00%,Hindi,Hindu,,,,,,,
+105,Ganda,India,25.05131172,84.22023723,1481000,0.00%,Odia,Hindu,,,,,,,
+106,Gauda (Gonda),India,25.05131172,84.22023723,2350000,0.00%,Odia,Hindu,,,,,,,
+108,Gautam,India,25.05131172,84.22023723,445000,0.00%,Hindi,Hindu,,,,,,,
+110,Gharti,India,25.05131172,84.22023723,136000,1.36%,"Nepali,Bengali",,,,,,,,
+,Gharti,Nepal,29.65402468,82.81157583,,,,,,,,,,,
+111,Ghasiya,India,25.05131172,84.22023723,515500,0.14%,Hindi,Muslim,,,,,,,
+112,Ginukh,Russia,42.4506,45.80932,600,0.32%,Ginukh,Muslim,,,,,,,
+115,Gorontalo,Indonesia,-8.31078,124.59376,1167000,0.04%,Gorontalo,Muslim,,,,,,,
+116,Gosain (Goswani),India,25.05131172,84.22023723,1571300,0.00%,Hindi,Hindu,,,,,,,
+117,Gujjar,India,25.05131172,84.22023723,70000,0.00%,Gujari,Hindu,,,,,,,
+119,Gypsy,Uzbekistan,40.26116,65.38644,23000,0.13%,Tajik,Muslim,,,,,,,
+120,Hajam (Naye),India,25.05131172,84.22023723,5298000,0.00%,"Urdu,Western Punjabi",,,,,,,,
+,Hajam (Naye),Pakistan,33.70589958,70.31291043,,,,,,,,,,,
+121,Halwai,India,25.05131172,84.22023723,1167000,0.00%,Hindi,Hindu,,,,,,,
+122,Han Chinese,China,24.68311,101.97421,931685100,8.30%,Mandarin Chinese,Atheist,,,,,,,
+123,Hani,China,24.5198,103.72997,784800,0.29%,Hani,Animist,,,,,,,
+124,Harratine,Morocco,33.21826697,-6.950070982,57000,0.00%,Moroccan Spoken Arabic,Muslim,,,,,,,
+126,Hindu Valmiki (Walmiki),India,25.05131172,84.22023723,5653600,0.00%,Hindi,Hindu,,,,,,,
+127,Imragen,Mauritania,16.24590067,-8.161375848,23000,0.00%,Hassaniyya Arabic,Muslim,,,,,,,
+128,Inghiloi,Azerbaijan,41.36546,46.82747,38500,0.33%,Georgian,Muslim,,,,,,,
+129,Ingush (Caucasus),Russia,43.4052,44.8203,447800,0.01%,Ingush,Muslim,,,,,,,
+130,Iranians,Iran,31.043472,61.493783,42531300,0.44%,Iranian Persian,Muslim,,,,,,,
+131,Jaiswal Bania,India,25.05131172,84.22023723,135000,0.00%,Hindi,Hindu,,,,,,,
+133,Japanese,Japan,35.35084,136.46904,122406300,0.35%,Japanese,Buddhist,,,,,,,
+134,Jat (Muslim),Pakistan,33.70589958,70.31291043,14074800,0.00%,West Punjabi,Muslim,,,,,,,
+135,Jat (Sikh),India,25.05131172,84.22023723,15795600,0.02%,Hindi,Hindu,,,,,,,
+136,Java Banyumassan,Indonesia,-0.74768,131.73212,9350000,1.18%,Javanese,Muslim,,,,,,,
+137,Jordanians (Arab),Jordan,32.30991,36.30381,4458600,0.33%,South Levintine Spoken Arabic,Muslim,,,,,,,
+138,Joshi,India,25.05131172,84.22023723,438400,0.00%,Hindi,Hindu,,,,,,,
+139,Julaha,India,25.05131172,84.22023723,933000,0.00%,Hindi,Hindu,,,,,,,
+140,Kabardian,Russia,43.50166402,43.61599925,2005400,0.01%,Kabardian,Muslim,,,,,,,
+,Kabardian,Turkey,,,,,,,,,,,,,
+141,Kahar,India,28.83035932,79.66381356,9565000,0.00%,Hindi,Hindu,,,,,,,
+166,Kahar (Kohar),India,28.83035932,79.66381356,"9,900,00",Unknown,Hindu,,,,,,,,
+142,Kahar Kamkar,India,28.83035932,79.66381356,240000,0.00%,Hindi,Hindu,,,,,,,
+143,Kaili Ledo (Central Sulawesi),Indonesia,-8.31078,124.59376,396000,0.01%,Ledo Kaili,Muslim,,,,,,,
+144,Kalmyk-Oirat,Mongolia,48.59894,96.12626,654200,0.21%,Kalmyk-Oirat,Buddhist,,,,,,,
+,Kalmyk-Oirat,Russia,46.63953,45.44453,,,,,,,,,,,
+,Kalmyk-Oirat,China,24.68311,101.97421,,,,,,,,,,,
+145,Kami (Biswakarma),Nepal,28.44244306,82.17540409,1511800,1.48%,Nepali,Hindu,,,,,,,
+146,Kandh Kui,India,19.91671431,77.90433836,1567900,0.00%,Odia,Hindu,,,,,,,
+147,Kandu (Kanu),India,25.05131172,84.22023723,2877000,0.00%,Hindi,Hindu,,,,,,,
+148,"Kanuri,Yerwa",Nigeria,6.29706,8.63775,8318000,0.00%,Yerwa Kanuri,,,,,,,,
+,"Kanuri,Yerwa",Niger,13.56385,12.79467,,,,,,,,,,,
+,"Kanuri,Yerwa",Chad,11.24528,15.26321,,,,,,,,,,,
+149,Karachay-Cherie's,Russia,43.76855755,41.91318527,250000,0.02%,Karachay - Balkar,Muslim,,,,,,,
+150,Karakalpaks,Uzbekistan,43.05521,59.83532,885400,0.00%,Karakalpak,Muslim,,,,,,,
+152,Karmakar,India,27.83279027,92.93115946,372700,0.00%,Hindi,Hindu,,,,,,,
+,Kayastha,India,,,,,,,,,,,,,
+155,Kayastha,Bangladesh,,,8712600,0.01%,Hindi,Hindu,,,,,,,
+156,Kazak,Kazakhstan,48.28745,68.99411,17574100,0.03%,Kazakh,Muslim,,,,,,,
+,Kazak,China,24.68311,101.97421,,,,,,,,,,,
+157,Kera,Chad,9.7663,15.18154,155000,5.27%,Kera,Animist,,,,,,,
+,Kera,Cameroon,4.37822,9.64981,,,,,,,,,,,
+158,Kewat,India,25.05131172,84.22023723,353200,0.00%,Hindi,Hindu,,,,,,,
+160,Khan,India,25.05131172,84.22023723,9054000,0.00%,"Kashmiri,Northern Hindko",,,,,,,,
+,Khan,Pakistan,33.70589958,70.31291043,,,,,,,,,,,
+163,"Khatik (Cikwa,Kuala,Kulal)",India,25.05131172,84.22023723,39700,0.00%,Muslim,,,,,,,,
+164,Khatri - Duplicate - (Seth),India,25.05131172,84.22023723,2747000,0.00%,Hindi,Hindu,,,,,,,
+165,Khatwa,India,25.05131172,84.22023723,319000,0.00%     0.00%,"Hindi,Maithili",,,,,,,,
+,Khatwa,Nepal,28.44244306,82.17540409,,,,,,,,,,,
+167,Koiri  (Kushwaha),India,25.05131172,84.22023723,9751700,0.01%,Hindi,Hindu,,,,,,,
+168,Kolta (Kuta),India,25.05131172,84.22023723,807000,Unknown,Odia,Hindu,,,,,,,
+169,Kotoko,Chad,11.56754,15.14521,36000,0.10%,Lagwan,Muslim,,,,,,,
+170,Kubachi,Russia,42.169198,47.43763,6900,0.70%,Kubachi,Muslim,,,,,,,
+171,Kuchbandia (Kuchbadhia),India,25.05131172,84.22023723,36000,0.00%,Hindi,Hindu,,,,,,,
+172,Kulina Pano,Brazil,-5.6597,-71.5429,200,0.00%,Kulina,Ethnic Religion,,,,,,,
+,Kumal,Nepal,28.44244306,82.17540409,143800,0.00%,Nepali,Hindu,,,,,,,
+173,Kumhar,India,25.05131172,84.22023723,19041300,0.00%,Hindi,Hindu,,,,,,,
+174,Kunjra,India,25.05131172,84.22023723,7200,0.00%,Bengali,Hindu,,,,,,,
+,Kunjra,Bangladesh,22.99644425,89.83624592,,,,,,,,,,,
+175,Kurds,Iraq,34.36674,45.01019,36145000,0.10%,Kurdish Languages,Muslim,,,,,,,
+,Kurds,Turkey,,,,,,,,,,,,,
+,Kurds,Syria,33.533734,36.333564,,,,,,,,,,,
+176,Kurmi,India,25.05131172,84.22023723,22265300,0.00%,Hindi,Hindu,,,,,,,
+177,Kyrgyz,Kyrgystan,,,5800600,0.11%,Kyrgyz,Muslim,,,,,,,
+179,Lak,Russia,44.3745,46.14648,176200,0.05%,Lak,Muslim,,,,,,,
+180,Lama (Bodha),India,25.05131172,84.22023723,131000,Unknown,Ladakhi,Buddhist,,,,,,,
+181,Lezgins,Russia,44.22168,41.88952,665200,0.04%,Lezgi,Muslim,,,,,,,
+,Lezgins,Azerbaijan,41.47999,48.34479,,,,,,,,,,,
+182,Lodha (Lodhi) (Lodh),India,25.05131172,84.22023723,7023000,Unknown,Hindi,Hindu,,,,,,,
+183,Lohar,India,25.05131172,84.22023723,11504900,0.00%,Hindi,Hindu,,,,,,,
+184,Lunia (Nonia),India,25.05131172,84.22023723,3921000,0.00%,Hindi,Hindu,,,,,,,
+185,Magar,Nepal,28.44244306,82.17540409,2552200,2.18%,Nepali,Hindu,,,,,,,
+186,Mahara,India,28.83035932,79.66381356,22600,0.00%,Sylheti,Hindu,,,,,,,
+187,Majhi,India,25.05131172,84.22023723,241000,0.00%,Hindi,Hindu,,,,,,,
+188,Mali (Malakar),India,27.83279027,92.93115946,12230000,0.00%,Hindi,Hindu,,,,,,,
+189,"Mallah (Mandal,Mai)",India,25.05131172,84.22023723,3220000,0.02%,Hindi,,,,,,,,
+190,Mandar,Indonesia,-8.31078,124.59376,553000,0.00%,Mandar,Muslim,,,,,,,
+193,Masna,Mauritania,18.389208,-9.457121,2800,0.00%,Hassanyya,Muslim,,,,,,,
+,Mijar,India,25.05131172,84.22023723,239000,Unknown,Eastern Punjabi,Hindu,,,,,,,
+,Mirasi (Sheikh),Pakistan,33.70589958,70.31291043,2182000,0.00%,Northern Punjabi,Muslim,,,,,,,
+198,Mochi,India,25.05131172,84.22023723,2328000,0.00%,Bengali,Hindu,,,,,,,
+201,Moors - Bithan (North Africa),Mauritania,16.53466931,-15.80615831,4616500,0.09%,Hassaniyya,Muslim,,,,,,,
+151,Muna,Indonesia,-8.31078,124.59376,348000,0.06%,Muna,Muslim,,,,,,,
+152,Munda,India,25.05131172,84.22023723,4316000,7.25%,Mundari,Hindu,,,,,,,
+153,Mundang,Chad,14.03813464,21.75803615,486000,4.30%,Mundang,Animist,,,,,,,
+,Mundand,Cameroon,4.37822,9.64981,,,,,,,,,,,
+154,Musahar (Musher),India,28.83035932,79.66381356,3964000,0.29%,Hindi,Hindu,,,,,,,
+155,Nai (Napit)(Naiya),India,25.05131172,84.22023723,13952000,0.00%,Hindi,Hindu,,,,,,,
+156,Nat,India,12.64999269,76.66210297,591400,0.02%,Hindi,Hindu,,,,,,,
+158,Newar,Nepal,28.44244306,82.17540409,1665900,0.88%,Newar,Hindu,,,,,,,
+160,Noliya,India,25.05131172,84.22023723,4500,Unknown,Odia,Hindu,,,,,,,
+162,"Nubian,Fedicca-Mohas",Sudan,11.98,28.96,1027000,0.00%,Nobiin,,,,,,,,
+,"Nubian,Fedicca-Mohas",Egypt,24.48006536,32.95521007,,,,,,,,,,,
+163,Nut,India,25.05131172,84.22023723,591400,0.02%,Hindi,Hindu,,,,,,,
+164,"Oromo,Hararghe ????",Ethiopia,8.72457,41.4741,7214000,0.50%,Eastern Oromo,,,,,,,,
+165,Ossetian,Russia,44.22168,41.88952,621500,0.98%,Ossetic,Atheist,,,,,,,
+,Pamir (Shughni),Afghanistan,37.59163,71.37385,143000,0.00%,Shughni,Muslim,,,,,,,
+,Pamir (Shughni),Tajikistan,38.59,68.78,,,,,,,,,,,
+,Pardhan (Pradhan),India,25.05131172,84.22023723,358000,Unkown,Pardhan,Hindu,,,,,,,
+167,Pasi,India,28.62712318,95.78077828,5734000,0.00%,Hindi,Hindu,,,,,,,
+168,Paswan    Dusadh,India,25.05131172,84.22023723,6729000,0.01%,Hindi,Hindu,,,,,,,
+169,Patel    Kunbi,India,25.05131172,84.22023723,15610500,0.02%,Gujarati,Hindu,,,,,,,
+,Patwa,India,25.05131172,84.22023723,293000,0.00%,Hindi,Hindu,,,,,,,
+,Persian (Turkmenistan),Turkmenistan,38.0518181,58.20082386,18000,0.05%,Iranian Persian,Muslim,,,,,,,
+,Pinjara (Behna),India,25.05131172,84.22023723,4005000,0.00%,Urdu,Muslim,,,,,,,
+,Pisabo,Peru,-5,-77,700,0.00%,Pisabu,Ethnic Religion,,,,,,,
+173,Rajbanshi,India,25.05131172,84.22023723,6598700,Unknown,Bengali,Hindu,,,,,,,
+,Rajbanshi,Bangladesh,22.99644425,89.83624592,,,,,,,,,,,
+,Rajbhar,Nepal,26.54056,88.74861,,,,,,,,,,,
+174,Rajbhar,India,25.3176,82.9739,99800,0.12%,Hindi,Hindu,,,,,,,
+175,Rajput,India,25.05131172,84.22023723,26988700,0.01%,Hindi,Hindu,,,,,,,
+,Rajwar,India,25.05131172,84.22023723,686000,Unknown,Hindi,Hindu,,,,,,,
+,Ravidas Chamar,India,25.05131172,84.22023723,1583000,0.00%,Hindi,Hindu,,,,,,,
+177,Rawat,India,25.05131172,84.22023723,900000,0.00%,Hindi,Hindu,,,,,,,
+,Rongkup (Lap-Cha) (Lapche),India,25.05131172,84.22023723,,,,Buddhist,,,,,,,
+178,Russian,Russia,52.13835,107.92173,135461300,1.50%,Russian,Christian,,,,,,,
+179,Rutul,Russia,44.22168,41.88952,52000,0.13%,Rutul,Muslim,,,,,,,
+,Rutul,Azerbaijan,41.07969,46.74134,,,,,,,,,,,
+,Sada,India,25.05131172,84.22023723,9600,0.00%,Kannada,Jainism,,,,,,,
+,Sahariya (Sahri),India,28.83035932,79.66381356,982000,Unknown,Hindi,Hindu,,,,,,,
+181,Santhal,India,25.05131172,84.22023723,9078300,0.00%,Santhali,Hindu,,,,,,,
+,Sarki,Nepal,28.44244306,82.17540409,465700,2.02%,Nepali,Hindu,,,,,,,
+184,Sasak,Indonesia,-0.74768,131.73212,3383000,0.02%,Sasa,Muslim,,,,,,,
+,Sayyid (Sayyad),India,25.05131172,84.22023723,17731000,0.00%,"Urdu,Sindhi",,,,,,,,
+,Sayyid (Sayyad),Pakistan,33.70589958,70.31291043,,,,,,,,,,,
+186,Shah,India,25.05131172,84.22023723,7200,0.00%,Kumaoni,Hindu,,,,,,,
+187,Shahseven (Ilsavan),Iran,35.71941909,51.45625497,102000,0.18%,Southern Azerbaijani,Muslim,,,,,,,
+188,Shaikh,Bangladesh,23.79566,90.26357,219883000,0.00%,Bengali,Muslim,,,,,,,
+,Shaikh Qureshi,India,25.05131172,84.22023723,10378000,0.00%,"Urdu,Sindhi",,,,,,,,
+,Shaikh Qureshi,Pakistan,33.70589958,70.31291043,,,,,,,,,,,
+189,Shankhsaz,India,25.05131172,84.22023723,3200,0.00%,Kashmiri,Muslim,,,,,,,
+192,Shawiya Berber (Shawi),Algeria,35.99742458,5.389438574,2685600,0.00%,Tachawit,Muslim,,,,,,,
+193,Sheikh,Pakistan,33.70589958,70.31291043,2083000,0.00%,Western Punjabi,Muslim,,,,,,,
+194,Sherpa,India,25.05131172,84.22023723,184000,4.23%,"""Sherpa,Nepali""",,,,,,,,
+,Sherpa,Nepal,28.44244306,82.17540409,,,,,,,,,,,
+195,Shui,China,24.68311,101.97421,334000,0.25%,Sui,Ethnic Religion,,,,,,,
+196,Singiwala (Singh),India,25.05131172,84.22023723,22000,0.00%,Marwari,Hindu,,,,,,,
+198,Somali,Somalia,5.25933,47.04801,24163200,0.03%,Somali,Muslim,,,,,,,
+,Somali,Kenya,0.098978133,40.32072477,,,,,,,,,,,
+,Somali,Ethiopia,5.93414,36.55906,,,,,,,,,,,
+200,Sonar,India,25.05131172,84.22023723,8184300,0.00%,Hindi,Hindu,,,,,,,
+,Soria,India,25.05131172,84.22023723,1400,1.71%,Hindi,Hindu,,,,,,,
+204,Sunda,Indonesia,-8.31078,124.59376,38495000,0.06%,Sunda,Muslim,,,,,,,
+,Sunuwar (Mukhiya),India,25.05131172,84.22023723,95000,Unknown,"Nepali,Sunwar",,,,,,,,
+,Sunuwar (Mukhiya),Nepal,28.44244306,82.17540409,,,,,,,,,,,
+205,Suri,India,25.05131172,84.22023723,1148000,0.08%,"Bengali,Maithili",,,,,,,,
+,Suri,Bangladesh,22.99644425,89.83624592,,,,,,,,,,,
+,Suri,Nepal,28.44244306,82.17540409,,,,,,,,,,,
+,Syangtan - (Gurung Ghaleg),India,25.05131172,84.22023723,747000,4.86%,Gurung,Buddhist,,,,,,,
+,Syangtan - (Gurung Ghaleg),Nepal,28.229396,84.873367,,,,,,,,,,,
+206,Tajiks,Tajikistan,38.56749,69.81948,10231800,0.05%,Tajik,Muslim,,,,,,,
+,Tajiks,Uzbekistan,39.07513,67.29038,,,,,,,,,,,
+,Talish,Iran,,,,,,,,,,,,,
+207,Talish,Azerbaijan,,,236000,0.00%,Talysh,Muslim,,,,,,,
+208,Tamang,Nepal,28.44244306,82.17540409,1985000,0.00%,Eastern Tamang,Buddhist,,,,,,,
+,Tamboli (Chourasia),India,,,,,,Hindu,,,,,,,
+210,Tanti,India,25.05131172,84.22023723,5827900,0.01%,Bengali,Hindu,,,,,,,
+211,Tat,Azerbaijan,41.37913,48.48932,36700,0.82%,Muslim Tat,Muslim,,,,,,,
+212,Tatar,Russia,55.361251,78.35814,6364200,0.43%,Tatar,Muslim,,,,,,,
+213,Teli,India,25.05131172,84.22023723,22467500,Unknown,Hindi,Hindu,,,,,,,
+215,Thapa     -    Magar,Nepal,28.44244306,82.17540409,2505400,2.19%,Nepali,Hindu,,,,,,,
+216,Tharu,Nepal,28.44244306,82.17540409,2226000,0.00%,Dangaura Tharu,Hindu,,,,,,,
+217,Tibetans,China,24.68311,101.97421,1128700,0.04%,Cental Tibetan,Hindu,,,,,,,
+,Tibetans,India,25.05131172,84.22023723,,,,,,,,,,,
+,Tigre,Eritrea,16.768941,38.26193,1030000,0.06%,Tigre,Muslim,,,,,,,
+218,Tolaki,Indonesia,-8.31078,124.59376,184000,0.98%,Tolaki,Muslim,,,,,,,
+219,Tsakhur,Azerbaijan,41.55684,46.86823,44000,0.10%,Tsakhur,Muslim,,,,,,,
+220,Tuareg (Tahaggart),Algeria,35.99742458,5.389438574,74000,0.00%,Tuareg (Tahaggart),Muslim,,,,,,,
+,Tuareg (Tahaggart),Lybia,,,,,,,,,,,,,
+,Tuareg (Tahaggart),Nigeria,6.29706,8.63775,,,,,,,,,,,
+221,Tudu,India,25.05131172,84.22023723,4230000,0.02%,Telugu,Hindu,,,,,,,
+222,Tujia,China,24.68311,101.97421,9699000,1.00%,Mandarin Chinese,Animist,,,,,,,
+223,Tunisians (Arab),Tunisia,36.66512,8.684009,11456200,0.00%,Spoken Tunisian Arabic,Muslim,,,,,,,
+,Turaiha (Turha),India,25.05131172,84.22023723,412000,0.00%,Bhojpuri,Hindu,,,,,,,
+224,Turcomens,Turkministan,,,8073500,0.00%,Turkmen,Muslim,,,,,,,
+,Turcomens,Afghanistan,31.15621,62.14612,,,,,,,,,,,
+225,Turks,Turkey,,,65256300,0.00%,Turkish,Muslim,,,,,,,
+,Turks,Germany,51.48800021,7.043515165,,,,,,,,,,,
+226,Turku (Arabs),Chad,14.03813464,21.75803615,57900,0.00%,Juba Arabic,Muslim,,,,,,,
+,Turku (Arabs),Cameroon,4.37822,9.64981,,,,,,,,,,,
+227,Uighurs,China,24.68311,101.97421,12453000,0.01%,Uighur,Muslim,,,,,,,
+228,Uzbeks,Uzbekistan,40.26116,65.38644,35868000,0.03%,Uzbek,Muslim,,,,,,,
+,Uzbeks,Azerbaijan,39.94044,46.62271,,,,,,,,,,,
+,Uzbeks,Tajikstan,,,,,,,,,,,,,
+230,Viswakarma,India,27.83279027,92.93115946,7423300,0.00%,Telugu,Hindu,,,,,,,
+,Waimiri-Atroari,Brazil,0.860553,-60.522396,2100,0.10%,Waimiri-Atroari,Ethnic Religion,,,,,,,
+231,Wolof,Senegal,14.72586101,-17.47296172,6331500,0.01%,Wolof,Muslim,,,,,,,
+232,Yadav (Ahir) (Rai),India,25.05131172,84.22023723,41011200,0.00%,"Hindi,Maithili",,,,,,,,
+,Yadav (Ahir) (Rai),Nepal,28.44244306,82.17540409,,,,,,,,,,,
+233,"Yakthumba,Limbu",Nepal,28.44244306,82.17540409,590800,0.00%,Limbu,,,,,,,,

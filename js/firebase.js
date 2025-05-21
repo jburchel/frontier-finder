@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
 import { 
     getFirestore, 
     collection, 
@@ -20,6 +20,15 @@ class FirebaseService {
         this.initializationPromise = null;
     }
 
+    // Helper method to get Firestore database instance
+    async getFirestore() {
+        if (!this.db) {
+            // Initialize if not already done
+            await this.initialize();
+        }
+        return this.db;
+    }
+    
     // Helper method to get collection reference
     getCollectionRef() {
         if (!this.db) {
@@ -37,45 +46,78 @@ class FirebaseService {
     }
 
     async initialize() {
+        console.log('[Firebase] initialize() called');
+        
         // If already initialized, return immediately
-        if (this.initialized) return;
+        if (this.initialized) {
+            console.log('[Firebase] Already initialized, returning existing db instance');
+            return this.db;
+        }
         
         // If initialization is in progress, return the existing promise
         if (this.initializationPromise) {
+            console.log('[Firebase] Initialization in progress, returning existing promise');
             return this.initializationPromise;
         }
+        
+        console.log('[Firebase] Starting new initialization');
         
         // Create a new initialization promise
         this.initializationPromise = new Promise(async (resolve, reject) => {
             try {
-                console.log('Initializing Firebase with config:', {
-                    projectId: config.firebase.projectId,
-                    appId: config.firebase.appId ? '(configured)' : '(missing)',
-                    apiKey: config.firebase.apiKey ? '(configured)' : '(missing)'
+                console.log('[Firebase] Initializing with config:', {
+                    projectId: config.firebase?.projectId ? '(configured)' : '(missing)',
+                    appId: config.firebase?.appId ? '(configured)' : '(missing)',
+                    apiKey: config.firebase?.apiKey ? '(configured)' : '(missing)'
                 });
                 
                 // Validate Firebase config
                 if (!config.firebase || !config.firebase.apiKey || !config.firebase.projectId) {
-                    throw new Error('Firebase configuration is missing or incomplete. Check config.js file.');
+                    const errorMsg = 'Firebase configuration is missing or incomplete. Check config.js file.';
+                    console.error('[Firebase]', errorMsg);
+                    reject(new Error(errorMsg));
+                    return;
                 }
                 
-                // Initialize Firebase app
-                const app = initializeApp(config.firebase);
-                this.db = getFirestore(app);
-                
-                // Test connection by trying to access the collection
+                // Initialize Firebase app - handle case where app is already initialized
+                let app;
                 try {
-                    const testQuery = query(this.getCollectionRef(), orderBy('addedAt', 'desc'));
-                    await getDocs(testQuery);
-                    console.log('Firebase connection test successful');
-                } catch (connectionError) {
-                    console.error('Firebase connection test failed:', connectionError);
-                    throw new Error(`Firebase connection failed: ${connectionError.message}`);
+                    console.log('[Firebase] Initializing Firebase app...');
+                    app = initializeApp(config.firebase);
+                    console.log('[Firebase] Firebase app initialized successfully');
+                } catch (initError) {
+                    console.warn('[Firebase] Firebase app already initialized, getting existing app');
+                    // If app is already initialized, get the existing app
+                    const apps = getApps();
+                    if (apps.length > 0) {
+                        app = apps[0];
+                        console.log('[Firebase] Using existing Firebase app instance');
+                    } else {
+                        const errorMsg = 'Failed to initialize Firebase app: ' + initError.message;
+                        console.error('[Firebase]', errorMsg);
+                        reject(new Error(errorMsg));
+                        return;
+                    }
                 }
                 
-                this.initialized = true;
-                console.log('Firebase initialized successfully');
-                resolve();
+                try {
+                    console.log('[Firebase] Getting Firestore instance...');
+                    this.db = getFirestore(app);
+                    console.log('[Firebase] Firestore instance created');
+                    
+                    // Test connection by getting collection reference
+                    console.log('[Firebase] Testing Firestore connection...');
+                    const collectionRef = collection(this.db, this.collectionName);
+                    console.log('[Firebase] Successfully got collection reference, connection test passed');
+                    
+                    this.initialized = true;
+                    console.log('[Firebase] Initialization completed successfully');
+                    resolve(this.db);
+                } catch (firestoreError) {
+                    const errorMsg = `Firestore initialization failed: ${firestoreError.message}`;
+                    console.error('[Firebase]', errorMsg, firestoreError);
+                    reject(new Error(errorMsg));
+                }
             } catch (error) {
                 console.error('Firebase initialization failed:', error);
                 this.initialized = false;

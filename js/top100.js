@@ -106,10 +106,72 @@ export class Top100Page {
             console.log('Top100Page: Loading Top 100 list...');
             this.showLoading();
             
-            // Use the firebaseService to get the Top 100 list
-            this.groups = await firebaseService.getTop100();
+            // Check if we just added items
+            const justAdded = sessionStorage.getItem('justAddedToTop100') === 'true';
+            if (justAdded) {
+                // Clear the flag so we don't show the message again on refresh
+                sessionStorage.removeItem('justAddedToTop100');
+                
+                // Show a success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'success-message';
+                successMessage.style.backgroundColor = '#d4edda';
+                successMessage.style.color = '#155724';
+                successMessage.style.padding = '15px';
+                successMessage.style.marginBottom = '20px';
+                successMessage.style.borderRadius = '4px';
+                successMessage.style.border = '1px solid #c3e6cb';
+                successMessage.style.textAlign = 'center';
+                successMessage.style.display = 'flex';
+                successMessage.style.alignItems = 'center';
+                successMessage.style.justifyContent = 'center';
+                successMessage.innerHTML = `
+                    <i class="fas fa-check-circle" style="margin-right: 10px; font-size: 20px;"></i>
+                    <span>Items successfully added to your Top 100 list!</span>
+                `;
+                
+                // Insert the message at the top of the container
+                const container = document.querySelector('.container');
+                if (container) {
+                    container.insertBefore(successMessage, container.firstChild);
+                    
+                    // Remove the message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.style.transition = 'opacity 0.5s';
+                        successMessage.style.opacity = '0';
+                        setTimeout(() => {
+                            if (successMessage.parentNode) {
+                                successMessage.parentNode.removeChild(successMessage);
+                            }
+                        }, 500);
+                    }, 5000);
+                }
+            }
             
-            console.log(`Top100Page: Loaded ${this.groups.length} groups`);
+            try {
+                // Try to use Firebase first
+                console.log('Top100Page: Attempting to load from Firebase...');
+                this.groups = await firebaseService.getTop100();
+                console.log(`Top100Page: Loaded ${this.groups.length} groups from Firebase`);
+            } catch (firebaseError) {
+                console.error('Top100Page: Firebase error, falling back to localStorage:', firebaseError);
+                
+                // Firebase failed, try localStorage as fallback
+                try {
+                    const storedItems = localStorage.getItem('top100Items');
+                    if (storedItems) {
+                        this.groups = JSON.parse(storedItems);
+                        console.log(`Top100Page: Loaded ${this.groups.length} groups from localStorage`);
+                    } else {
+                        console.log('Top100Page: No items found in localStorage');
+                        this.groups = [];
+                    }
+                } catch (localStorageError) {
+                    console.error('Top100Page: Error reading from localStorage:', localStorageError);
+                    this.groups = [];
+                }
+            }
+            
             this.updateDisplay();
             
         } catch (error) {
@@ -277,11 +339,26 @@ export class Top100Page {
     async removeFromTop100(id) {
         try {
             console.log(`Top100Page: Removing group with ID: ${id}`);
-            await firebaseService.removeFromTop100(id);
+            
+            // Try to remove from Firebase first
+            try {
+                await firebaseService.removeFromTop100(id);
+                console.log('Top100Page: Successfully removed from Firebase');
+            } catch (firebaseError) {
+                console.error('Top100Page: Error removing from Firebase, will still update local data:', firebaseError);
+            }
             
             // Update local data
             this.groups = this.groups.filter(group => group.id !== id);
             this.updateDisplay();
+            
+            // Also update localStorage
+            try {
+                localStorage.setItem('top100Items', JSON.stringify(this.groups));
+                console.log('Top100Page: Updated localStorage after removal');
+            } catch (localStorageError) {
+                console.error('Top100Page: Error updating localStorage:', localStorageError);
+            }
             
         } catch (error) {
             console.error('Top100Page: Error removing group:', error);
