@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Search Results - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <h1 data-i18n="resultsTitle">Search Results</h1>
+            <a href="index.html" class="back-button" data-i18n="backToSearch">← Back to Search</a>
+        </header>
+
+        <main>
+            <div class="main-content-area">
+                <div class="search-parameters">
+                    <h2 data-i18n="searchParams">Search Parameters</h2>
+                    <dl>
+                        <div>
+                            <dt data-i18n="baseUpg">UPG:</dt>
+                            <dd id="baseUpg"></dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="country">Country:</dt>
+                            <dd id="country"></dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="searchRadius">Search Radius:</dt>
+                            <dd id="searchRadius"></dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="results-section">
+                    <div id="searchResults" class="search-results">
+                        <div class="table-controls">
+                            <button id="addToListButton" class="button primary" disabled data-i18n="addToList">
+                                <i class="fas fa-plus"></i> Add Selected to Top 100
+                            </button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="headerSelect">Select</th>
+                                    <th data-i18n="headerName">People Group</th>
+                                    <th data-i18n="headerPronunciation">Pronunciation</th>
+                                    <th></th>
+                                    <th data-i18n="headerPopulation">Population</th>
+                                    <th data-i18n="headerCountry">Country</th>
+                                    <th data-i18n="headerDistance">Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="actions-container">
+                        <button onclick="window.location.href='index.html'" class="button secondary" data-i18n="New Search">New Search</button>
+                        <button onclick="window.location.href='top100.html'" class="button secondary" data-i18n="View Top 100">View Top 100</button>
+                        <button id="addToListButtonBottom" class="button primary" disabled data-i18n="Add to Top 100 List">Add to Top 100 List</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="definitions-sidebar">
+                <div class="definition-box">
+                    <h3 data-i18n="definitionsTitle">Key Definitions</h3>
+                    
+                    <div class="definition-item">
+                        <h4 data-i18n="fpgTitle">Frontier People Group (FPG)</h4>
+                        <p data-i18n="fpgJPDef">Less than 0.1% Christian and no evidence of a self-sustaining gospel movement.</p>
+                    </div>
+                    
+                    <div class="definition-item">
+                        <h4 data-i18n="uupgTitle">Unengaged Unreached People Group (UUPG)</h4>
+                        <p data-i18n="uupgDef">No active church planting methodology underway.</p>
+                    </div>
+                    
+                    <div class="definition-item">
+                        <h4 data-i18n="zeroScaleTitle">Zero Scale (GSEC 0)</h4>
+                        <p data-i18n="zeroScaleDef">No evangelical Christians or churches. No access to evangelical print, audio, visual, or human resources.</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer>
+            <p data-i18n="copyright">&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+
+        <!-- Application Scripts -->
+        <script type="module" src="js/config.js"></script>
+        <script type="module" src="js/results.js"></script>
+        <script type="module" src="js/jp-results.js"></script>
+    </div>
+</body>
+</html> 

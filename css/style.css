@@ -1,0 +1,1486 @@
+:root {
+    /* Crossover Global Brand Colors */
+    --primary-color: #183963;    /* PANTONE: 534 */
+    --accent-color: #39A949;     /* PANTONE: 7739 */
+    --neutral-gray: #7F7F7F;     /* PANTONE: 840 C */
+    --background: #FFFFFF;       /* PANTONE: P 75-1 U */
+    --secondary-color: #002857;  /* Darker blue for hover states */
+    --button-color: #39a949;     /* Green for button */
+    --button-hover-color: #2c7a37; /* Darker green for button hover */
+    --text-color: #333;
+    --background-color: #f5f5f5;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Cronos Pro', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header styles */
+header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    max-width: 180px;
+    height: auto;
+    flex-shrink: 0;  /* Prevent logo from shrinking */
+}
+
+.header-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 2.5rem;
+    line-height: 1.2;
+}
+
+.tagline {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.mission-statement {
+    color: var(--secondary-color);
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive header adjustments */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .logo {
+        max-width: 160px;
+    }
+    
+    .header-content {
+        text-align: center;
+    }
+
+    h1 {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Search section styles */
+.search-section {
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+}
+
+.search-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.search-filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.instructions {
+    margin-bottom: 1.5rem;
+    color: var(--neutral-gray);
+}
+
+/* Form styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row label {
+    min-width: 120px;
+    margin: 0;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    justify-content: flex-start;
+}
+
+/* Label styles */
+label {
+    color: var(--primary-color);
+    font-weight: bold;
+    min-width: 125 px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+/* Dropdown styles */
+select {
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: white;
+    min-width: 200px;
+}
+
+/* Placeholder text color */
+select option[value=""] {
+    color: var(--text-color);
+}
+
+/* Radius group styles */
+.radius-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.radius-input-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 0;
+}
+
+.radius-input-group input[type="number"] {
+    width: 80px;
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+/* Radio groups */
+.radio-group, .radius-radio-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.radio-option input[type="radio"] {
+    accent-color: var(--accent-color);
+    margin: 0;
+}
+
+/* Dropdowns */
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: white;
+}
+
+/* Button styles */
+button {
+    background-color: var(--button-color);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--button-hover-color);
+}
+
+/* Results section */
+.results-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+}
+
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.search-results {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.search-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.search-results th,
+.search-results td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-gray);
+}
+
+.search-results th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.search-results tr:hover {
+    background-color: var(--background-color);
+}
+
+.results-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Search button */
+#searchButton, #jpSearchButton {
+    display: block;
+    width: auto;
+    min-width: 120px;
+    height: 36px;
+    padding: 0 1.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .radio-group {
+        flex-wrap: wrap;
+    }
+}
+
+/* Search type alignment */
+.search-type-label {
+    min-width: 150px;
+    margin-left: 0;
+}
+
+.search-button {
+    position: relative;
+    min-width: 100px;
+}
+
+.search-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 2rem 0;
+}
+
+.error-message-box {
+    background-color: #fff0f0;
+    border-left: 4px solid #ff3333;
+    padding: 1.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.error-message-box .button {
+    margin: 0.5rem;
+}
+
+/* Results page specific styles */
+.back-button {
+    display: inline-block;
+    margin: 1rem 0;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.search-summary {
+    background: white;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.results-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.result-card {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.no-results {
+    color: var(--neutral-gray);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .results-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+.test-button {
+    background-color: #f0ad4e;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.test-button:hover {
+    background-color: #ec971f;
+}
+
+/* Search form grid layout */
+.search-grid, .jp-search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Section headings */
+.search-section h3 {
+    color: var(--primary-color);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.input-group label {
+    min-width: 120px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.input-group select, .input-group input[type="text"] {
+    flex: 1;
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.input-group input[type="number"], .input-group input[type="text"] {
+    width: 100px;
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--neutral-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-section {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.search-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Specific width for radius input */
+input[type="number"]#radius {
+    width: 100px;
+}
+
+.radio-group.inline {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+}
+
+.radio-group.inline label {
+    min-width: auto;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-grid, .jp-search-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .input-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .input-group label {
+        margin-bottom: 0.5rem;
+    }
+
+    .radio-group.inline {
+        margin-top: 0.5rem;
+    }
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    table-layout: fixed;
+    font-size: 14px;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    max-width: 100%;
+}
+
+.results-table th,
+.results-table td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.results-table th {
+    background-color: #183963;
+    color: white;
+    height: 40px;
+    line-height: 20px;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.selection-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.results-summary {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #39A949;
+}
+
+.results-summary ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.results-summary li {
+    margin: 5px 0;
+}
+
+.button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #39A949;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #2d8439;
+}
+
+.button.primary {
+    background-color: #183963;
+    -webkit-user-select: none; /* Safari support */
+    user-select: none;
+}
+
+.button.primary:hover {
+    background-color: #122b4a;
+}
+
+/* Fix for Safari support */
+.button, button {
+    -webkit-user-select: none; /* Safari support */
+    user-select: none;
+}
+
+/* Styles for sortable table headers */
+.results-table th.sortable {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari support */
+    user-select: none;
+    position: relative;
+    background-color: var(--primary-color);
+    transition: background-color 0.2s;
+}
+
+.results-table th.sortable:hover {
+    background-color: #122b4a;
+}
+
+/* Sort icon styles */
+.sort-icon {
+    display: inline-block;
+    margin-left: 5px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Animation for sort indicators */
+.results-table th.sortable:active {
+    transform: scale(0.98);
+}
+
+/* Sorting styles */
+.sortable {
+    position: relative;
+    padding-right: 20px;
+}
+
+.sortable::after {
+    content: '⇅';
+    position: absolute;
+    right: 5px;
+    color: #999;
+}
+
+.sort-asc::after {
+    content: '↑';
+    color: #333;
+}
+
+.sort-desc::after {
+    content: '↓';
+    color: #333;
+}
+
+.results-table th {
+    user-select: none;
+}
+
+.results-table th:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Top 100 Table Styles */
+#top100Table th {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Additional specificity for Top 100 table */
+.top100-container table thead tr th {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Ensure table headers have proper styling */
+table#top100Table thead tr th {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Filter controls */
+.filter-controls {
+    margin: 15px 0;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #183963;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-controls label {
+    font-weight: bold;
+    color: #183963;
+    margin: 0;
+}
+
+.filter-controls select {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    min-width: 150px;
+}
+
+.filter-controls select:focus {
+    outline: none;
+    border-color: #183963;
+    box-shadow: 0 0 0 2px rgba(24, 57, 99, 0.1);
+}
+
+/* Loading spinner */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 3rem 0;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #183963;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-container p {
+    color: #666;
+    font-size: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.actions-container {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    align-items: center;
+}
+
+.actions-container .button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-width: 150px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.actions-container .button.primary {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.actions-container .button.primary:hover {
+    background-color: var(--button-hover-color);
+}
+
+.actions-container .button.secondary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.actions-container .button.secondary:hover {
+    background-color: var(--secondary-color);
+}
+
+.actions-container .button:disabled {
+    background-color: var(--neutral-gray);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Top 100 Page Specific Styles */
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #183963;
+}
+
+.list-summary {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: 500;
+    color: #333;
+    vertical-align: middle;
+}
+
+.sort-controls {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.sort-controls button {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.sort-controls button:hover {
+    background-color: #e9e9e9;
+}
+
+.sort-controls button.active {
+    background-color: #183963;
+    color: white;
+    border-color: #183963;
+}
+
+/* Main layout */
+main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.main-content-area {
+    flex: 1;
+    min-width: 800px;
+    width: 75%;
+}
+
+.definitions-sidebar {
+    width: 250px;
+}
+
+@media (max-width: 768px) {
+    main {
+        flex-direction: column;
+    }
+    
+    .definitions-sidebar {
+        width: 100%;
+    }
+}
+
+/* Definition box styling */
+.definition-box {
+    background-color: #f8f8f8;
+    border-left: 4px solid #39A949;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.definition-box h3 {
+    color: #183963;
+    margin-top: 0;
+}
+
+.definition-item {
+    margin-bottom: 1.5rem;
+}
+
+.definition-item h4 {
+    color: #39A949;
+    margin-bottom: 0.5rem;
+}
+
+.definition-item h5 {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    margin-top: 0.75rem;
+}
+
+/* Top 100 page specific styles */
+.export-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 1rem;
+}
+
+.button.csv, .button.pdf {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.button.csv {
+    background-color: #39A949;
+    color: white;
+    border: none;
+}
+
+.button.pdf {
+    background-color: #183963;
+    color: white;
+    border: none;
+}
+
+.button.csv:hover, .button.pdf:hover {
+    opacity: 0.9;
+}
+
+/* Fix for play button icon */
+.play-button {
+    display: none;
+}
+
+/* Table styling improvements */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+th {
+    background-color: #183963;
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Sort controls */
+.sort-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.sort-controls button {
+    padding: 5px 10px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.sort-controls button.active {
+    background-color: #183963;
+    color: white;
+    border-color: #183963;
+}
+
+/* List summary */
+.list-summary {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Radio group inline */
+.radio-group.inline {
+    display: flex;
+    gap: 15px;
+}
+
+/* Top 100 section styling */
+.top-100-section {
+    background-color: #f8f8f8;
+    border-left: 4px solid #39A949;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-100-section h2 {
+    color: #183963;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.top-100-section p {
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.top-100-section .button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.top-100-section .button {
+    display: inline-block;
+    background-color: #183963;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    -webkit-user-select: none; /* Safari support */
+    user-select: none;
+    transition: background-color 0.3s;
+}
+
+.top-100-section .button:hover {
+    background-color: #39A949;
+}
+
+/* Make the search section and top 100 section match */
+.search-section, .top-100-section {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.search-section:hover, .top-100-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Empty state container */
+.empty-container {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.empty-container p {
+    margin-bottom: 1.5rem;
+    color: #666;
+}
+
+/* Update button styles */
+.button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.button:hover {
+    background-color: #e9e9e9;
+}
+
+.button.primary {
+    background-color: #183963;
+    color: white;
+    border-color: #183963;
+}
+
+.button.primary:hover {
+    background-color: #122c4d;
+}
+
+/* Make sure the table is properly styled with separate columns */
+#top100Table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#top100Table th,
+#top100Table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #ddd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Top 100 table column widths */
+#top100Table th:nth-child(1), #top100Table td:nth-child(1) { /* Name */
+    width: 20%;
+    text-align: left;
+}
+
+#top100Table th:nth-child(2), #top100Table td:nth-child(2) { /* Pronunciation */
+    width: 20%;
+    text-align: left;
+}
+
+#top100Table th:nth-child(3), #top100Table td:nth-child(3) { /* Play button */
+    width: 60px;
+    text-align: center;
+}
+
+#top100Table th:nth-child(4), #top100Table td:nth-child(4) { /* Population */
+    width: 15%;
+    text-align: right;
+}
+
+#top100Table th:nth-child(5), #top100Table td:nth-child(5) { /* Country */
+    width: 20%;
+    text-align: left;
+}
+
+#top100Table th:nth-child(6), #top100Table td:nth-child(6) { /* Type */
+    width: 10%;
+    text-align: center;
+}
+
+#top100Table th:nth-child(7), #top100Table td:nth-child(7) { /* Actions */
+    width: 100px;
+    text-align: center;
+}
+
+#top100Table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+#top100Table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Style for the speak button */
+.speak-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #39A949;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+    padding: 0;
+    min-width: 36px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.speak-button:hover {
+    background-color: #2c8037;
+    transform: scale(1.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.speak-button:active {
+    transform: scale(0.95);
+}
+
+.speak-button i {
+    font-size: 16px;
+}
+
+/* Styles for the play button on results page */
+.play-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #39A949;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 24px;
+    height: 24px;
+}
+
+.play-button:hover {
+    background-color: #2d8439;
+}
+
+.play-button i {
+    margin-right: 0;
+}
+
+/* Style for the delete button */
+.delete-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+}
+
+.delete-button:hover {
+    background-color: #ff3333;
+}
+
+/* Add styles for the sort container */
+.sort-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.list-summary {
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.sort-controls {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Search parameters styling */
+.search-parameters {
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--accent-color);
+}
+
+.search-parameters h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.search-parameters dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.search-parameters dt {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.search-parameters dd {
+    font-size: 1.1rem;
+    margin-left: 0;
+}
+
+/* Table styling for play buttons */
+.table th:nth-child(4), 
+.table td:nth-child(4) {
+    width: 60px;
+    text-align: center;
+}
+
+/* Results table styling */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.results-table th,
+.results-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.results-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results-table tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Table column for play buttons */
+.results-table th:nth-child(4), 
+.results-table td:nth-child(4),
+#top100Table th:nth-child(3),
+#top100Table td:nth-child(3) {
+    width: 60px;
+    text-align: center;
+    padding: 8px;
+}
+
+/* Make sure the speak button is properly displayed in the Top 100 table */
+#top100Table td {
+    vertical-align: middle;
+}
+
+/* Ensure the speak button has enough space */
+#top100Table td:nth-child(3) {
+    padding: 8px 12px;
+}
+
+/* Make sure the remove button has enough space */
+#top100Table td:nth-child(7) {
+    padding: 8px 12px;
+}
+
+/* Ensure the table doesn't overflow on mobile */
+@media (max-width: 768px) {
+    #top100Table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .speak-button, .delete-button {
+        min-width: auto;
+        padding: 6px;
+    }
+    
+    .delete-button {
+        font-size: 12px;
+    }
+}
+
+/* Map Styles */
+.map-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin: 20px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Map search box */
+.map-search-box {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    width: 300px;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.map-search-box input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.map-search-box input:focus {
+    border-color: #39A949;
+    box-shadow: 0 0 0 2px rgba(57, 169, 73, 0.2);
+}
+
+/* Loading indicator */
+.loading-indicator {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    color: #183963;
+}
+
+.spinner {
+    border: 4px solid rgba(24, 57, 99, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #183963;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error message */
+.error-message {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ef9a9a;
+}
+
+/* Custom marker styles */
+.marker-popup {
+    font-family: Arial, sans-serif;
+}
+
+.marker-popup strong {
+    color: #183963;
+    font-size: 1.1em;
+}
+
+.marker-popup br {
+    margin-bottom: 4px;
+}
+
+/* Responsive map */
+@media (max-width: 768px) {
+    .map-container {
+        height: 300px;
+    }
+    
+    .map-search-box {
+        width: 150px;
+    }
+}

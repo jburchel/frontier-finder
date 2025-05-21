@@ -1,0 +1,51 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Firebase config
+firebaseconfig.js
+
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.voidrules
+.windsurfrules
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+
+# Python cache
+scripts/__pycache__/
+*.pyc
+
+# Backup files
+*.bak
+temp_backup/
+
+# Test and debug files
+*-test.html
+*-debug.*
+leaflet-test.html
+map-test.html
+map-debug.html
+
+# Raw data directories
+data/people_groups_org_data/
+mcp-browser-use/

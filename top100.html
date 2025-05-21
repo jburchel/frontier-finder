@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Dynamically set base href depending on environment
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const baseHref = isGitHubPages ? '/frontier-finder/' : '/';
+        document.write(`<base href="${baseHref}">`);
+    </script>
+    <title>Top 100 Priority List - Frontier Finder</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- ResponsiveVoice JS (non-commercial version) -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Crossover Global Logo" class="logo">
+            <div class="header-content">
+                <h1>Top 100 Priority List</h1>
+            </div>
+            <a href="index.html" class="back-link">← Back to Search</a>
+        </header>
+
+        <main>
+            <div class="top100-container">
+                <p>This is your personalized list of Frontier People Groups (FPGs) that you've selected as priorities for prayer, research, and potential engagement.</p>
+                
+                <div class="top100-controls">
+                    <div class="search-filter">
+                        <input type="text" id="searchFilter" placeholder="Search by name, country, language...">
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <label for="filterSelect">Filter by:</label>
+                        <select id="filterSelect">
+                            <option value="all">All Groups</option>
+                            <option value="FPG">FPGs Only</option>
+                            <option value="UUPG">UUPGs Only</option>
+                        </select>
+                    </div>
+                    
+                    <div class="export-controls">
+                        <button id="exportCSVButton" class="button csv">Export CSV</button>
+                        <button id="exportPDFButton" class="button pdf">Export PDF</button>
+                    </div>
+                </div>
+                
+                <div class="sort-container">
+                    <div class="list-summary">Sort by:</div>
+                    <div class="sort-controls">
+                        <button data-sort="name">Name</button>
+                        <button data-sort="population">Population</button>
+                        <button data-sort="country">Country</button>
+                        <button data-sort="type">Type</button>
+                        <button data-sort="dateAdded">Date Added</button>
+                    </div>
+                </div>
+                
+                <div id="loadingState" class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>Loading your Top 100 list...</p>
+                </div>
+                
+                <div id="errorState" class="error-container" style="display: none;">
+                    <div class="error-message-box">
+                        <p class="error-message">An error occurred while loading your Top 100 list.</p>
+                        <button id="retryButton" class="button primary">Retry</button>
+                        <a href="index.html" class="button">Back to Search</a>
+                    </div>
+                </div>
+                
+                <div id="emptyState" class="empty-container" style="display: none;">
+                    <p>Your Top 100 list is empty. Search for people groups and add them to your list.</p>
+                    <a href="index.html" class="button primary">Start Searching</a>
+                </div>
+                
+                <div id="tableContainer" style="display: none;">
+                    <table id="top100Table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Pronunciation</th>
+                                <th>Listen</th>
+                                <th>Population</th>
+                                <th>Country</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top100List">
+                            <!-- Table rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Crossover Global. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/top100.js"></script>
+</body>
+</html> 
